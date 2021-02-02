@@ -242,7 +242,7 @@ export default class DeclarativeTableComponent extends ContainerBase<any, azdata
 	private static ACCEPTABLE_VALUES = new Set<string>(['number', 'string', 'boolean']);
 	public setProperties(properties: azdata.DeclarativeTableProperties): void {
 		const basicData: any[][] = properties.data ?? [];
-		const complexData: azdata.DeclarativeTableCellValue[][] = properties.dataValues;
+		const complexData: azdata.DeclarativeTableCellValue[][] = properties.dataValues ?? [];
 		let finalData: azdata.DeclarativeTableCellValue[][];
 
 		finalData = basicData.map(row => {
@@ -277,13 +277,6 @@ export default class DeclarativeTableComponent extends ContainerBase<any, azdata
 		if (isDataPropertyChanged) {
 			this.clearContainer();
 			this._data = finalData;
-			this.data?.forEach(row => {
-				for (let i = 0; i < row.length; i++) {
-					if (this.isComponent(i)) {
-						this.addToContainer(this.getItemDescriptor(row[i].value as string), undefined);
-					}
-				}
-			});
 		}
 		super.setProperties(properties);
 	}
