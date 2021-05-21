@@ -21,7 +21,7 @@ import { IJobManagementService } from 'sql/workbench/services/jobManagement/comm
 import { JobManagementView, JobActionContext } from 'sql/workbench/contrib/jobManagement/browser/jobManagementView';
 import { CommonServiceInterface } from 'sql/workbench/services/bootstrap/browser/commonServiceInterface.service';
 import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IAction } from 'vs/base/common/actions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -30,11 +30,11 @@ import { escape } from 'sql/base/common/strings';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { tableBackground, cellBackground, cellBorderColor } from 'sql/platform/theme/common/colors';
 import { TelemetryView } from 'sql/platform/telemetry/common/telemetryKeys';
-import { attachButtonStyler } from 'sql/platform/theme/common/styler';
 import { Taskbar } from 'sql/base/browser/ui/taskbar/taskbar';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { IColorTheme } from 'vs/platform/theme/common/themeService';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
+import { attachTableFilterStyler } from 'sql/platform/theme/common/styler';
 
 
 export const NOTEBOOKSVIEW_SELECTOR: string = 'notebooksview-component';
@@ -106,7 +106,9 @@ export class NotebooksViewComponent extends JobManagementView implements OnInit,
 		@Inject(IContextMenuService) contextMenuService: IContextMenuService,
 		@Inject(IKeybindingService) keybindingService: IKeybindingService,
 		@Inject(IDashboardService) _dashboardService: IDashboardService,
-		@Inject(IAdsTelemetryService) private _telemetryService: IAdsTelemetryService
+		@Inject(IAdsTelemetryService) private _telemetryService: IAdsTelemetryService,
+		@Inject(IContextViewService) private _contextViewService: IContextViewService,
+
 	) {
 		super(commonService, _dashboardService, contextMenuService, keybindingService, instantiationService, _agentViewComponent);
 		let notebookCacheObjectMap = this._jobManagementService.notebookCacheObjectMap;
@@ -180,8 +182,8 @@ export class NotebooksViewComponent extends JobManagementView implements OnInit,
 		});
 		this.rowDetail = rowDetail;
 		columns.unshift(this.rowDetail.getColumnDefinition());
-		let filterPlugin = new HeaderFilter<IItem>();
-		this._register(attachButtonStyler(filterPlugin, this._themeService));
+		let filterPlugin = new HeaderFilter<IItem>(this._contextViewService);
+		this._register(attachTableFilterStyler(filterPlugin, this._themeService));
 		this.filterPlugin = filterPlugin;
 		jQuery(this._gridEl.nativeElement).empty();
 		jQuery(this.actionBarContainer.nativeElement).empty();

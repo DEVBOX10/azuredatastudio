@@ -70,7 +70,7 @@ suite('ConnectionDialogService tests', () => {
 	setup(() => {
 		const viewInstantiationService: TestInstantiationService = <TestInstantiationService>workbenchInstantiationService();
 		const viewDescriptorService = viewInstantiationService.createInstance(ViewDescriptorService);
-		container = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry).registerViewContainer({ id: 'testContainer', name: 'test', ctorDescriptor: new SyncDescriptor(<any>{}) }, ViewContainerLocation.Sidebar);
+		container = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry).registerViewContainer({ id: 'testContainer', title: 'test', ctorDescriptor: new SyncDescriptor(<any>{}) }, ViewContainerLocation.Sidebar);
 		viewInstantiationService.stub(IViewDescriptorService, viewDescriptorService);
 		const viewDescriptor: ITreeViewDescriptor = {
 			id: testTreeViewId,
@@ -90,8 +90,6 @@ suite('ConnectionDialogService tests', () => {
 		let errorMessageService = getMockErrorMessageService();
 		let capabilitiesService = new TestCapabilitiesService();
 		mockConnectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Strict,
-			undefined, // connection store
-			undefined, // connection status manager
 			undefined, // connection dialog service
 			testInstantiationService, // instantiation service
 			undefined, // editor service

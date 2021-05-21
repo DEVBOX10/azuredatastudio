@@ -28,17 +28,17 @@ export type EngineSettingsModel = {
 
 export class PostgresModel extends ResourceModel {
 	private _config?: azdataExt.PostgresServerShowResult;
-	public _engineSettings: EngineSettingsModel[] = [];
+	public workerNodesEngineSettings: EngineSettingsModel[] = [];
+	public coordinatorNodeEngineSettings: EngineSettingsModel[] = [];
 	private readonly _azdataApi: azdataExt.IExtension;
 
 	private readonly _onConfigUpdated = new vscode.EventEmitter<azdataExt.PostgresServerShowResult>();
-	public readonly _onEngineSettingsUpdated = new vscode.EventEmitter<EngineSettingsModel[]>();
 	public onConfigUpdated = this._onConfigUpdated.event;
-	public onEngineSettingsUpdated = this._onEngineSettingsUpdated.event;
 	public configLastUpdated?: Date;
 	public engineSettingsLastUpdated?: Date;
 
 	private _refreshPromise?: Deferred<void>;
+	private _engineSettingsPromise?: Deferred<void>;
 
 	constructor(_controllerModel: ControllerModel, private _pgInfo: PGResourceInfo, registration: Registration, private _treeDataProvider: AzureArcTreeDataProvider) {
 		super(_controllerModel, _pgInfo, registration);
@@ -52,16 +52,13 @@ export class PostgresModel extends ResourceModel {
 
 	/** Returns the major version of Postgres */
 	public get engineVersion(): string | undefined {
-		const kind = this._config?.kind;
-		return kind
-			? kind.substring(kind.lastIndexOf('-') + 1)
-			: undefined;
+		return this._config?.spec.engine.version;
 	}
 
 	/** Returns the IP address and port of Postgres */
 	public get endpoint(): { ip: string, port: string } | undefined {
-		return this._config?.status.externalEndpoint
-			? parseIpAndPort(this._config.status.externalEndpoint)
+		return this._config?.status.primaryEndpoint
+			? parseIpAndPort(this._config.status.primaryEndpoint)
 			: undefined;
 	}
 
@@ -75,7 +72,9 @@ export class PostgresModel extends ResourceModel {
 		const ramLimit = this._config.spec.scheduling?.default?.resources?.limits?.memory;
 		const cpuRequest = this._config.spec.scheduling?.default?.resources?.requests?.cpu;
 		const ramRequest = this._config.spec.scheduling?.default?.resources?.requests?.memory;
-		const storage = this._config.spec.storage?.data?.size;
+		const dataStorage = this._config.spec.storage?.data?.volumes?.[0]?.size;
+		const logStorage = this._config.spec.storage?.logs?.volumes?.[0]?.size;
+		const backupsStorage = this._config.spec.storage?.backups?.volumes?.[0]?.size;
 
 		// scale.shards was renamed to scale.workers. Check both for backwards compatibility.
 		const scale = this._config.spec.scale;
@@ -93,8 +92,19 @@ export class PostgresModel extends ResourceModel {
 			configuration.push(`${ramLimit ?? ramRequest!} ${loc.ram}`);
 		}
 
-		if (storage) {
-			configuration.push(`${storage} ${loc.storagePerNode}`);
+		let storage: string[] = [];
+		if (dataStorage) {
+			storage.push(loc.dataStorage(dataStorage));
+		}
+		if (logStorage) {
+			storage.push(loc.logStorage(logStorage));
+		}
+		if (backupsStorage) {
+			storage.push(loc.backupsStorage(backupsStorage));
+		}
+		if (dataStorage || logStorage || backupsStorage) {
+			storage.push(`${loc.storagePerNode}`);
+			configuration.push(storage.join(' '));
 		}
 
 		return configuration.join(', ');
@@ -107,10 +117,8 @@ export class PostgresModel extends ResourceModel {
 			return this._refreshPromise.promise;
 		}
 		this._refreshPromise = new Deferred();
-		let session: azdataExt.AzdataSession | undefined = undefined;
 		try {
-			session = await this.controllerModel.acquireAzdataSession();
-			this._config = (await this._azdataApi.azdata.arc.postgres.server.show(this.info.name, this.controllerModel.azdataAdditionalEnvVars, session)).result;
+			this._config = (await this._azdataApi.azdata.arc.postgres.server.show(this.info.name, this.controllerModel.azdataAdditionalEnvVars, this.controllerModel.controllerContext)).result;
 			this.configLastUpdated = new Date();
 			this._onConfigUpdated.fire(this._config);
 			this._refreshPromise.resolve();
@@ -118,44 +126,66 @@ export class PostgresModel extends ResourceModel {
 			this._refreshPromise.reject(err);
 			throw err;
 		} finally {
-			session?.dispose();
 			this._refreshPromise = undefined;
 		}
 	}
 
 	public async getEngineSettings(): Promise<void> {
-		if (!this._connectionProfile) {
-			await this.getConnectionProfile();
+		// Only allow to get engine setting once at a time
+		if (this._engineSettingsPromise) {
+			return this._engineSettingsPromise.promise;
 		}
+		this._engineSettingsPromise = new Deferred();
 
-		// We haven't connected yet so do so now and then store the ID for the active connection
-		if (!this._activeConnectionId) {
-			const result = await azdata.connection.connect(this._connectionProfile!, false, false);
-			if (!result.connected) {
-				throw new Error(result.errorMessage);
+		try {
+			if (!this._connectionProfile) {
+				await this.getConnectionProfile();
 			}
-			this._activeConnectionId = result.connectionId;
+
+			// We haven't connected yet so do so now and then store the ID for the active connection
+			if (!this._activeConnectionId) {
+				const result = await azdata.connection.connect(this._connectionProfile!, false, false);
+				if (!result.connected) {
+					throw new Error(result.errorMessage);
+				}
+				this._activeConnectionId = result.connectionId;
+			}
+
+			// TODO Need to make separate calls for worker nodes and coordinator node
+			const provider = azdata.dataprotocol.getProvider<azdata.QueryProvider>(this._connectionProfile!.providerName, azdata.DataProviderType.QueryProvider);
+			const ownerUri = await azdata.connection.getUriForConnection(this._activeConnectionId);
+
+			const skippedEngineSettings: String[] = [
+				'archive_command', 'archive_timeout', 'log_directory', 'log_file_mode', 'log_filename', 'restore_command',
+				'shared_preload_libraries', 'synchronous_commit', 'ssl', 'unix_socket_permissions', 'wal_level'
+			];
+
+			await this.createCoordinatorEngineSettings(provider, ownerUri, skippedEngineSettings);
+
+			const scale = this._config?.spec.scale;
+			const nodes = (scale?.workers ?? scale?.shards ?? 0);
+			if (nodes !== 0) {
+				await this.createWorkerEngineSettings(provider, ownerUri, skippedEngineSettings);
+			}
+
+			this.engineSettingsLastUpdated = new Date();
+			this._engineSettingsPromise.resolve();
+		} catch (err) {
+			this._engineSettingsPromise.reject(err);
+			throw err;
+		} finally {
+			this._engineSettingsPromise = undefined;
 		}
+	}
 
-		const provider = azdata.dataprotocol.getProvider<azdata.QueryProvider>(this._connectionProfile!.providerName, azdata.DataProviderType.QueryProvider);
-		const ownerUri = await azdata.connection.getUriForConnection(this._activeConnectionId);
+	private async createCoordinatorEngineSettings(provider: azdata.QueryProvider, ownerUri: string, skip: String[]): Promise<void> {
+		const engineSettingsCoordinator = await provider.runQueryAndReturn(ownerUri, 'select name, setting, short_desc,min_val, max_val, enumvals, vartype from pg_settings');
 
-		const engineSettings = await provider.runQueryAndReturn(ownerUri, 'select name, setting, short_desc,min_val, max_val, enumvals, vartype from pg_settings');
-		if (!engineSettings) {
-			throw new Error('Could not fetch engine settings');
-		}
-
-		const skippedEngineSettings: String[] = [
-			'archive_command', 'archive_timeout', 'log_directory', 'log_file_mode', 'log_filename', 'restore_command',
-			'shared_preload_libraries', 'synchronous_commit', 'ssl', 'unix_socket_permissions', 'wal_level'
-		];
-
-		this._engineSettings = [];
-
-		engineSettings.rows.forEach(row => {
+		this.coordinatorNodeEngineSettings = [];
+		engineSettingsCoordinator.rows.forEach(row => {
 			let rowValues = row.map(c => c.displayValue);
 			let name = rowValues.shift();
-			if (!skippedEngineSettings.includes(name!)) {
+			if (!skip.includes(name!)) {
 				let result: EngineSettingsModel = {
 					parameterName: name,
 					value: rowValues.shift(),
@@ -166,16 +196,48 @@ export class PostgresModel extends ResourceModel {
 					type: rowValues.shift()
 				};
 
-				this._engineSettings.push(result);
+				this.coordinatorNodeEngineSettings.push(result);
 			}
 		});
 
-		this.engineSettingsLastUpdated = new Date();
-		this._onEngineSettingsUpdated.fire(this._engineSettings);
+	}
+
+	private async createWorkerEngineSettings(provider: azdata.QueryProvider, ownerUri: string, skip: String[]): Promise<void> {
+
+		const engineSettingsWorker = await provider.runQueryAndReturn(ownerUri,
+			`with settings as (select nodename, success, result from run_command_on_workers('select json_agg(pg_settings) from pg_settings') order by success desc, nodename asc)
+			select * from settings limit case when exists(select 1 from settings where success) then 1 end`);
+
+		if (engineSettingsWorker.rows[0][1].displayValue === 'False') {
+			let errorString = engineSettingsWorker.rows.map(row => row[2].displayValue);
+			throw new Error(errorString.join('\n'));
+		}
+
+		let engineSettingsWorkerJSON = JSON.parse(engineSettingsWorker.rows[0][2].displayValue);
+		this.workerNodesEngineSettings = [];
+
+		for (let i = 0; i < engineSettingsWorkerJSON.length; i++) {
+			let rowValues = engineSettingsWorkerJSON[i];
+			let name = rowValues.name;
+			if (!skip.includes(name!)) {
+				let result: EngineSettingsModel = {
+					parameterName: name,
+					value: rowValues.setting,
+					description: rowValues.short_desc,
+					min: rowValues.min_val,
+					max: rowValues.max_val,
+					options: rowValues.enumvals,
+					type: rowValues.vartype
+				};
+
+				this.workerNodesEngineSettings.push(result);
+			}
+		}
+
 	}
 
 	protected createConnectionProfile(): azdata.IConnectionProfile {
-		const ipAndPort = parseIpAndPort(this.config?.status.externalEndpoint || '');
+		const ipAndPort = parseIpAndPort(this.config?.status.primaryEndpoint || '');
 		return {
 			serverName: `${ipAndPort.ip},${ipAndPort.port}`,
 			databaseName: '',

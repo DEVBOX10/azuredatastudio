@@ -7,12 +7,14 @@ import * as azdata from 'azdata';
 import * as vscode from 'vscode';
 import * as dataworkspace from 'dataworkspace';
 import * as path from 'path';
+import * as git from '../../../git/src/api/git';
 import * as constants from '../common/constants';
 import * as glob from 'fast-glob';
 import { IWorkspaceService } from '../common/interfaces';
 import { ProjectProviderRegistry } from '../common/projectProviderRegistry';
 import Logger from '../common/logger';
 import { TelemetryReporter, TelemetryViews, calculateRelativity, TelemetryActions } from '../common/telemetry';
+import { isCurrentWorkspaceUntitled } from '../common/utils';
 
 const WorkspaceConfigurationName = 'dataworkspace';
 const ProjectsConfigurationName = 'projects';
@@ -26,7 +28,7 @@ export class WorkspaceService implements IWorkspaceService {
 	}
 
 	/**
-	 * Load any temp project that needed to be loaded before the extension host was restarted
+	 * Load any temp project that needed to be loaded before ADS was restarted
 	 * which would happen if a workspace was created in order open or create a project
 	 */
 	async loadTempProjects(): Promise<void> {
@@ -42,7 +44,7 @@ export class WorkspaceService implements IWorkspaceService {
 	}
 
 	/**
-	 * Creates a new workspace in the same folder as the project. Because the extension host gets restarted when
+	 * Creates a new workspace in the same folder as the project. Because ADS gets restarted when
 	 * a new workspace is created and opened, the project needs to be saved as the temp project that will be loaded
 	 * when the extension gets restarted
 	 * @param projectFileFsPath project to add to the workspace
@@ -51,9 +53,15 @@ export class WorkspaceService implements IWorkspaceService {
 		// save temp project
 		await this._context.globalState.update(TempProject, [projectFileFsPath]);
 
-		// create a new workspace
+		// create workspace
 		const projectFolder = vscode.Uri.file(path.dirname(projectFileFsPath));
-		await azdata.workspace.createWorkspace(projectFolder, workspaceFile);
+
+		if (isCurrentWorkspaceUntitled()) {
+			vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders!.length, null, { uri: projectFolder });
+			await azdata.workspace.saveAndEnterWorkspace(workspaceFile!);
+		} else {
+			await azdata.workspace.createAndEnterWorkspace(projectFolder, workspaceFile);
+		}
 	}
 
 	get isProjectProviderAvailable(): boolean {
@@ -67,11 +75,11 @@ export class WorkspaceService implements IWorkspaceService {
 	}
 
 	/**
-	 * Verify that a workspace is open or that if one isn't, it's ok to create a workspace
+	 * Verify that a workspace is open or that if one isn't, it's ok to create a workspace and restart ADS
 	 */
 	async validateWorkspace(): Promise<boolean> {
-		if (!vscode.workspace.workspaceFile) {
-			const result = await vscode.window.showWarningMessage(constants.CreateWorkspaceConfirmation, constants.OkButtonText, constants.CancelButtonText);
+		if (!vscode.workspace.workspaceFile || isCurrentWorkspaceUntitled()) {
+			const result = await vscode.window.showWarningMessage(constants.CreateWorkspaceConfirmation, { modal: true }, constants.OkButtonText);
 			if (result === constants.OkButtonText) {
 				return true;
 			} else {
@@ -84,11 +92,11 @@ export class WorkspaceService implements IWorkspaceService {
 	}
 
 	/**
-	 * Shows confirmation message that the extension host will be restarted and current workspace/file will be closed. If confirmed, the specified workspace will be entered.
+	 * Shows confirmation message that the ADS will be restarted and current workspace/file will be closed. If confirmed, the specified workspace will be entered.
 	 * @param workspaceFile
 	 */
 	async enterWorkspace(workspaceFile: vscode.Uri): Promise<void> {
-		const result = await vscode.window.showWarningMessage(constants.EnterWorkspaceConfirmation, constants.OkButtonText, constants.CancelButtonText);
+		const result = await vscode.window.showWarningMessage(constants.EnterWorkspaceConfirmation, { modal: true }, constants.OkButtonText);
 		if (result === constants.OkButtonText) {
 			await azdata.workspace.enterWorkspace(workspaceFile);
 		} else {
@@ -102,10 +110,10 @@ export class WorkspaceService implements IWorkspaceService {
 		}
 
 		// a workspace needs to be open to add projects
-		if (!vscode.workspace.workspaceFile) {
+		if (!vscode.workspace.workspaceFile || isCurrentWorkspaceUntitled()) {
 			await this.CreateNewWorkspaceForProject(projectFiles[0].fsPath, workspaceFilePath);
 
-			// this won't get hit since the extension host will get restarted, but helps with testing
+			// this won't get hit since ADS will get restarted, but helps with testing
 			return;
 		}
 
@@ -155,8 +163,15 @@ export class WorkspaceService implements IWorkspaceService {
 		return projectTypes;
 	}
 
-	getProjectsInWorkspace(): vscode.Uri[] {
-		return vscode.workspace.workspaceFile ? this.getWorkspaceConfigurationValue<string[]>(ProjectsConfigurationName).map(project => this.toUri(project)) : [];
+	getProjectsInWorkspace(ext?: string): vscode.Uri[] {
+		let projects = vscode.workspace.workspaceFile ? this.getWorkspaceConfigurationValue<string[]>(ProjectsConfigurationName).map(project => this.toUri(project)) : [];
+
+		// filter by specified extension
+		if (ext) {
+			projects = projects.filter(p => p.fsPath.toLowerCase().endsWith(ext.toLowerCase()));
+		}
+
+		return projects;
 	}
 
 	/**
@@ -179,7 +194,7 @@ export class WorkspaceService implements IWorkspaceService {
 		}
 
 		for (const folder of workspaceFolders) {
-			const results = await this.getAllProjectsInWorkspaceFolder(folder);
+			const results = await this.getAllProjectsInFolder(folder.uri);
 
 			let containsNotAddedProject = false;
 			for (const projFile of results) {
@@ -191,11 +206,11 @@ export class WorkspaceService implements IWorkspaceService {
 			}
 
 			if (containsNotAddedProject) {
-				const result = await vscode.window.showInformationMessage(constants.WorkspaceContainsNotAddedProjects, constants.LaunchOpenExisitingDialog, constants.DoNotShowAgain);
+				const result = await vscode.window.showInformationMessage(constants.WorkspaceContainsNotAddedProjects, constants.LaunchOpenExisitingDialog, constants.DoNotAskAgain);
 				if (result === constants.LaunchOpenExisitingDialog) {
 					// open settings
 					await vscode.commands.executeCommand('projects.openExisting');
-				} else if (result === constants.DoNotShowAgain) {
+				} else if (result === constants.DoNotAskAgain) {
 					await config.update(constants.showNotAddedProjectsMessageKey, false, true);
 				}
 
@@ -204,12 +219,12 @@ export class WorkspaceService implements IWorkspaceService {
 		}
 	}
 
-	async getAllProjectsInWorkspaceFolder(folder: vscode.WorkspaceFolder): Promise<string[]> {
+	async getAllProjectsInFolder(folder: vscode.Uri): Promise<string[]> {
 		// get the unique supported project extensions
 		const supportedProjectExtensions = [...new Set((await this.getAllProjectTypes()).map(p => { return p.projectFileExtension; }))];
 
 		// path needs to use forward slashes for glob to work
-		const escapedPath = glob.escapePath(folder.uri.fsPath.replace(/\\/g, '/'));
+		const escapedPath = glob.escapePath(folder.fsPath.replace(/\\/g, '/'));
 
 		// can filter for multiple file extensions using folder/**/*.{sqlproj,csproj} format, but this notation doesn't work if there's only one extension
 		// so the filter needs to be in the format folder/**/*.sqlproj if there's only one supported projectextension
@@ -254,6 +269,31 @@ export class WorkspaceService implements IWorkspaceService {
 			return projectFile;
 		} else {
 			throw new Error(constants.ProviderNotFoundForProjectTypeError(projectTypeId));
+		}
+	}
+
+	async gitCloneProject(url: string, localClonePath: string, workspaceFile: vscode.Uri): Promise<void> {
+		const gitApi: git.API = (<git.GitExtension>vscode.extensions.getExtension('vscode.git')!.exports).getAPI(1);
+		const opts = {
+			location: vscode.ProgressLocation.Notification,
+			title: constants.gitCloneMessage(url),
+			cancellable: true
+		};
+
+		try {
+			// show git output channel
+			vscode.commands.executeCommand('git.showOutput');
+			const repositoryPath = await vscode.window.withProgress(
+				opts,
+				(progress, token) => gitApi.clone(url!, { parentPath: localClonePath!, progress, recursive: true }, token)
+			);
+
+			// get all the project files in the cloned repo and add them to workspace
+			const repoProjects = (await this.getAllProjectsInFolder(vscode.Uri.file(repositoryPath))).map(p => { return vscode.Uri.file(p); });
+			this.addProjectsToWorkspace(repoProjects, workspaceFile);
+		} catch (e) {
+			vscode.window.showErrorMessage(constants.gitCloneError);
+			console.error(e);
 		}
 	}
 

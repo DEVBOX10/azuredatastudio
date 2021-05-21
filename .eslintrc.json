@@ -7,7 +7,8 @@
     },
     "plugins": [
         "@typescript-eslint",
-        "jsdoc"
+        "jsdoc",
+        "mocha"
     ],
     "rules": {
         "constructor-super": "warn",
@@ -41,6 +42,7 @@
         "no-var": "warn",
         "jsdoc/no-types": "warn",
         "semi": "off",
+        "mocha/no-exclusive-tests": "warn",
         "@typescript-eslint/semi": "warn",
         "@typescript-eslint/naming-convention": [
             "warn",
@@ -544,7 +546,8 @@
                     "vscode-textmate",
                     "vscode-oniguruma",
                     "iconv-lite-umd",
-                    "semver-umd"
+                    "tas-client-umd",
+                    "jschardet"
                 ]
             },
             {
@@ -605,7 +608,11 @@
                     "**/{vs,sql}/editor/**",
                     "**/{vs,sql}/workbench/{common,browser,electron-sandbox}/**",
                     "**/{vs,sql}/workbench/api/{common,browser,electron-sandbox}/**",
-                    "**/{vs,sql}/workbench/services/**/{common,browser,electron-sandbox}/**"
+                    "**/{vs,sql}/workbench/services/**/{common,browser,electron-sandbox}/**",
+                    "vscode-textmate",
+                    "vscode-oniguruma",
+                    "iconv-lite-umd",
+                    "jschardet"
                 ]
             },
             {
@@ -733,7 +740,13 @@
 					"angular2-grid",
 					"html-query-plan",
 					"turndown",
-					"mark.js"
+					"gridstack",
+					"gridstack/**",
+					"mark.js",
+		            "vscode-textmate",
+                    "vscode-oniguruma",
+                    "iconv-lite-umd",
+                    "jschardet"
                 ]
             },
             {
@@ -762,7 +775,11 @@
                     "**/{vs,sql}/workbench/{common,browser,electron-sandbox}/**",
                     "**/{vs,sql}/workbench/api/{common,browser,electron-sandbox}/**",
                     "**/{vs,sql}/workbench/services/**/{common,browser,electron-sandbox}/**",
-                    "**/{vs,sql}/workbench/contrib/**/{common,browser,electron-sandbox}/**"
+                    "**/{vs,sql}/workbench/contrib/**/{common,browser,electron-sandbox}/**",
+                    "vscode-textmate",
+                    "vscode-oniguruma",
+                    "iconv-lite-umd",
+                    "jschardet"
                 ]
             },
             {
@@ -925,15 +942,22 @@
                 ]
             },
             {
+                "target": "**/test/monaco/**",
+                "restrictions": [
+                    "**/test/monaco/**",
+                    "*" // node modules
+                ]
+            },
+            {
                 "target": "**/api/**.test.ts",
                 "restrictions": [
                     "**/{vs,sql}/**",
                     "assert",
                     "sinon",
                     "crypto",
-					"vscode",
-					"typemoq",
-					"azdata"
+                    "vscode",
+                    "typemoq",
+                    "azdata"
                 ]
             },
             {
@@ -1024,6 +1048,7 @@
                             "collapse",
                             "create",
                             "delete",
+                            "discover",
                             "dispose",
                             "edit",
                             "end",

@@ -153,12 +153,15 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	}
 
 	private handleOnConnect(params: INewConnectionParams, profile?: IConnectionProfile): void {
+		this._logService.debug('ConnectionDialogService: onConnect event is received');
 		if (!this._connecting) {
+			this._logService.debug('ConnectionDialogService: Start connecting');
 			this._connecting = true;
 			this.handleProviderOnConnecting();
 			if (!profile) {
 				let result = this.uiController.validateConnection();
 				if (!result.isValid) {
+					this._logService.debug('ConnectionDialogService: Connection is invalid');
 					this._connecting = false;
 					this._connectionDialog.resetConnection();
 					return;
@@ -201,7 +204,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private handleOnCancel(params: INewConnectionParams): void {
 		if (this.ignoreNextConnect) {
 			this._connectionDialog.resetConnection();
-			this._connectionDialog.close();
+			this._connectionDialog.close('cancel');
 			this.ignoreNextConnect = false;
 			this._dialogDeferredPromise.resolve(undefined);
 			return;
@@ -229,7 +232,7 @@ export class ConnectionDialogService implements IConnectionDialogService {
 	private async handleDefaultOnConnect(params: INewConnectionParams, connection: IConnectionProfile): Promise<void> {
 		if (this.ignoreNextConnect) {
 			this._connectionDialog.resetConnection();
-			this._connectionDialog.close();
+			this._connectionDialog.close('ok');
 			this.ignoreNextConnect = false;
 			this._connecting = false;
 			this._dialogDeferredPromise.resolve(connection);
@@ -253,20 +256,23 @@ export class ConnectionDialogService implements IConnectionDialogService {
 			const connectionResult = await this._connectionManagementService.connectAndSaveProfile(connection, uri, options, params && params.input);
 			this._connecting = false;
 			if (connectionResult && connectionResult.connected) {
-				this._connectionDialog.close();
+				this._connectionDialog.close('ok');
 				if (this._dialogDeferredPromise) {
 					this._dialogDeferredPromise.resolve(connectionResult.connectionProfile);
 				}
 			} else if (connectionResult && connectionResult.errorHandled) {
 				this._connectionDialog.resetConnection();
+				this._logService.debug(`ConnectionDialogService: Error handled and connection reset - Error: ${connectionResult.errorMessage}`);
 			} else {
 				this._connectionDialog.resetConnection();
 				this.showErrorDialog(Severity.Error, this._connectionErrorTitle, connectionResult.errorMessage, connectionResult.callStack);
+				this._logService.debug(`ConnectionDialogService: Connection error: ${connectionResult.errorMessage}`);
 			}
 		} catch (err) {
 			this._connecting = false;
 			this._connectionDialog.resetConnection();
 			this.showErrorDialog(Severity.Error, this._connectionErrorTitle, err);
+			this._logService.debug(`ConnectionDialogService: Error encountered while connecting ${err}`);
 		}
 	}
 

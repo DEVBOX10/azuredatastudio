@@ -71,6 +71,65 @@ declare module 'azureResource' {
 		export interface AzureResourceResourceGroup extends AzureResource {
 		}
 
+		export interface AzureLocation {
+			id: string,
+			name: string,
+			displayName: string,
+			regionalDisplayName: string,
+			metadata: {
+				regionType: string,
+				regionCategory: string,
+				geographyGroup: string,
+				longitude: number,
+				latitude: number,
+				physicalLocation: string,
+				pairedRegion: {
+					name: string,
+					id: string,
+				}[],
+			},
+		}
+
+		export interface AzureSqlManagedInstance extends AzureGraphResource {
+			sku: {
+				capacity: number;
+				family: string;
+				name: string;
+				tier: 'GeneralPurpose' | 'BusinessCritical';
+			},
+			properties: {
+				provisioningState: string,
+				storageAccountType: string,
+				maintenanceConfigurationId: string,
+				state: string,
+				licenseType: string,
+				zoneRedundant: false,
+				fullyQualifiedDomainName: string,
+				collation: string,
+				administratorLogin: string,
+				minimalTlsVersion: string,
+				subnetId: string,
+				publicDataEndpointEnabled: boolean,
+				storageSizeInGB: number,
+				timezoneId: string,
+				proxyOverride: string,
+				vCores: number,
+				dnsZone: string,
+			  }
+
+		}
+
+		export interface ManagedDatabase {
+			id: string,
+			location: string,
+			name: string,
+			properties: {
+				sourceDatabaseId: string,
+				status: string
+			},
+			type: string
+		}
+
 		export interface AzureResourceDatabase extends AzureSqlResource {
 			serverName: string;
 			serverFullName: string;
@@ -83,26 +142,5 @@ declare module 'azureResource' {
 		export interface BlobContainer extends AzureResource { }
 
 		export interface FileShare extends AzureResource { }
-
-		export interface MigrationControllerProperties {
-			name: string;
-			subscriptionId: string;
-			resourceGroup: string;
-			location: string;
-			provisioningState: string;
-			integrationRuntimeState?: string;
-			isProvisioned?: boolean;
-		}
-
-		export interface MigrationController {
-			properties: MigrationControllerProperties;
-			location: string;
-			id: string;
-			name: string;
-			error: {
-				code: string,
-				message: string
-			}
-		}
 	}
 }

@@ -5,7 +5,7 @@
 
 import 'vs/css!./media/style';
 
-import { registerThemingParticipant, IColorTheme, ICssStyleCollector } from 'vs/platform/theme/common/themeService';
+import { registerThemingParticipant } from 'vs/platform/theme/common/themeService';
 import { iconForeground, foreground, selectionBackground, focusBorder, scrollbarShadow, scrollbarSliderActiveBackground, scrollbarSliderBackground, scrollbarSliderHoverBackground, listHighlightForeground, inputPlaceholderForeground } from 'vs/platform/theme/common/colorRegistry';
 import { WORKBENCH_BACKGROUND, TITLE_BAR_ACTIVE_BACKGROUND } from 'vs/workbench/common/theme';
 import { isWeb, isIOS, isMacintosh, isWindows } from 'vs/base/common/platform';
@@ -13,7 +13,7 @@ import { createMetaElement } from 'vs/base/browser/dom';
 import { isSafari, isStandalone } from 'vs/base/browser/browser';
 import { ColorScheme } from 'vs/platform/theme/common/theme';
 
-registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) => {
+registerThemingParticipant((theme, collector) => {
 
 	// Foreground
 	const windowForeground = theme.getColor(foreground);
@@ -28,7 +28,7 @@ registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) =
 	// Icon defaults
 	const iconForegroundColor = theme.getColor(iconForeground);
 	if (iconForegroundColor) {
-		collector.addRule(`.monaco-workbench .codicon { color: ${iconForegroundColor}; }`);
+		collector.addRule(`.codicon { color: ${iconForegroundColor}; }`);
 	}
 
 	// Selection
@@ -121,7 +121,8 @@ registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) =
 		.monaco-workbench button:focus,
 		.monaco-workbench textarea:focus,
 		.monaco-workbench input[type="search"]:focus,
-		.monaco-workbench input[type="checkbox"]:focus {
+		.monaco-workbench input[type="radio"]:focus, /* {{SQL CARBON EDIT}} */
+		.monaco-workbench input[type="checkbox"]:focus{
 			outline-color: ${focusOutline};
 		}
 		`);

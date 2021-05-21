@@ -6,7 +6,7 @@
 import { localize } from 'vs/nls';
 import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
 import { IAction } from 'vs/base/common/actions';
-import { append, $, addClass, toggleClass, Dimension } from 'vs/base/browser/dom';
+import { toggleClass, Dimension } from 'vs/base/browser/dom';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
@@ -22,29 +22,14 @@ import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/la
 import { Registry } from 'vs/platform/registry/common/platform';
 import { IMenuService, MenuId } from 'vs/platform/actions/common/actions';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { ShowViewletAction, Viewlet } from 'vs/workbench/browser/viewlet';
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
-import { ViewPaneContainer, ViewPane } from 'vs/workbench/browser/parts/views/viewPaneContainer';
+import { ViewPane } from 'vs/workbench/browser/parts/views/viewPane';
+import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+import { Viewlet } from 'vs/workbench/browser/viewlet';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import { SqlIconId } from 'sql/base/common/codicons';
 
 export const VIEWLET_ID = 'workbench.view.connections';
-
-// Viewlet Action
-export class OpenDataExplorerViewletAction extends ShowViewletAction {
-	public static ID = VIEWLET_ID;
-	public static LABEL = localize('showDataExplorer', "Show Connections");
-
-	constructor(
-		id: string,
-		label: string,
-		@IViewletService viewletService: IViewletService,
-		@IEditorGroupsService editorGroupService: IEditorGroupsService,
-		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService
-	) {
-		super(id, label, VIEWLET_ID, viewletService, editorGroupService, layoutService);
-	}
-}
 
 export class DataExplorerViewletViewsContribution implements IWorkbenchContribution {
 
@@ -89,8 +74,6 @@ export class DataExplorerViewlet extends Viewlet {
 export class DataExplorerViewPaneContainer extends ViewPaneContainer {
 	private root?: HTMLElement;
 
-	private dataSourcesBox?: HTMLElement;
-
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -109,12 +92,10 @@ export class DataExplorerViewPaneContainer extends ViewPaneContainer {
 	}
 
 	create(parent: HTMLElement): void {
-		addClass(parent, 'dataExplorer-viewlet');
 		this.root = parent;
 
-		this.dataSourcesBox = append(this.root, $('.dataSources'));
-
-		return super.create(this.dataSourcesBox);
+		super.create(parent);
+		parent.classList.add('dataExplorer-viewlet');
 	}
 
 	public updateStyles(): void {
@@ -154,9 +135,15 @@ export class DataExplorerViewPaneContainer extends ViewPaneContainer {
 
 export const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
 	id: VIEWLET_ID,
-	name: localize('dataexplorer.name', "Connections"),
+	title: localize('dataexplorer.name', "Connections"),
 	ctorDescriptor: new SyncDescriptor(DataExplorerViewPaneContainer),
-	icon: 'dataExplorer',
+	openCommandActionDescriptor: {
+		id: VIEWLET_ID,
+		mnemonicTitle: localize('showDataExplorer', "Show Connections"),
+		keybindings: { primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_D },
+		order: 0
+	},
+	icon: { id: SqlIconId.dataExplorer },
 	order: 0,
 	storageId: `${VIEWLET_ID}.state`
-}, ViewContainerLocation.Sidebar, true);
+}, ViewContainerLocation.Sidebar, { isDefault: true });

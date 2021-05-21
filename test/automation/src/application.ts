@@ -51,6 +51,10 @@ export class Application {
 		return !!this.options.remote;
 	}
 
+	get web(): boolean {
+		return !!this.options.web;
+	}
+
 	private _workspacePathOrFolder: string;
 	get workspacePathOrFolder(): string {
 		return this._workspacePathOrFolder;
@@ -66,7 +70,7 @@ export class Application {
 
 	async start(expectWalkthroughPart = true): Promise<any> {
 		await this._start();
-		//{{SQL CARBON EDIT}}
+		// {{SQL CARBON EDIT}}
 		await this.code.waitForElement('.object-explorer-view');
 
 		//Original
@@ -77,7 +81,7 @@ export class Application {
 			await this.code.waitForActiveElement(`.editor-instance[data-editor-id="workbench.editor.walkThroughPart"] > div > div[tabIndex="0"]`);
 		}
 		*/
-		//{{SQL CARBON EDIT}}
+		// {{SQL CARBON EDIT}}
 	}
 
 	async restart(options: { workspaceOrFolder?: string, extraArgs?: string[] }): Promise<any> {
@@ -149,7 +153,7 @@ export class Application {
 		await this.code.waitForElement('.monaco-workbench');
 
 		if (this.remote) {
-			await this.code.waitForTextContent('.monaco-workbench .statusbar-item[id="status.host"]', ' TestResolver');
+			await this.code.waitForTextContent('.monaco-workbench .statusbar-item[id="status.host"]', ' TestResolver', undefined, 2000);
 		}
 
 		// wait a bit, since focus might be stolen off widgets

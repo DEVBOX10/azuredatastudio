@@ -20,7 +20,8 @@ export enum ComponentEventType {
 	onSelectedRowChanged,
 	onComponentCreated,
 	onCellAction,
-	onEnterKeyPressed
+	onEnterKeyPressed,
+	onInput
 }
 
 /**
@@ -28,7 +29,8 @@ export enum ComponentEventType {
  */
 export enum ModelViewAction {
 	SelectTab = 'selectTab',
-	AppendData = 'appendData'
+	AppendData = 'appendData',
+	Filter = 'filter'
 }
 
 /**
@@ -137,7 +139,6 @@ export enum ModelComponentTypes {
 	FileBrowserTree,
 	Editor,
 	DiffEditor,
-	Dom,
 	Hyperlink,
 	Image,
 	RadioCardGroup,
@@ -145,5 +146,6 @@ export enum ModelComponentTypes {
 	TabbedPanel,
 	Separator,
 	PropertiesContainer,
-	InfoBox
+	InfoBox,
+	Slider
 }

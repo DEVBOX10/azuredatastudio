@@ -131,6 +131,10 @@ export class TestQueryProvider implements azdata.QueryProvider {
 
 }
 
+export interface ExtensionGlobalMemento extends vscode.Memento {
+	setKeysForSync(keys: string[]): void;
+}
+
 export class TestExtensionContext implements vscode.ExtensionContext {
 	storageUri: vscode.Uri;
 	globalStorageUri: vscode.Uri;
@@ -138,7 +142,7 @@ export class TestExtensionContext implements vscode.ExtensionContext {
 	extensionMode: vscode.ExtensionMode;
 	subscriptions: { dispose(): any; }[];
 	workspaceState: vscode.Memento;
-	globalState: vscode.Memento;
+	globalState: ExtensionGlobalMemento;
 	extensionUri: vscode.Uri;
 	extensionPath: string;
 	environmentVariableCollection: vscode.EnvironmentVariableCollection;
@@ -148,6 +152,7 @@ export class TestExtensionContext implements vscode.ExtensionContext {
 	storagePath: string;
 	globalStoragePath: string;
 	logPath: string;
+	secrets: vscode.SecretStorage;
 }
 
 export class TestImportDataModel implements ImportDataModel {

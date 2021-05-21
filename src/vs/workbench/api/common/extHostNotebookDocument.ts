@@ -15,7 +15,6 @@ import { CellKind, INotebookDocumentPropertiesChangeData, IWorkspaceCellEditDto,
 import { ExtHostDocumentsAndEditors, IExtHostModelAddedData } from 'vs/workbench/api/common/extHostDocumentsAndEditors';
 import { CellEditType, CellOutputKind, diff, IMainCellDto, IProcessedOutput, NotebookCellMetadata, NotebookCellsChangedEventDto, NotebookCellsChangeType, NotebookCellsSplice2, notebookDocumentMetadataDefaults } from 'vs/workbench/contrib/notebook/common/notebookCommon';
 import * as vscode from 'vscode';
-import { Cache } from './cache';
 
 
 interface IObservable<T> {
@@ -113,14 +112,17 @@ export class ExtHostCell extends Disposable {
 	get cell(): vscode.NotebookCell {
 		if (!this._cell) {
 			const that = this;
-			const document = this._extHostDocument.getDocument(this.uri)!.document;
+			const data = this._extHostDocument.getDocument(this.uri);
+			if (!data) {
+				throw new Error(`MISSING extHostDocument for notebook cell: ${this.uri}`);
+			}
 			this._cell = Object.freeze({
 				get index() { return that._notebook.getCellIndex(that); },
 				notebook: that._notebook.notebookDocument,
 				uri: that.uri,
 				cellKind: this._cellData.cellKind,
-				document,
-				get language() { return document.languageId; },
+				document: data.document,
+				get language() { return data!.document.languageId; },
 				get outputs() { return that._outputs; },
 				set outputs(value) { that._updateOutputs(value); },
 				get metadata() { return that._metadata; },
@@ -228,14 +230,13 @@ export class ExtHostNotebookDocument extends Disposable {
 	private _disposed = false;
 	private _languages: string[] = [];
 
-	private readonly _edits = new Cache<vscode.NotebookDocumentEditEvent>('notebook documents');
-
 	constructor(
 		private readonly _proxy: MainThreadNotebookShape,
 		private readonly _documentsAndEditors: ExtHostDocumentsAndEditors,
 		private readonly _mainThreadBulkEdits: MainThreadBulkEditsShape,
 		private readonly _emitter: INotebookEventEmitter,
 		private readonly _viewType: string,
+		private readonly _contentOptions: vscode.NotebookDocumentContentOptions,
 		metadata: Required<vscode.NotebookDocumentMetadata>,
 		public readonly uri: URI,
 		private readonly _storagePath: URI | undefined
@@ -301,6 +302,7 @@ export class ExtHostNotebookDocument extends Disposable {
 				set languages(value: string[]) { that._trySetLanguages(value); },
 				get metadata() { return that._metadata; },
 				set metadata(value: Required<vscode.NotebookDocumentMetadata>) { that._updateMetadata(value); },
+				get contentOptions() { return that._contentOptions; }
 			});
 		}
 		return this._notebook;
@@ -490,38 +492,5 @@ export class ExtHostNotebookDocument extends Disposable {
 
 	getCellIndex(cell: ExtHostCell): number {
 		return this._cells.indexOf(cell);
-	}
-
-	addEdit(item: vscode.NotebookDocumentEditEvent): number {
-		return this._edits.add([item]);
-	}
-
-	async undo(editId: number, isDirty: boolean): Promise<void> {
-		await this.getEdit(editId).undo();
-		// if (!isDirty) {
-		// 	this.disposeBackup();
-		// }
-	}
-
-	async redo(editId: number, isDirty: boolean): Promise<void> {
-		await this.getEdit(editId).redo();
-		// if (!isDirty) {
-		// 	this.disposeBackup();
-		// }
-	}
-
-	private getEdit(editId: number): vscode.NotebookDocumentEditEvent {
-		const edit = this._edits.get(editId, 0);
-		if (!edit) {
-			throw new Error('No edit found');
-		}
-
-		return edit;
-	}
-
-	disposeEdits(editIds: number[]): void {
-		for (const id of editIds) {
-			this._edits.delete(id);
-		}
 	}
 }

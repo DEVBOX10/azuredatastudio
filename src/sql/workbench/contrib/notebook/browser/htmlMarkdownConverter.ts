@@ -132,15 +132,28 @@ export class HTMLMarkdownConverter {
 		this.turndownService.addRule('a', {
 			filter: 'a',
 			replacement: (content, node) => {
-				//On Windows, if notebook is not trusted then the href attr is removed for all non-web URL links
-				// href contains either a hyperlink or a URI-encoded absolute path. (See resolveUrls method in notebookMarkdown.ts)
-				const notebookLink = node.href ? URI.parse(node.href) : URI.file(node.title);
-				const notebookFolder = this.notebookUri ? path.join(path.dirname(this.notebookUri.fsPath), path.sep) : '';
-				let relativePath = findPathRelativeToContent(notebookFolder, notebookLink);
-				if (relativePath) {
-					return `[${node.innerText}](${relativePath})`;
+				let href = node.href;
+				let notebookLink: URI | undefined;
+				const isAnchorLinkInFile = (node.attributes.href?.nodeValue.startsWith('#') || href.includes('#')) && href.startsWith('file://');
+				if (isAnchorLinkInFile) {
+					notebookLink = getUriAnchorLink(node, this.notebookUri);
+				} else {
+					//On Windows, if notebook is not trusted then the href attr is removed for all non-web URL links
+					// href contains either a hyperlink or a URI-encoded absolute path. (See resolveUrls method in notebookMarkdown.ts)
+					notebookLink = href ? URI.parse(href) : URI.file(node.title);
 				}
-				return `[${content}](${node.href})`;
+				const notebookFolder = this.notebookUri ? path.join(path.dirname(this.notebookUri.fsPath), path.sep) : '';
+				if (notebookLink.fsPath !== this.notebookUri.fsPath) {
+					let relativePath = findPathRelativeToContent(notebookFolder, notebookLink);
+					if (relativePath) {
+						return `[${node.innerText}](${relativePath})`;
+					}
+				} else if (notebookLink?.fragment) {
+					// if the anchor link is to a section in the same notebook then just add the fragment
+					return `[${content}](${notebookLink.fragment})`;
+				}
+
+				return `[${content}](${href})`;
 			}
 		});
 		// Only nested list case differs from original turndown rule
@@ -253,6 +266,15 @@ export class HTMLMarkdownConverter {
 				return delimiter + leadingSpace + content + trailingSpace + delimiter;
 			}
 		});
+
+		this.turndownService.addRule('p', {
+			filter: 'p',
+			replacement: function (content, node) {
+				// If inside of a table cell, extra newlines would break table rendering
+				return isInsideTable(node) ? content : '\n\n' + content + '\n\n';
+			}
+		});
+
 		this.turndownService.escape = escapeMarkdown;
 	}
 }
@@ -268,14 +290,20 @@ function blankReplacement(content, node) {
 	// When outdenting a nested list, an empty list will still remain. Need to handle this case.
 	if (node.nodeName === 'UL' || node.nodeName === 'OL') {
 		return '\n';
+	} else if (isInsideTable(node)) {
+		return '  ';
 	}
 	return node.isBlock ? '\n\n' : '';
+}
+
+function isInsideTable(node): boolean {
+	return node.parentNode?.nodeName === 'TH' || node.parentNode?.nodeName === 'TD';
 }
 
 export function findPathRelativeToContent(notebookFolder: string, contentPath: URI | undefined): string {
 	if (notebookFolder) {
 		if (contentPath?.scheme === 'file') {
-			let relativePath = path.relative(notebookFolder, contentPath.fsPath);
+			let relativePath = contentPath.fragment ? path.relative(notebookFolder, contentPath.fsPath).concat('#', contentPath.fragment) : path.relative(notebookFolder, contentPath.fsPath);
 			//if path contains whitespaces then it's not identified as a link
 			relativePath = relativePath.replace(/\s/g, '%20');
 			if (relativePath.startsWith(path.join('..', path.sep) || path.join('.', path.sep))) {
@@ -294,4 +322,16 @@ export function addHighlightIfYellowBgExists(node, content: string): string {
 		return '<mark>' + content + '</mark>';
 	}
 	return content;
+}
+
+export function getUriAnchorLink(node, notebookUri: URI): URI {
+	const sectionLinkToAnotherFile = node.href.includes('#') && !node.attributes.href?.nodeValue.startsWith('#');
+	if (sectionLinkToAnotherFile) {
+		let absolutePath = !path.isAbsolute(node.attributes.href?.nodeValue) ? path.resolve(path.dirname(notebookUri.fsPath), node.attributes.href?.nodeValue) : node.attributes.href?.nodeValue;
+		// if section link is different from the current notebook
+		return URI.file(absolutePath);
+	} else {
+		// else build an uri using the current notebookUri
+		return URI.from({ scheme: 'file', path: notebookUri.path, fragment: node.attributes.href?.nodeValue });
+	}
 }

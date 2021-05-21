@@ -5,12 +5,16 @@
 
 import * as vscode from 'vscode';
 
+export interface ExtensionGlobalMemento extends vscode.Memento {
+	setKeysForSync(keys: string[]): void;
+}
+
 export class MockExtensionContext implements vscode.ExtensionContext {
 	logger: undefined;
 	logPath: './';
 	subscriptions: { dispose(): any; }[];
 	workspaceState: vscode.Memento;
-	globalState: vscode.Memento;
+	globalState: ExtensionGlobalMemento;
 	extensionPath: string;
 	extensionUri: vscode.Uri;
 	asAbsolutePath(relativePath: string): string {
@@ -27,6 +31,7 @@ export class MockExtensionContext implements vscode.ExtensionContext {
 	globalStorageUri: vscode.Uri;
 	logUri: vscode.Uri;
 	environmentVariableCollection: vscode.EnvironmentVariableCollection;
+	secrets: vscode.SecretStorage;
 }
 
 export class MockOutputChannel implements vscode.OutputChannel {

@@ -26,6 +26,7 @@ import { ILogService } from 'vs/platform/log/common/log';
 import { IRange, Range } from 'vs/editor/common/core/range';
 import { BatchSummary, IQueryMessage, ResultSetSummary, QueryExecuteSubsetParams, CompleteBatchSummary, IResultMessage, ResultSetSubset, BatchStartSummary } from './query';
 import { IQueryEditorConfiguration } from 'sql/platform/query/common/query';
+import { IDisposableDataProvider } from 'sql/base/common/dataProvider';
 
 /*
 * Query Runner class which handles running a query, reports the results to the content manager,
@@ -173,8 +174,9 @@ export default class QueryRunner extends Disposable {
 		this._messages = [];
 		if (isRangeOrUndefined(input)) {
 			// Update internal state to show that we're executing the query
-			this._resultLineOffset = input ? input.startLineNumber : 0;
-			this._resultColumnOffset = input ? input.startColumn : 0;
+			// startLineNumber/startColumn is 1 based, need to do a -1 to get the offset.
+			this._resultLineOffset = input ? (input.startLineNumber - 1) : 0;
+			this._resultColumnOffset = input ? (input.startColumn - 1) : 0;
 			this._isExecuting = true;
 			this._totalElapsedMilliseconds = 0;
 			// TODO issue #228 add statusview callbacks here
@@ -501,18 +503,19 @@ export class QueryGridDataProvider implements IGridDataProvider {
 		return this.queryRunner.getQueryRows(rowStart, numberOfRows, this.batchId, this.resultSetId);
 	}
 
-	copyResults(selection: Slick.Range[], includeHeaders?: boolean): Promise<void> {
-		return this.copyResultsAsync(selection, includeHeaders);
+	copyResults(selection: Slick.Range[], includeHeaders?: boolean, tableView?: IDisposableDataProvider<Slick.SlickData>): Promise<void> {
+		return this.copyResultsAsync(selection, includeHeaders, tableView);
 	}
 
-	private async copyResultsAsync(selection: Slick.Range[], includeHeaders?: boolean): Promise<void> {
+	private async copyResultsAsync(selection: Slick.Range[], includeHeaders?: boolean, tableView?: IDisposableDataProvider<Slick.SlickData>): Promise<void> {
 		try {
-			let results = await getResultsString(this, selection, includeHeaders);
+			const results = await getResultsString(this, selection, includeHeaders, tableView);
 			await this._clipboardService.writeText(results);
 		} catch (error) {
 			this._notificationService.error(nls.localize('copyFailed', "Copy failed with error {0}", getErrorMessage(error)));
 		}
 	}
+
 	getEolString(): string {
 		return getEolString(this._textResourcePropertiesService, this.queryRunner.uri);
 	}

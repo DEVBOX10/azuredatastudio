@@ -9,7 +9,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as nls from 'vscode-nls';
-import { DeploymentProvider, instanceOfAzureSQLVMDeploymentProvider, instanceOfAzureSQLDBDeploymentProvider, instanceOfCommandDeploymentProvider, instanceOfDialogDeploymentProvider, instanceOfDownloadDeploymentProvider, instanceOfNotebookBasedDialogInfo, instanceOfNotebookDeploymentProvider, instanceOfNotebookWizardDeploymentProvider, instanceOfWebPageDeploymentProvider, instanceOfWizardDeploymentProvider, NotebookInfo, NotebookPathInfo, ResourceType, ResourceTypeOption, ResourceSubType, AgreementInfo } from '../interfaces';
+import { DeploymentProvider, instanceOfAzureSQLVMDeploymentProvider, instanceOfAzureSQLDBDeploymentProvider, instanceOfCommandDeploymentProvider, instanceOfDialogDeploymentProvider, instanceOfDownloadDeploymentProvider, instanceOfNotebookBasedDialogInfo, instanceOfNotebookDeploymentProvider, instanceOfNotebookWizardDeploymentProvider, instanceOfWebPageDeploymentProvider, instanceOfWizardDeploymentProvider, NotebookInfo, NotebookPathInfo, ResourceType, ResourceTypeOption, ResourceSubType, AgreementInfo, HelpText, InitialVariableValues } from '../interfaces';
 import { AzdataService } from './azdataService';
 import { KubeService } from './kubeService';
 import { INotebookService } from './notebookService';
@@ -29,9 +29,29 @@ export interface OptionValuesFilter {
 }
 
 export interface IResourceTypeService {
+	/**
+	 * Loads the resource types contributed by all extensions, this should only be called on startup or when
+	 * changes to the installed extensions are made.
+	 */
+	loadResourceTypes(): void;
+	/**
+	 * Gets the set of contributed resource types
+	 * @param filterByPlatform Whether to filter to just types valid for the current platform
+	 */
 	getResourceTypes(filterByPlatform?: boolean): ResourceType[];
-	validateResourceTypes(resourceTypes: ResourceType[]): string[];
-	startDeployment(resourceType: ResourceType, optionValuesFilter?: OptionValuesFilter): void;
+	/**
+	 * Validates that the given resource type matches the schema we expect
+	 * @param resourceType The resource type to validate
+	 * @param positionInfo A string to use to identify the resource type (in case it doesn't have a name or other expected properties)
+	 */
+	validateResourceType(resourceType: ResourceType, positionInfo: string): string[];
+	/**
+	 * Starts a deployment for the given resource type
+	 * @param resourceType The resource type to start the deployment for
+	 * @param optionValuesFilter The resource type options to filter the list of selectable options to
+	 * @param initialVariableValues The set of initial key/value pairs to assign to the variables for the deployment
+	 */
+	startDeployment(resourceType: ResourceType, optionValuesFilter?: OptionValuesFilter, initialVariableValues?: InitialVariableValues): void;
 }
 
 export class ResourceTypeService implements IResourceTypeService {
@@ -44,31 +64,38 @@ export class ResourceTypeService implements IResourceTypeService {
 	 * @param filterByPlatform indicates whether to return the resource types supported on current platform.
 	 */
 	getResourceTypes(filterByPlatform: boolean = true): ResourceType[] {
-		if (this._resourceTypes.length === 0) {
-			vscode.extensions.all.forEach((extension) => {
-				const extensionResourceTypes = extension.packageJSON.contributes?.resourceDeploymentTypes as ResourceType[];
-				extensionResourceTypes?.forEach((extensionResourceType: ResourceType) => {
-					// Clone the object - we modify it by adding complex types and so if we modify the original contribution then
-					// we can break VS Code functionality since it will sometimes pass this object over the RPC layer which requires
-					// stringifying it - which can break with some of the complex types we add.
-					const resourceType = deepClone(extensionResourceType);
-					this.updatePathProperties(resourceType, extension.extensionPath);
-					resourceType.getProvider = (selectedOptions) => { return this.getProvider(resourceType, selectedOptions); };
-					resourceType.getOkButtonText = (selectedOptions) => { return this.getOkButtonText(resourceType, selectedOptions); };
-					resourceType.getAgreementInfo = (selectedOptions) => { return this.getAgreementInfo(resourceType, selectedOptions); };
-					this.getResourceSubTypes(resourceType);
-					this._resourceTypes.push(resourceType);
-				});
-
-			});
-		}
-
 		let resourceTypes = this._resourceTypes;
 		if (filterByPlatform) {
 			resourceTypes = resourceTypes.filter(resourceType => (typeof resourceType.platforms === 'string' && resourceType.platforms === '*') || resourceType.platforms.includes(this.platformService.platform()));
 		}
-
 		return resourceTypes;
+	}
+
+	public loadResourceTypes(): void {
+		const resourceTypes: ResourceType[] = [];
+		vscode.extensions.all.forEach((extension) => {
+			const extensionResourceTypes = extension.packageJSON.contributes?.resourceDeploymentTypes as ResourceType[];
+			extensionResourceTypes?.forEach((extensionResourceType: ResourceType, index: number) => {
+				// Clone the object - we modify it by adding complex types and so if we modify the original contribution then
+				// we can break VS Code functionality since it will sometimes pass this object over the RPC layer which requires
+				// stringifying it - which can break with some of the complex types we add.
+				const resourceType = deepClone(extensionResourceType);
+				this.updatePathProperties(resourceType, extension.extensionPath);
+				resourceType.getProvider = (selectedOptions) => { return this.getProvider(resourceType, selectedOptions); };
+				resourceType.getOkButtonText = (selectedOptions) => { return this.getOkButtonText(resourceType, selectedOptions); };
+				resourceType.getAgreementInfo = (selectedOptions) => { return this.getAgreementInfo(resourceType, selectedOptions); };
+				resourceType.getHelpText = (selectedOptions) => { return this.getHelpText(resourceType, selectedOptions); };
+				this.getResourceSubTypes(resourceType);
+				// Validate the resource type, only adding it to our overall list if it's valid
+				const errors = this.validateResourceType(resourceType, `resource type index: ${index}`);
+				if (errors.length > 0) {
+					console.log(`Found errors validating resource type at index ${index} in extension ${extension.id}\n${errors.join('\n')}`);
+				} else {
+					resourceTypes.push(resourceType);
+				}
+			});
+		});
+		this._resourceTypes = resourceTypes;
 	}
 
 	private updatePathProperties(resourceType: ResourceType, extensionPath: string): void {
@@ -126,14 +153,12 @@ export class ResourceTypeService implements IResourceTypeService {
 	}
 
 	private getResourceSubTypes(resourceType: ResourceType): void {
-		const resourceSubTypes: ResourceSubType[] = [];
 		vscode.extensions.all.forEach((extension) => {
 			const extensionResourceSubTypes = extension.packageJSON.contributes?.resourceDeploymentSubTypes as ResourceSubType[];
 			extensionResourceSubTypes?.forEach((extensionResourceSubType: ResourceSubType) => {
 				const resourceSubType = deepClone(extensionResourceSubType);
 				if (resourceSubType.resourceName === resourceType.name) {
 					this.updateProviderPathProperties(resourceSubType.provider, extension.extensionPath);
-					resourceSubTypes.push(resourceSubType);
 					const tagSet = new Set(resourceType.tags);
 					resourceSubType.tags?.forEach(tag => tagSet.add(tag));
 					resourceType.tags = Array.from(tagSet);
@@ -153,32 +178,16 @@ export class ResourceTypeService implements IResourceTypeService {
 					if (resourceSubType.agreement) {
 						resourceType.agreements?.push(resourceSubType.agreement!);
 					}
+					if (resourceSubType.helpText) {
+						resourceType.helpTexts.push(resourceSubType.helpText);
+					}
 				}
 			});
 		});
 	}
 
-	/**
-	 * Validate the resource types and returns validation error messages if any.
-	 * @param resourceTypes resource types to be validated
-	 */
-	validateResourceTypes(resourceTypes: ResourceType[]): string[] {
-		// NOTE: The validation error messages do not need to be localized as it is only meant for the developer's use.
+	public validateResourceType(resourceType: ResourceType, positionInfo: string): string[] {
 		const errorMessages: string[] = [];
-		if (!resourceTypes || resourceTypes.length === 0) {
-			errorMessages.push('Resource type list is empty');
-		} else {
-			let resourceTypeIndex = 1;
-			resourceTypes.forEach(resourceType => {
-				this.validateResourceType(resourceType, `resource type index: ${resourceTypeIndex}`, errorMessages);
-				resourceTypeIndex++;
-			});
-		}
-
-		return errorMessages;
-	}
-
-	private validateResourceType(resourceType: ResourceType, positionInfo: string, errorMessages: string[]): void {
 		this.validateNameDisplayName(resourceType, 'resource type', positionInfo, errorMessages);
 		if (!resourceType.icon || (typeof resourceType.icon === 'object' && (!resourceType.icon.dark || !resourceType.icon.light))) {
 			errorMessages.push(`Icon for resource type is not specified properly. ${positionInfo} `);
@@ -192,8 +201,8 @@ export class ResourceTypeService implements IResourceTypeService {
 				optionIndex++;
 			});
 		}
-
 		this.validateProviders(resourceType, positionInfo, errorMessages);
+		return errorMessages;
 	}
 
 	private validateResourceTypeOption(option: ResourceTypeOption, positionInfo: string, errorMessages: string[]): void {
@@ -307,8 +316,19 @@ export class ResourceTypeService implements IResourceTypeService {
 		return undefined;
 	}
 
-	public startDeployment(resourceType: ResourceType, optionValuesFilter?: OptionValuesFilter): void {
-		const wizard = new ResourceTypeWizard(resourceType, new KubeService(), new AzdataService(this.platformService), this.notebookService, this.toolsService, this.platformService, this, optionValuesFilter);
+	private getHelpText(resourceType: ResourceType, selectedOptions: { option: string, value: string }[]): HelpText | undefined {
+		if (resourceType.helpTexts) {
+			for (const possibleOption of resourceType.helpTexts) {
+				if (processWhenClause(possibleOption.when, selectedOptions)) {
+					return possibleOption;
+				}
+			}
+		}
+		return undefined;
+	}
+
+	public startDeployment(resourceType: ResourceType, optionValuesFilter?: OptionValuesFilter, initialVariableValues?: InitialVariableValues): void {
+		const wizard = new ResourceTypeWizard(resourceType, new KubeService(), new AzdataService(this.platformService), this.notebookService, this.toolsService, this.platformService, this, optionValuesFilter, initialVariableValues);
 		wizard.open();
 	}
 

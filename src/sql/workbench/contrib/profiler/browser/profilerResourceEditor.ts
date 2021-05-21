@@ -60,7 +60,7 @@ export class ProfilerResourceEditor extends BaseTextEditor {
 		const options = super.getConfigurationOverrides();
 		options.readOnly = true;
 		if (this.input) {
-			options.inDiffEditor = true;
+			options.inDiffEditor = false;
 			options.scrollBeyondLastLine = false;
 			options.folding = false;
 			options.renderWhitespace = 'none';

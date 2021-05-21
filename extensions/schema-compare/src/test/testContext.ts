@@ -26,8 +26,9 @@ export function createContext(): TestContext {
 				update: () => { return Promise.resolve(); }
 			},
 			globalState: {
-				get: () => { return Promise.resolve(); },
-				update: () => { return Promise.resolve(); }
+				setKeysForSync: (): void => { },
+				get: (): any | undefined => { return Promise.resolve(); },
+				update: (): Thenable<void> => { return Promise.resolve(); }
 			},
 			extensionPath: extensionPath,
 			asAbsolutePath: () => { return ''; },
@@ -39,7 +40,8 @@ export function createContext(): TestContext {
 			extensionMode: undefined as any,
 			globalStorageUri: undefined,
 			logUri: undefined,
-			storageUri: undefined
+			storageUri: undefined,
+			secrets: undefined
 		},
 		viewContext: viewContext
 	};
@@ -326,7 +328,6 @@ export function createViewContext(): ViewTestContext {
 			divContainer: () => divBuilder,
 			flexContainer: () => flexBuilder,
 			splitViewContainer: () => splitViewBuilder,
-			dom: undefined!,
 			card: () => undefined!,
 			inputBox: () => inputBoxBuilder,
 			checkBox: () => checkBoxBuilder!,
@@ -353,7 +354,8 @@ export function createViewContext(): ViewTestContext {
 			tabbedPanel: undefined!,
 			separator: undefined!,
 			propertiesContainer: undefined!,
-			infoBox: undefined!
+			infoBox: undefined!,
+			slider: undefined!
 		}
 	};
 	return {

@@ -5,14 +5,14 @@
 import { Registry } from 'vs/platform/registry/common/platform';
 import { EditorDescriptor, IEditorRegistry, Extensions as EditorExtensions } from 'vs/workbench/browser/editor';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { localize } from 'vs/nls';
-import { IEditorInputFactoryRegistry, Extensions as EditorInputFactoryExtensions, ActiveEditorContext } from 'vs/workbench/common/editor';
+import { IEditorInputFactoryRegistry, Extensions as EditorInputFactoryExtensions, ActiveEditorContext, IEditorInput } from 'vs/workbench/common/editor';
 
 import { ILanguageAssociationRegistry, Extensions as LanguageAssociationExtensions } from 'sql/workbench/services/languageAssociation/common/languageAssociation';
 import { UntitledNotebookInput } from 'sql/workbench/contrib/notebook/browser/models/untitledNotebookInput';
 import { FileNotebookInput } from 'sql/workbench/contrib/notebook/browser/models/fileNotebookInput';
-import { FileNoteBookEditorInputFactory, UntitledNoteBookEditorInputFactory, NotebookEditorInputAssociation } from 'sql/workbench/contrib/notebook/browser/models/nodebookInputFactory';
+import { FileNoteBookEditorInputFactory, UntitledNoteBookEditorInputFactory, NotebookEditorInputAssociation } from 'sql/workbench/contrib/notebook/browser/models/notebookInputFactory';
 import { IWorkbenchActionRegistry, Extensions as WorkbenchActionsExtensions } from 'vs/workbench/common/actions';
 import { SyncActionDescriptor, registerAction2, MenuRegistry, MenuId, Action2 } from 'vs/platform/actions/common/actions';
 
@@ -33,7 +33,7 @@ import { MssqlNodeContext } from 'sql/workbench/services/objectExplorer/browser/
 import { mssqlProviderName } from 'sql/platform/connection/common/constants';
 import { CommandsRegistry } from 'vs/platform/commands/common/commands';
 import { TreeViewItemHandleArg } from 'sql/workbench/common/views';
-import { ConnectedContext } from 'azdata';
+import { ConnectedContext, nb } from 'azdata';
 import { TreeNodeContextKey } from 'sql/workbench/services/objectExplorer/common/treeNodeContextKey';
 import { ObjectExplorerActionsContext } from 'sql/workbench/services/objectExplorer/browser/objectExplorerActions';
 import { ItemContextKey } from 'sql/workbench/contrib/dashboard/browser/widgets/explorer/explorerContext';
@@ -44,12 +44,17 @@ import { registerCellComponent } from 'sql/platform/notebooks/common/outputRegis
 import { TextCellComponent } from 'sql/workbench/contrib/notebook/browser/cellViews/textCell.component';
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
 import { NotebookThemingContribution } from 'sql/workbench/contrib/notebook/browser/notebookThemingContribution';
-import { LifecyclePhase } from 'vs/platform/lifecycle/common/lifecycle';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import { ToggleTabFocusModeAction } from 'vs/editor/contrib/toggleTabFocusMode/toggleTabFocusMode';
-import { NotebookExplorerViewletViewsContribution, OpenNotebookExplorerViewletAction } from 'sql/workbench/contrib/notebook/browser/notebookExplorer/notebookExplorerViewlet';
+import { NotebookExplorerViewletViewsContribution } from 'sql/workbench/contrib/notebook/browser/notebookExplorer/notebookExplorerViewlet';
 import 'vs/css!./media/notebook.contribution';
 import { isMacintosh } from 'vs/base/common/platform';
 import { SearchSortOrder } from 'vs/workbench/services/search/common/search';
+import { ImageMimeTypes, TextCellEditModes } from 'sql/workbench/services/notebook/common/contracts';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { NotebookInput } from 'sql/workbench/contrib/notebook/browser/models/notebookInput';
+import { INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { INotebookManager } from 'sql/workbench/services/notebook/browser/notebookService';
 
 Registry.as<IEditorInputFactoryRegistry>(EditorInputFactoryExtensions.EditorInputFactories)
 	.registerEditorInputFactory(FileNotebookInput.ID, FileNoteBookEditorInputFactory);
@@ -150,6 +155,77 @@ CommandsRegistry.registerCommand({
 	}
 });
 
+const LAUNCH_FIND_IN_NOTEBOOK = 'notebook.action.launchFindInNotebook';
+
+CommandsRegistry.registerCommand({
+	id: LAUNCH_FIND_IN_NOTEBOOK,
+	handler: async (accessor: ServicesAccessor, searchTerm: string) => {
+		const notebookEditor = accessor.get(IEditorService).activeEditorPane;
+		if (notebookEditor instanceof NotebookEditor) {
+			if (notebookEditor) {
+				await notebookEditor.setNotebookModel();
+				await notebookEditor.launchFind(searchTerm);
+			}
+		}
+	}
+});
+
+const RESTART_JUPYTER_NOTEBOOK_SESSIONS = 'notebook.action.restartJupyterNotebookSessions';
+
+CommandsRegistry.registerCommand({
+	id: RESTART_JUPYTER_NOTEBOOK_SESSIONS,
+	handler: async (accessor: ServicesAccessor, restartJupyterServer: boolean = true) => {
+		const editorService: IEditorService = accessor.get(IEditorService);
+		const editors: readonly IEditorInput[] = editorService.editors;
+		let jupyterServerRestarted: boolean = false;
+
+		for (let editor of editors) {
+			if (editor instanceof NotebookInput) {
+				let model: INotebookModel = editor.notebookModel;
+				if (model.providerId === 'jupyter' && model.clientSession.isReady) {
+					// Jupyter server needs to be restarted so that the correct Python installation is used
+					if (!jupyterServerRestarted && restartJupyterServer) {
+						let jupyterNotebookManager: INotebookManager = model.notebookManagers.find(x => x.providerId === 'jupyter');
+						// Shutdown all current Jupyter sessions before stopping the server
+						await jupyterNotebookManager.sessionManager.shutdownAll();
+						// Jupyter session manager needs to be disposed so that a new one is created with the new server info
+						jupyterNotebookManager.sessionManager.dispose();
+						await jupyterNotebookManager.serverManager.stopServer();
+						let spec: nb.IKernelSpec = model.defaultKernel;
+						await jupyterNotebookManager.serverManager.startServer(spec);
+						jupyterServerRestarted = true;
+					}
+
+					// Start a new session for each Jupyter notebook
+					await model.restartSession();
+				}
+			}
+		}
+	}
+});
+
+const STOP_JUPYTER_NOTEBOOK_SESSIONS = 'notebook.action.stopJupyterNotebookSessions';
+
+CommandsRegistry.registerCommand({
+	id: STOP_JUPYTER_NOTEBOOK_SESSIONS,
+	handler: async (accessor: ServicesAccessor) => {
+		const editorService: IEditorService = accessor.get(IEditorService);
+		const editors: readonly IEditorInput[] = editorService.editors;
+
+		for (let editor of editors) {
+			if (editor instanceof NotebookInput) {
+				let model: INotebookModel = editor.notebookModel;
+				if (model?.providerId === 'jupyter') {
+					let jupyterNotebookManager: INotebookManager = model.notebookManagers.find(x => x.providerId === 'jupyter');
+					await jupyterNotebookManager.sessionManager.shutdownAll();
+					jupyterNotebookManager.sessionManager.dispose();
+					await jupyterNotebookManager.serverManager.stopServer();
+					return;
+				}
+			}
+		}
+	}
+});
 
 MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 	command: {
@@ -221,10 +297,16 @@ configurationRegistry.registerConfiguration({
 			'default': true,
 			'description': localize('notebook.enableDoubleClickEdit', "Enable double click to edit for text cells in notebooks")
 		},
-		'notebook.setRichTextViewByDefault': {
-			'type': 'boolean',
-			'default': true,
-			'description': localize('notebook.setRichTextViewByDefault', "Set Rich Text View mode by default for text cells")
+		'notebook.defaultTextEditMode': {
+			'type': 'string',
+			'enum': [TextCellEditModes.RichText, TextCellEditModes.SplitView, TextCellEditModes.Markdown],
+			'enumDescriptions': [
+				localize('notebook.richTextModeDescription', 'Text is displayed as Rich Text (also known as WYSIWYG).'),
+				localize('notebook.splitViewModeDescription', 'Markdown is displayed on the left, with a preview of the rendered text on the right.'),
+				localize('notebook.markdownModeDescription', 'Text is displayed as Markdown.')
+			],
+			'default': TextCellEditModes.RichText,
+			'description': localize('notebook.defaultTextEditMode', "The default editing mode used for text cells")
 		},
 		'notebook.saveConnectionName': {
 			'type': 'boolean',
@@ -236,7 +318,12 @@ configurationRegistry.registerConfiguration({
 			'default': 1.5,
 			'minimum': 1,
 			'description': localize('notebook.markdownPreviewLineHeight', "Controls the line height used in the notebook markdown preview. This number is relative to the font size.")
-		}
+		},
+		'notebook.showRenderedNotebookInDiffEditor': {
+			'type': 'boolean',
+			'default': false,
+			'description': localize('notebook.showRenderedNotebookinDiffEditor', "(Preview) Show rendered notebook in diff editor.")
+		},
 	}
 });
 
@@ -260,7 +347,7 @@ registerComponentType({
  * A mime renderer component for images.
  */
 registerComponentType({
-	mimeTypes: ['image/bmp', 'image/png', 'image/jpeg', 'image/gif'],
+	mimeTypes: ImageMimeTypes,
 	rank: 90,
 	safe: true,
 	ctor: MimeRendererComponent,
@@ -381,16 +468,6 @@ registerCellComponent(TextCellComponent);
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchRegistry.registerWorkbenchContribution(NotebookExplorerViewletViewsContribution, LifecyclePhase.Starting);
-const registry = Registry.as<IWorkbenchActionRegistry>(WorkbenchActionsExtensions.WorkbenchActions);
-registry.registerWorkbenchAction(
-	SyncActionDescriptor.create(
-		OpenNotebookExplorerViewletAction,
-		OpenNotebookExplorerViewletAction.ID,
-		OpenNotebookExplorerViewletAction.LABEL,
-		{ primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_B }),
-	'View: Show Notebook Explorer',
-	localize('notebookExplorer.view', "View")
-);
 
 // Configuration
 configurationRegistry.registerConfiguration({

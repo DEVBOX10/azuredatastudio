@@ -8,7 +8,6 @@ import * as loc from '../../../localizedConstants';
 import { IconPathHelper, cssStyles } from '../../../constants';
 import { KeyValueContainer, KeyValue, InputKeyValue, MultilineInputKeyValue } from '../../components/keyValueContainer';
 import { DashboardPage } from '../../components/dashboardPage';
-import { ControllerModel } from '../../../models/controllerModel';
 import { MiaaModel } from '../../../models/miaaModel';
 import { parseIpAndPort } from '../../../common/utils';
 
@@ -17,9 +16,11 @@ export class MiaaConnectionStringsPage extends DashboardPage {
 	private _keyValueContainer!: KeyValueContainer;
 	private _connectionStringsMessage!: azdata.TextComponent;
 
-	constructor(modelView: azdata.ModelView, private _controllerModel: ControllerModel, private _miaaModel: MiaaModel) {
-		super(modelView);
-		this.disposables.push(this._controllerModel.onRegistrationsUpdated(_ =>
+	constructor(modelView: azdata.ModelView, dashboard: azdata.window.ModelViewDashboard, private _miaaModel: MiaaModel) {
+		super(modelView, dashboard);
+		this.disposables.push(this._miaaModel.onConfigUpdated(_ =>
+			this.eventuallyRunOnInitialized(() => this.updateConnectionStrings())));
+		this.disposables.push(this._miaaModel.onDatabasesUpdated(_ =>
 			this.eventuallyRunOnInitialized(() => this.updateConnectionStrings())));
 	}
 
@@ -73,12 +74,12 @@ export class MiaaConnectionStringsPage extends DashboardPage {
 
 	private getConnectionStrings(): KeyValue[] {
 		const config = this._miaaModel.config;
-		if (!config?.status.externalEndpoint) {
+		if (!config?.status.primaryEndpoint) {
 			return [];
 		}
 
-		const externalEndpoint = parseIpAndPort(config.status.externalEndpoint);
-		const username = this._miaaModel.username;
+		const externalEndpoint = parseIpAndPort(config.status.primaryEndpoint);
+		const username = this._miaaModel.username ?? '{your_username_here}';
 
 		return [
 			new InputKeyValue(this.modelView.modelBuilder, 'ADO.NET', `Server=tcp:${externalEndpoint.ip},${externalEndpoint.port};Persist Security Info=False;User ID=${username};Password={your_password_here};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`),
@@ -96,7 +97,7 @@ $conn = sqlsrv_connect($serverName, $connectionInfo);`),
 	}
 
 	private updateConnectionStrings(): void {
-		this._connectionStringsMessage.value = !this._miaaModel.config?.status.externalEndpoint ? loc.noExternalEndpoint : '';
+		this._connectionStringsMessage.value = !this._miaaModel.config?.status.primaryEndpoint ? loc.noExternalEndpoint : '';
 		this._keyValueContainer.refresh(this.getConnectionStrings());
 	}
 }

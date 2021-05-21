@@ -10,9 +10,9 @@ import { URI } from 'vs/base/common/uri';
 import { localize } from 'vs/nls';
 
 import * as notebookUtils from 'sql/workbench/services/notebook/browser/models/notebookUtils';
-import { CellTypes, CellType, NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
+import { CellTypes, CellType, NotebookChangeType, TextCellEditModes } from 'sql/workbench/services/notebook/common/contracts';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
-import { ICellModel, IOutputChangedEvent, CellExecutionState, ICellModelOptions, ITableUpdatedEvent } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { ICellModel, IOutputChangedEvent, CellExecutionState, ICellModelOptions, ITableUpdatedEvent, CellEditModes } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
@@ -30,10 +30,11 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { Disposable } from 'vs/base/common/lifecycle';
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
+import { IInsightOptions } from 'sql/workbench/common/editor/query/chartState';
 
 let modelId = 0;
 const ads_execute_command = 'ads_execute_command';
-
+const validBase64OctetStreamRegex = /^data:application\/octet-stream;base64,(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{4})/;
 export interface QueryResultId {
 	batchId: number;
 	id: number;
@@ -76,10 +77,14 @@ export class CellModel extends Disposable implements ICellModel {
 	private _showPreview: boolean = true;
 	private _showMarkdown: boolean = false;
 	private _cellSourceChanged: boolean = false;
-	private _defaultToWYSIWYG: boolean;
+	private _defaultTextEditMode: string;
 	private _isParameter: boolean;
 	private _onParameterStateChanged = new Emitter<boolean>();
 	private _isInjectedParameter: boolean;
+	private _previousChartState: IInsightOptions[] = [];
+	private _outputCounter = 0; // When re-executing the same cell, ensure that we apply chart options in the same order
+	private _attachments: nb.ICellAttachments;
+	private _preventNextChartCache: boolean = false;
 
 	constructor(cellData: nb.ICellContents,
 		private _options: ICellModelOptions,
@@ -140,6 +145,31 @@ export class CellModel extends Disposable implements ICellModel {
 		return this._metadata;
 	}
 
+	public get attachments() {
+		return this._attachments;
+	}
+
+	addAttachment(mimeType: string, base64Encoding: string, name: string): void {
+		// base64Encoded value looks like: data:application/octet-stream;base64,<base64Value>
+		// get the <base64Value> from the string
+		let index = base64Encoding.indexOf('base64,');
+		if (this.isValidBase64OctetStream(base64Encoding)) {
+			base64Encoding = base64Encoding.substring(index + 7);
+			let attachment: nb.ICellAttachment = {};
+			attachment[mimeType] = base64Encoding;
+			if (!this._attachments) {
+				this._attachments = {};
+			}
+			// TO DO: Check if name already exists and message the user?
+			this._attachments[name] = attachment;
+			this.sendChangeToNotebook(NotebookChangeType.CellMetadataUpdated);
+		}
+	}
+
+	private isValidBase64OctetStream(base64Image: string): boolean {
+		return base64Image && validBase64OctetStreamRegex.test(base64Image);
+	}
+
 	public get isEditMode(): boolean {
 		return this._isEditMode;
 	}
@@ -186,7 +216,8 @@ export class CellModel extends Disposable implements ICellModel {
 	public set isEditMode(isEditMode: boolean) {
 		this._isEditMode = isEditMode;
 		if (this._isEditMode) {
-			this.showMarkdown = !this._defaultToWYSIWYG;
+			this.showPreview = this._defaultTextEditMode !== TextCellEditModes.Markdown;
+			this.showMarkdown = this._defaultTextEditMode !== TextCellEditModes.RichText;
 		}
 		this._onCellModeChanged.fire(this._isEditMode);
 		// Note: this does not require a notebook update as it does not change overall state
@@ -271,6 +302,7 @@ export class CellModel extends Disposable implements ICellModel {
 			this.cellSourceChanged = true;
 		}
 		this._modelContentChangedEvent = undefined;
+		this._preventNextChartCache = true;
 	}
 
 	public get modelContentChangedEvent(): IModelContentChangedEvent {
@@ -352,8 +384,8 @@ export class CellModel extends Disposable implements ICellModel {
 		this._onCellMarkdownChanged.fire(this._showMarkdown);
 	}
 
-	public get defaultToWYSIWYG(): boolean {
-		return this._defaultToWYSIWYG;
+	public get defaultTextEditMode(): string {
+		return this._defaultTextEditMode;
 	}
 
 	public get cellSourceChanged(): boolean {
@@ -486,6 +518,7 @@ export class CellModel extends Disposable implements ICellModel {
 			if (!kernel) {
 				return false;
 			}
+			this._outputCounter = 0;
 			this._telemetryService?.createActionEvent(TelemetryKeys.TelemetryView.Notebook, TelemetryKeys.NbTelemetryAction.RunCell)
 				.withAdditionalProperties({ cell_language: kernel.name })
 				.send();
@@ -520,6 +553,7 @@ export class CellModel extends Disposable implements ICellModel {
 						}, false);
 						this.setFuture(future as FutureInternal);
 						this.fireExecutionStateChanged();
+						this._notebookService?.notifyCellExecutionStarted();
 						// For now, await future completion. Later we should just track and handle cancellation based on model notifications
 						let result: nb.IExecuteReplyMsg = <nb.IExecuteReplyMsg><any>await future.done;
 						if (result && result.content) {
@@ -540,6 +574,7 @@ export class CellModel extends Disposable implements ICellModel {
 								let commandExecuted = this._commandService?.executeCommand(result.commandId, result.args);
 								// This will ensure that the run button turns into a stop button
 								this.fireExecutionStateChanged();
+								this._notebookService?.notifyCellExecutionStarted();
 								await commandExecuted;
 								// For save files, if we output a message after saving the file, the file becomes dirty again.
 								// Special casing this to avoid this particular issue.
@@ -621,19 +656,31 @@ export class CellModel extends Disposable implements ICellModel {
 		if (this._future) {
 			this._future.dispose();
 		}
-		this.clearOutputs();
+		this.clearOutputs(true);
 		this._future = future;
 		future.setReplyHandler({ handle: (msg) => this.handleReply(msg) });
 		future.setIOPubHandler({ handle: (msg) => this.handleIOPub(msg) });
 		future.setStdInHandler({ handle: (msg) => this.handleSdtIn(msg) });
 	}
-
-	public clearOutputs(): void {
+	/**
+	 * Clear outputs can be done as part of the "Clear Outputs" action on a cell or as part of running a cell
+	 * @param runCellPending If a cell has been run
+	 */
+	public clearOutputs(runCellPending = false): void {
+		if (runCellPending) {
+			this.cacheChartStateIfExists();
+		} else {
+			this.clearPreviousChartState();
+		}
 		this._outputs = [];
 		this._outputsIdMap.clear();
 		this.fireOutputsChanged();
 
 		this.executionCount = undefined;
+	}
+
+	public get previousChartState(): any[] {
+		return this._previousChartState;
 	}
 
 	private fireOutputsChanged(shouldScroll: boolean = false): void {
@@ -700,7 +747,14 @@ export class CellModel extends Disposable implements ICellModel {
 					}
 				}
 				if (!added) {
+					if (this._previousChartState[this._outputCounter]) {
+						if (!output.metadata) {
+							output.metadata = {};
+						}
+						output.metadata.azdata_chartOptions = this._previousChartState[this._outputCounter];
+					}
 					this._outputsIdMap.set(output, { batchId: (<QueryResultId>msg.metadata).batchId, id: (<QueryResultId>msg.metadata).id });
+					this._outputCounter++;
 				}
 				break;
 			case 'execute_result_update':
@@ -845,6 +899,8 @@ export class CellModel extends Disposable implements ICellModel {
 			if (this._configurationService?.getValue('notebook.saveConnectionName')) {
 				metadata.connection_name = this._savedConnectionName;
 			}
+		} else if (this._cellType === CellTypes.Markdown && this._attachments) {
+			cellJson.attachments = this._attachments;
 		}
 		return cellJson as nb.ICellContents;
 	}
@@ -866,7 +922,7 @@ export class CellModel extends Disposable implements ICellModel {
 			this._isParameter = false;
 			this._isInjectedParameter = false;
 		}
-
+		this._attachments = cell.attachments;
 		this._cellGuid = cell.metadata && cell.metadata.azdata_cell_guid ? cell.metadata.azdata_cell_guid : generateUuid();
 		this.setLanguageFromContents(cell);
 		this._savedConnectionName = this._metadata.connection_name;
@@ -876,6 +932,19 @@ export class CellModel extends Disposable implements ICellModel {
 				this.addOutput(output);
 			}
 		}
+	}
+
+	public get currentMode(): CellEditModes {
+		if (this._cellType === CellTypes.Code) {
+			return CellEditModes.CODE;
+		}
+		if (this._showMarkdown && this._showPreview) {
+			return CellEditModes.SPLIT;
+		} else if (this._showMarkdown && !this._showPreview) {
+			return CellEditModes.MARKDOWN;
+		}
+		// defaulting to WYSIWYG
+		return CellEditModes.WYSIWYG;
 	}
 
 	private setLanguageFromContents(cell: nb.ICellContents): void {
@@ -987,20 +1056,47 @@ export class CellModel extends Disposable implements ICellModel {
 
 	private populatePropertiesFromSettings() {
 		if (this._configurationService) {
-			const enableWYSIWYGByDefaultKey = 'notebook.setRichTextViewByDefault';
-			this._defaultToWYSIWYG = this._configurationService.getValue(enableWYSIWYGByDefaultKey);
-			if (!this._defaultToWYSIWYG) {
-				this.showMarkdown = true;
-			}
+			const defaultTextModeKey = 'notebook.defaultTextEditMode';
+			this._defaultTextEditMode = this._configurationService.getValue(defaultTextModeKey);
+
 			const allowADSCommandsKey = 'notebook.allowAzureDataStudioCommands';
 			this._isCommandExecutionSettingEnabled = this._configurationService.getValue(allowADSCommandsKey);
 			this._register(this._configurationService.onDidChangeConfiguration(e => {
 				if (e.affectsConfiguration(allowADSCommandsKey)) {
 					this._isCommandExecutionSettingEnabled = this._configurationService.getValue(allowADSCommandsKey);
-				} else if (e.affectsConfiguration(enableWYSIWYGByDefaultKey)) {
-					this._defaultToWYSIWYG = this._configurationService.getValue(enableWYSIWYGByDefaultKey);
+				} else if (e.affectsConfiguration(defaultTextModeKey)) {
+					this._defaultTextEditMode = this._configurationService.getValue(defaultTextModeKey);
 				}
 			}));
 		}
 	}
+
+	/**
+	 * Cache start state for any existing charts.
+	 * This ensures that data can be passed to the grid output component when a cell is re-executed
+	 */
+	private cacheChartStateIfExists(): void {
+		this.clearPreviousChartState();
+		// If a cell's source was changed, don't cache chart state
+		if (!this._preventNextChartCache) {
+			this._outputs?.forEach(o => {
+				if (dataResourceDataExists(o)) {
+					if (o.metadata?.azdata_chartOptions) {
+						this._previousChartState.push(o.metadata.azdata_chartOptions);
+					} else {
+						this._previousChartState.push(undefined);
+					}
+				}
+			});
+		}
+		this._preventNextChartCache = false;
+	}
+
+	private clearPreviousChartState(): void {
+		this._previousChartState = [];
+	}
+}
+
+function dataResourceDataExists(metadata: nb.ICellOutput): boolean {
+	return metadata['data']?.['application/vnd.dataresource+json'];
 }

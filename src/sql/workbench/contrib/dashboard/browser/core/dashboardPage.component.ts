@@ -31,7 +31,7 @@ import * as nls from 'vs/nls';
 import * as objects from 'vs/base/common/objects';
 import { Event, Emitter } from 'vs/base/common/event';
 import { Action, IAction, IActionViewItem } from 'vs/base/common/actions';
-import { ConfigurationTarget, IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration';
 import Severity from 'vs/base/common/severity';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 import { IContextKeyService, ContextKeyExpr, RawContextKey, IContextKey } from 'vs/platform/contextkey/common/contextkey';
@@ -43,15 +43,15 @@ import * as DOM from 'vs/base/browser/dom';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import { TaskRegistry } from 'sql/workbench/services/tasks/browser/tasksRegistry';
 import { MenuRegistry, IMenuService, MenuId, MenuItemAction } from 'vs/platform/actions/common/actions';
-import { fillInActions, LabeledMenuItemActionItem } from 'vs/platform/actions/browser/menuEntryActionViewItem';
+import { fillInActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { NAV_SECTION } from 'sql/workbench/contrib/dashboard/browser/containers/dashboardNavSection.contribution';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
 import { DASHBOARD_BORDER, EDITOR_PANE_BACKGROUND, TOOLBAR_OVERFLOW_SHADOW } from 'vs/workbench/common/theme';
 import { IColorTheme, registerThemingParticipant, ICssStyleCollector } from 'vs/platform/theme/common/themeService';
 import { attachTabbedPanelStyler } from 'sql/workbench/common/styler';
 import { focusBorder } from 'vs/platform/theme/common/colorRegistry';
+import { LabeledMenuItemActionItem } from 'sql/platform/actions/browser/menuEntryActionViewItem';
 
 const dashboardRegistry = Registry.as<IDashboardRegistry>(DashboardExtensions.DashboardContributions);
 const homeTabGroupId = 'home';
@@ -119,13 +119,11 @@ export abstract class DashboardPage extends AngularDisposable implements IConfig
 		@Inject(forwardRef(() => ChangeDetectorRef)) protected _cd: ChangeDetectorRef,
 		@Inject(INotificationService) private notificationService: INotificationService,
 		@Inject(IAngularEventingService) private angularEventingService: IAngularEventingService,
-		@Inject(IConfigurationService) private configurationService: IConfigurationService,
 		@Inject(ILogService) private logService: ILogService,
 		@Inject(ICommandService) private commandService: ICommandService,
 		@Inject(IContextKeyService) contextKeyService: IContextKeyService,
 		@Inject(IMenuService) private menuService: IMenuService,
 		@Inject(IKeybindingService) private keybindingService: IKeybindingService,
-		@Inject(IContextMenuService) private contextMenuService: IContextMenuService,
 		@Inject(IWorkbenchThemeService) private themeService: IWorkbenchThemeService
 	) {
 		super();
@@ -256,8 +254,9 @@ export abstract class DashboardPage extends AngularDisposable implements IConfig
 
 		let toolbarActions = [];
 		_tasks.forEach(a => {
-			let iconClassName = TaskRegistry.getOrCreateTaskIconClassName(a);
-			toolbarActions.push(new ToolbarAction(a.id, a.title.toString(), iconClassName, this.runAction, this, this.logService));
+			const iconClassName = TaskRegistry.getOrCreateTaskIconClassName(a);
+			const title = typeof a.title === 'string' ? a.title : a.title.value;
+			toolbarActions.push(new ToolbarAction(a.id, title, iconClassName, this.runAction, this, this.logService));
 		});
 
 		let content: ITaskbarContent[] = [];
@@ -280,7 +279,7 @@ export abstract class DashboardPage extends AngularDisposable implements IConfig
 	private createActionItemProvider(action: Action): IActionViewItem {
 		// Create ActionItem for actions contributed by extensions
 		if (action instanceof MenuItemAction) {
-			return new LabeledMenuItemActionItem(action, this.keybindingService, this.contextMenuService, this.notificationService);
+			return new LabeledMenuItemActionItem(action, this.keybindingService, this.notificationService);
 		}
 		return undefined;
 	}
@@ -298,13 +297,6 @@ export abstract class DashboardPage extends AngularDisposable implements IConfig
 		allTabs = this.setAndRemoveHomeTab(allTabs, homeWidgets);
 
 		this.loadNewTabs(allTabs.filter((tab) => tab.group === homeTabGroupId));
-
-		// If preview features are disabled only show the home tab since extension-contributed tabs
-		// are still under preview
-		const extensionTabsEnabled = this.configurationService.getValue('workbench')['enablePreviewFeatures'];
-		if (!extensionTabsEnabled) {
-			allTabs = [];
-		}
 
 		// Load tab setting configs
 		this._tabSettingConfigs = this.dashboardService.getSettings<Array<TabSettingConfig>>([this.context, 'tabs'].join('.'));

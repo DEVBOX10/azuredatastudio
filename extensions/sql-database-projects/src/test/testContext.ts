@@ -129,8 +129,9 @@ export function createContext(): TestContext {
 				update: () => { return Promise.resolve(); }
 			},
 			globalState: {
-				get: () => { return Promise.resolve(); },
-				update: () => { return Promise.resolve(); }
+				setKeysForSync: (): void => { },
+				get: (): any | undefined => { return Promise.resolve(); },
+				update: (): Thenable<void> => { return Promise.resolve(); }
 			},
 			extensionPath: extensionPath,
 			asAbsolutePath: () => { return ''; },
@@ -142,7 +143,8 @@ export function createContext(): TestContext {
 			extensionMode: undefined as any,
 			globalStorageUri: vscode.Uri.parse('test://'),
 			logUri: vscode.Uri.parse('test://'),
-			storageUri: vscode.Uri.parse('test://')
+			storageUri: vscode.Uri.parse('test://'),
+			secrets: undefined as any
 		},
 		dacFxService: TypeMoq.Mock.ofType(MockDacFxService)
 	};

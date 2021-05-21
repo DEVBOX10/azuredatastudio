@@ -4,39 +4,36 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from 'os';
+import * as fs from 'fs';
 import * as platform from 'vs/base/common/platform';
-import * as processes from 'vs/base/node/processes';
-import { readFile, fileExists, stat } from 'vs/base/node/pfs';
+import { SymlinkSupport } from 'vs/base/node/pfs';
 import { LinuxDistro, IShellDefinition } from 'vs/workbench/contrib/terminal/common/terminal';
 import { coalesce } from 'vs/base/common/arrays';
 import { normalize, basename } from 'vs/base/common/path';
+import { enumeratePowerShellInstallations } from 'vs/base/node/powershell';
+import * as processes from 'vs/base/node/processes'; // {{SQL CARBON EDIT}} - Add back getSystemShell for web build
 
-/**
- * Gets the detected default shell for the _system_, not to be confused with VS Code's _default_
- * shell that the terminal uses by default.
- * @param p The platform to detect the shell of.
- */
-export function getSystemShell(p: platform.Platform): string {
+export function getSystemShell(p: platform.Platform, environment: platform.IProcessEnvironment = process.env as platform.IProcessEnvironment): string { // {{SQL CARBON EDIT}} - Add back getSystemShell for web build
 	if (p === platform.Platform.Windows) {
 		if (platform.isWindows) {
-			return getSystemShellWindows();
+			return getSystemShellWindows(environment);
 		}
 		// Don't detect Windows shell when not on Windows
-		return processes.getWindowsShell();
+		return processes.getWindowsShell(environment);
 	}
 	// Only use $SHELL for the current OS
 	if (platform.isLinux && p === platform.Platform.Mac || platform.isMacintosh && p === platform.Platform.Linux) {
 		return '/bin/bash';
 	}
-	return getSystemShellUnixLike();
+	return getSystemShellUnixLike(environment);
 }
 
-let _TERMINAL_DEFAULT_SHELL_UNIX_LIKE: string | null = null;
-function getSystemShellUnixLike(): string {
+let _TERMINAL_DEFAULT_SHELL_UNIX_LIKE: string | null = null; // {{SQL CARBON EDIT}} - Add back getSystemShell for web build
+function getSystemShellUnixLike(environment: platform.IProcessEnvironment): string {
 	if (!_TERMINAL_DEFAULT_SHELL_UNIX_LIKE) {
 		let unixLikeTerminal = 'sh';
-		if (!platform.isWindows && process.env.SHELL) {
-			unixLikeTerminal = process.env.SHELL;
+		if (!platform.isWindows && environment.SHELL) {
+			unixLikeTerminal = environment.SHELL;
 			// Some systems have $SHELL set to /bin/false which breaks the terminal
 			if (unixLikeTerminal === '/bin/false') {
 				unixLikeTerminal = '/bin/bash';
@@ -51,12 +48,12 @@ function getSystemShellUnixLike(): string {
 }
 
 let _TERMINAL_DEFAULT_SHELL_WINDOWS: string | null = null;
-function getSystemShellWindows(): string {
+function getSystemShellWindows(environment: platform.IProcessEnvironment): string {
 	if (!_TERMINAL_DEFAULT_SHELL_WINDOWS) {
 		const isAtLeastWindows10 = platform.isWindows && parseFloat(os.release()) >= 10;
-		const is32ProcessOn64Windows = process.env.hasOwnProperty('PROCESSOR_ARCHITEW6432');
-		const powerShellPath = `${process.env.windir}\\${is32ProcessOn64Windows ? 'Sysnative' : 'System32'}\\WindowsPowerShell\\v1.0\\powershell.exe`;
-		_TERMINAL_DEFAULT_SHELL_WINDOWS = isAtLeastWindows10 ? powerShellPath : processes.getWindowsShell();
+		const is32ProcessOn64Windows = environment.hasOwnProperty('PROCESSOR_ARCHITEW6432');
+		const powerShellPath = `${environment.windir}\\${is32ProcessOn64Windows ? 'Sysnative' : 'System32'}\\WindowsPowerShell\\v1.0\\powershell.exe`;
+		_TERMINAL_DEFAULT_SHELL_WINDOWS = isAtLeastWindows10 ? powerShellPath : processes.getWindowsShell(environment);
 	}
 	return _TERMINAL_DEFAULT_SHELL_WINDOWS;
 }
@@ -64,11 +61,11 @@ function getSystemShellWindows(): string {
 let detectedDistro = LinuxDistro.Unknown;
 if (platform.isLinux) {
 	const file = '/etc/os-release';
-	fileExists(file).then(async exists => {
+	SymlinkSupport.existsFile(file).then(async exists => {
 		if (!exists) {
 			return;
 		}
-		const buffer = await readFile(file);
+		const buffer = await fs.promises.readFile(file);
 		const contents = buffer.toString();
 		if (/NAME="?Fedora"?/.test(contents)) {
 			detectedDistro = LinuxDistro.Fedora;
@@ -109,8 +106,6 @@ async function detectAvailableWindowsShells(): Promise<IShellDefinition[]> {
 
 	const expectedLocations: { [key: string]: string[] } = {
 		'Command Prompt': [`${system32Path}\\cmd.exe`],
-		'Windows PowerShell': [`${system32Path}\\WindowsPowerShell\\v1.0\\powershell.exe`],
-		'PowerShell': [await getShellPathFromRegistry('pwsh')],
 		'WSL Bash': [`${system32Path}\\${useWSLexe ? 'wsl.exe' : 'bash.exe'}`],
 		'Git Bash': [
 			`${process.env['ProgramW6432']}\\Git\\bin\\bash.exe`,
@@ -125,6 +120,12 @@ async function detectAvailableWindowsShells(): Promise<IShellDefinition[]> {
 		// 	`${process.env['HOMEDRIVE']}\\cygwin\\bin\\bash.exe`
 		// ]
 	};
+
+	// Add all of the different kinds of PowerShells
+	for await (const pwshExe of enumeratePowerShellInstallations()) {
+		expectedLocations[pwshExe.displayName] = [pwshExe.exePath];
+	}
+
 	const promises: Promise<IShellDefinition | undefined>[] = [];
 	Object.keys(expectedLocations).forEach(key => promises.push(validateShellPaths(key, expectedLocations[key])));
 	const shells = await Promise.all(promises);
@@ -132,7 +133,7 @@ async function detectAvailableWindowsShells(): Promise<IShellDefinition[]> {
 }
 
 async function detectAvailableUnixShells(): Promise<IShellDefinition[]> {
-	const contents = await readFile('/etc/shells', 'utf8');
+	const contents = await fs.promises.readFile('/etc/shells', 'utf8');
 	const shells = contents.split('\n').filter(e => e.trim().indexOf('#') !== 0 && e.trim().length > 0);
 	return shells.map(e => {
 		return {
@@ -151,23 +152,29 @@ async function validateShellPaths(label: string, potentialPaths: string[]): Prom
 		return validateShellPaths(label, potentialPaths);
 	}
 	try {
-		const result = await stat(normalize(current));
-		if (result.isFile || result.isSymbolicLink) {
+		const result = await fs.promises.stat(normalize(current));
+		if (result.isFile() || result.isSymbolicLink()) {
 			return {
 				label,
 				path: current
 			};
 		}
-	} catch { /* noop */ }
-	return validateShellPaths(label, potentialPaths);
-}
-
-async function getShellPathFromRegistry(shellName: string): Promise<string> {
-	const Registry = await import('vscode-windows-registry');
-	try {
-		const shellPath = Registry.GetStringRegKey('HKEY_LOCAL_MACHINE', `SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\${shellName}.exe`, '');
-		return shellPath ? shellPath : '';
-	} catch (error) {
-		return '';
+	} catch (e) {
+		// Also try using lstat as some symbolic links on Windows
+		// throw 'permission denied' using 'stat' but don't throw
+		// using 'lstat'
+		try {
+			const result = await fs.promises.lstat(normalize(current));
+			if (result.isFile() || result.isSymbolicLink()) {
+				return {
+					label,
+					path: current
+				};
+			}
+		}
+		catch (e) {
+			// noop
+		}
 	}
+	return validateShellPaths(label, potentialPaths);
 }

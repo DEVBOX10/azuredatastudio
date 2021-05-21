@@ -16,6 +16,7 @@ import { TestStorageService } from 'vs/workbench/test/common/workbenchTestServic
 import { TreeItemCollapsibleState } from 'sql/workbench/services/objectExplorer/common/treeNode';
 import { TestThemeService } from 'vs/platform/theme/test/common/testThemeService';
 import * as assert from 'assert';
+import { MockContextKeyService } from 'vs/platform/keybinding/test/common/mockKeybindingService';
 
 suite('ServerTreeView onAddConnectionProfile handler tests', () => {
 
@@ -28,8 +29,6 @@ suite('ServerTreeView onAddConnectionProfile handler tests', () => {
 		let instantiationService = new TestInstantiationService();
 		instantiationService.stub(IStorageService, new TestStorageService());
 		let mockConnectionManagementService = TypeMoq.Mock.ofType(ConnectionManagementService, TypeMoq.MockBehavior.Strict,
-			undefined, //connection store
-			undefined, // connectionstatusmanager
 			undefined, // connectiondialog service
 			instantiationService, // instantiation service
 			undefined, // editor service
@@ -39,7 +38,7 @@ suite('ServerTreeView onAddConnectionProfile handler tests', () => {
 		);
 		mockConnectionManagementService.setup(x => x.getConnectionGroups()).returns(x => []);
 		mockConnectionManagementService.setup(x => x.hasRegisteredServers()).returns(() => true);
-		serverTreeView = new ServerTreeView(mockConnectionManagementService.object, instantiationService, undefined, new TestThemeService(), undefined, undefined, capabilitiesService, undefined, undefined);
+		serverTreeView = new ServerTreeView(mockConnectionManagementService.object, instantiationService, undefined, new TestThemeService(), undefined, undefined, capabilitiesService, undefined, undefined, new MockContextKeyService());
 		mockTree = TypeMoq.Mock.ofType(TestTree);
 		(serverTreeView as any)._tree = mockTree.object;
 		mockRefreshTreeMethod = TypeMoq.Mock.ofType(Function);

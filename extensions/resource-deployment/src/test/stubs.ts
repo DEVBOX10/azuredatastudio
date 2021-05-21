@@ -10,6 +10,10 @@ import { Readable } from 'stream';
 export class TestChildProcessPromise<T> implements cp.ChildProcessPromise {
 	private _promise: Promise<T>;
 	private _event: events.EventEmitter = new events.EventEmitter();
+	readonly exitCode: number | null = null;
+	readonly signalCode: number | null = null;
+	readonly spawnargs: string[] = [];
+	readonly spawnfile: string = '';
 
 	constructor() {
 		this._promise = new Promise<T>((resolve, reject) => {
@@ -17,7 +21,7 @@ export class TestChildProcessPromise<T> implements cp.ChildProcessPromise {
 			this.reject = reject;
 		});
 	}
-	resolve!: (value?: T | PromiseLike<T>) => void;
+	resolve!: (value: T | PromiseLike<T>) => void;
 	reject!: (reason?: any) => void;
 	then<TResult1 = T, TResult2 = never>(onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null): Promise<TResult1 | TResult2> {
 		return this._promise.then(onFulfilled, onRejected);
@@ -37,7 +41,7 @@ export class TestChildProcessPromise<T> implements cp.ChildProcessPromise {
 	killed: boolean = false;
 	pid: number = -1;
 	connected: boolean = false;
-	kill(signal?: number | 'SIGABRT' | 'SIGALRM' | 'SIGBUS' | 'SIGCHLD' | 'SIGCONT' | 'SIGFPE' | 'SIGHUP' | 'SIGILL' | 'SIGINT' | 'SIGIO' | 'SIGIOT' | 'SIGKILL' | 'SIGPIPE' | 'SIGPOLL' | 'SIGPROF' | 'SIGPWR' | 'SIGQUIT' | 'SIGSEGV' | 'SIGSTKFLT' | 'SIGSTOP' | 'SIGSYS' | 'SIGTERM' | 'SIGTRAP' | 'SIGTSTP' | 'SIGTTIN' | 'SIGTTOU' | 'SIGUNUSED' | 'SIGURG' | 'SIGUSR1' | 'SIGUSR2' | 'SIGVTALRM' | 'SIGWINCH' | 'SIGXCPU' | 'SIGXFSZ' | 'SIGBREAK' | 'SIGLOST' | 'SIGINFO'): void {
+	kill(signal?: NodeJS.Signals | number): boolean {
 		throw new Error('Method not implemented.');
 	}
 

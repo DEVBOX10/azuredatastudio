@@ -10,7 +10,7 @@ import { List } from 'vs/base/browser/ui/list/listWidget';
 import { Event, Emitter } from 'vs/base/common/event';
 import { localize } from 'vs/nls';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { attachListStyler } from 'vs/platform/theme/common/styler';
+import { attachButtonStyler, attachListStyler } from 'vs/platform/theme/common/styler';
 import { IAction } from 'vs/base/common/actions';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -22,8 +22,7 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import * as azdata from 'azdata';
 
 import { Button } from 'sql/base/browser/ui/button/button';
-import { Modal } from 'sql/workbench/browser/modal/modal';
-import { attachButtonStyler } from 'sql/platform/theme/common/styler';
+import { HideReason, Modal } from 'sql/workbench/browser/modal/modal';
 import { AccountViewModel } from 'sql/platform/accounts/common/accountViewModel';
 import { AddAccountAction } from 'sql/platform/accounts/common/accountActions';
 import { AccountListRenderer, AccountListDelegate } from 'sql/workbench/services/accountManagement/browser/accountListRenderer';
@@ -33,7 +32,8 @@ import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import { ILogService } from 'vs/platform/log/common/log';
 import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
-import { IViewPaneOptions, ViewPane, ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer';
+import { ViewPane, IViewPaneOptions } from 'vs/workbench/browser/parts/views/viewPane';
+import { ViewPaneContainer } from 'vs/workbench/browser/parts/views/viewPaneContainer';
 import { attachModalDialogStyler, attachPanelStyler } from 'sql/workbench/common/styler';
 import { IViewDescriptorService, IViewsRegistry, Extensions as ViewContainerExtensions, IViewContainersRegistry, ViewContainerLocation } from 'vs/workbench/common/views';
 import { IQuickInputService, IQuickPickItem } from 'vs/platform/quickinput/common/quickInput';
@@ -54,7 +54,7 @@ export class AccountPaneContainer extends ViewPaneContainer {
 
 export const ACCOUNT_VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
 	id: VIEWLET_ID,
-	name: localize('accountExplorer.name', "Accounts"),
+	title: localize('accountExplorer.name', "Accounts"),
 	ctorDescriptor: new SyncDescriptor(AccountPaneContainer),
 	storageId: `${VIEWLET_ID}.state`
 }, ViewContainerLocation.Dialog);
@@ -85,6 +85,9 @@ class AccountPanel extends ViewPane {
 		this.tenantList = new List<Tenant>('TenantList', container, new TenantListDelegate(AccountDialog.ACCOUNTLIST_HEIGHT), [this.instantiationService.createInstance(TenantListRenderer)]);
 		this._register(attachListStyler(this.accountList, this.themeService));
 		this._register(attachListStyler(this.tenantList, this.themeService));
+
+		// Temporary workaround for https://github.com/microsoft/azuredatastudio/issues/14808 so that we can close an accessibility issue.
+		this.tenantList.getHTMLElement().tabIndex = -1;
 	}
 
 	protected layoutBody(size: number): void {
@@ -168,7 +171,7 @@ export class AccountDialog extends Modal {
 	) {
 		super(
 			localize('linkedAccounts', "Linked accounts"),
-			TelemetryKeys.Accounts,
+			TelemetryKeys.ModalDialogName.Accounts,
 			telemetryService,
 			layoutService,
 			clipboardService,
@@ -273,12 +276,12 @@ export class AccountDialog extends Modal {
 
 	/* Overwrite enter key behavior */
 	protected onAccept() {
-		this.close();
+		this.close('ok');
 	}
 
-	public close() {
+	public close(hideReason: HideReason = 'close') {
 		this._onCloseEmitter.fire();
-		this.hide();
+		this.hide(hideReason);
 	}
 
 	public open() {
@@ -302,9 +305,9 @@ export class AccountDialog extends Modal {
 		this._noaccountViewContainer!.hidden = true;
 		if (Iterable.consume(this._providerViewsMap.values()).length > 0) {
 			const firstView = this._providerViewsMap.values().next().value;
-			if (firstView instanceof AccountPanel) {
-				firstView.setSelection([0]);
-				firstView.focus();
+			if (firstView && firstView.view instanceof AccountPanel) {
+				firstView.view.setSelection([0]);
+				firstView.view.focus();
 			}
 		}
 	}

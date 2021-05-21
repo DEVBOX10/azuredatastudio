@@ -33,7 +33,7 @@ export class MainThreadTreeViews extends Disposable implements MainThreadTreeVie
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTreeViews);
 	}
 
-	$registerTreeViewDataProvider(treeViewId: string, options: { showCollapseAll: boolean, canSelectMany: boolean }): void {
+	$registerTreeViewDataProvider(treeViewId: string, options: { showCollapseAll: boolean, canSelectMany: boolean; }): void {
 		this.logService.trace('MainThreadTreeViews#$registerTreeViewDataProvider', treeViewId, options);
 
 		this.extensionService.whenInstalledExtensionsRegistered().then(() => {
@@ -48,6 +48,7 @@ export class MainThreadTreeViews extends Disposable implements MainThreadTreeVie
 				viewer.dataProvider = dataProvider;
 				this.registerListeners(treeViewId, viewer);
 				this._proxy.$setVisible(treeViewId, viewer.visible);
+				// {{SQL CARBON EDIT}}
 			} else if (treeViewId.includes('connectionDialog')) {
 				this.connectionTreeService.registerTreeProvider(treeViewId, dataProvider);
 			} else {
@@ -56,20 +57,20 @@ export class MainThreadTreeViews extends Disposable implements MainThreadTreeVie
 		});
 	}
 
-	$reveal(treeViewId: string, item: ITreeItem, parentChain: ITreeItem[], options: IRevealOptions): Promise<void> {
-		this.logService.trace('MainThreadTreeViews#$reveal', treeViewId, item, parentChain, options);
+	$reveal(treeViewId: string, itemInfo: { item: ITreeItem, parentChain: ITreeItem[]; } | undefined, options: IRevealOptions): Promise<void> {
+		this.logService.trace('MainThreadTreeViews#$reveal', treeViewId, itemInfo?.item, itemInfo?.parentChain, options);
 
 		return this.viewsService.openView(treeViewId, options.focus)
 			.then(() => {
 				const viewer = this.getTreeView(treeViewId);
-				if (viewer) {
-					return this.reveal(viewer, this._dataProviders.get(treeViewId)!, item, parentChain, options);
+				if (viewer && itemInfo) {
+					return this.reveal(viewer, this._dataProviders.get(treeViewId)!, itemInfo.item, itemInfo.parentChain, options);
 				}
 				return undefined;
 			});
 	}
 
-	$refresh(treeViewId: string, itemsToRefreshByHandle: { [treeItemHandle: string]: ITreeItem }): Promise<void> {
+	$refresh(treeViewId: string, itemsToRefreshByHandle: { [treeItemHandle: string]: ITreeItem; }): Promise<void> {
 		this.logService.trace('MainThreadTreeViews#$refresh', treeViewId, itemsToRefreshByHandle);
 
 		const viewer = this.getTreeView(treeViewId);
@@ -77,6 +78,7 @@ export class MainThreadTreeViews extends Disposable implements MainThreadTreeVie
 		if (viewer && dataProvider) {
 			const itemsToRefresh = dataProvider.getItemsToRefresh(itemsToRefreshByHandle);
 			return viewer.refresh(itemsToRefresh.length ? itemsToRefresh : undefined);
+			// {{SQL CARBON EDIT}}
 		} else if (treeViewId.includes('connectionDialog')) {
 			const itemsToRefresh = dataProvider.getItemsToRefresh(itemsToRefreshByHandle);
 			return this.connectionTreeService.view?.refresh(itemsToRefresh.length ? itemsToRefresh : undefined);
@@ -93,12 +95,13 @@ export class MainThreadTreeViews extends Disposable implements MainThreadTreeVie
 		}
 	}
 
-	$setTitle(treeViewId: string, title: string): void {
-		this.logService.trace('MainThreadTreeViews#$setTitle', treeViewId, title);
+	$setTitle(treeViewId: string, title: string, description: string | undefined): void {
+		this.logService.trace('MainThreadTreeViews#$setTitle', treeViewId, title, description);
 
 		const viewer = this.getTreeView(treeViewId);
 		if (viewer) {
 			viewer.title = title;
+			viewer.description = description;
 		}
 	}
 
@@ -192,7 +195,7 @@ export class TreeViewDataProvider implements ITreeViewDataProvider {
 				}));
 	}
 
-	getItemsToRefresh(itemsToRefreshByHandle: { [treeItemHandle: string]: ITreeItem }): ITreeItem[] {
+	getItemsToRefresh(itemsToRefreshByHandle: { [treeItemHandle: string]: ITreeItem; }): ITreeItem[] {
 		const itemsToRefresh: ITreeItem[] = [];
 		if (itemsToRefreshByHandle) {
 			for (const treeItemHandle of Object.keys(itemsToRefreshByHandle)) {
@@ -227,15 +230,15 @@ export class TreeViewDataProvider implements ITreeViewDataProvider {
 	}
 
 	protected async postGetChildren(elements: ITreeItem[]): Promise<ITreeItem[]> { // {{SQL CARBON EDIT}} For use by Component Tree View
-		const result: ITreeItem[] = []; //{{SQL CARBON EDIT}}
+		const result: ITreeItem[] = []; // {{SQL CARBON EDIT}}
 		const hasResolve = await this.hasResolve;
 		if (elements) {
 			for (const element of elements) {
 				// {{SQL CARBON EDIT}} We rely on custom properties on the tree items in a number of places so creating a new item here was
 				// {{SQL CARBON EDIT}} clearing those. Revert to old behavior if the provider doesn't support a resolve (our normal case)
 				if (hasResolve) {
-					const resolvable = new ResolvableTreeItem(element, hasResolve ? () => {
-						return this._proxy.$resolve(this.treeViewId, element.handle);
+					const resolvable = new ResolvableTreeItem(element, hasResolve ? (token) => {
+						return this._proxy.$resolve(this.treeViewId, element.handle, token);
 					} : undefined);
 					this.itemsMap.set(element.handle, resolvable);
 					result.push(resolvable);
@@ -251,9 +254,13 @@ export class TreeViewDataProvider implements ITreeViewDataProvider {
 	private updateTreeItem(current: ITreeItem, treeItem: ITreeItem): void {
 		treeItem.children = treeItem.children ? treeItem.children : undefined;
 		if (current) {
-			const properties = distinct([...Object.keys(current), ...Object.keys(treeItem)]);
+			const properties = distinct([...Object.keys(current instanceof ResolvableTreeItem ? current.asTreeItem() : current),
+			...Object.keys(treeItem)]);
 			for (const property of properties) {
 				(<any>current)[property] = (<any>treeItem)[property];
+			}
+			if (current instanceof ResolvableTreeItem) {
+				current.resetResolve();
 			}
 		}
 	}

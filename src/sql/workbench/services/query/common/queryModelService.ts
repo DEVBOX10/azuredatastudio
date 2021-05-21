@@ -5,7 +5,7 @@
 
 import * as GridContentEvents from 'sql/workbench/services/query/common/gridContentEvents';
 import QueryRunner from 'sql/workbench/services/query/common/queryRunner';
-import { ResultSetSubset } from 'sql/workbench/services/query/common/query';
+import { ICellValue, ResultSetSubset } from 'sql/workbench/services/query/common/query';
 import { DataService } from 'sql/workbench/services/query/common/dataService';
 import { IQueryModelService, IQueryEvent } from 'sql/workbench/services/query/common/queryModel';
 
@@ -62,6 +62,7 @@ export class QueryModelService implements IQueryModelService {
 	private _onRunQueryComplete: Emitter<string>;
 	private _onQueryEvent: Emitter<IQueryEvent>;
 	private _onEditSessionReady: Emitter<azdata.EditSessionReadyParams>;
+	private _onCellSelectionChangedEmitter = new Emitter<ICellValue[]>();
 
 	// EVENTS /////////////////////////////////////////////////////////////
 	public get onRunQueryStart(): Event<string> { return this._onRunQueryStart.event; }
@@ -69,6 +70,7 @@ export class QueryModelService implements IQueryModelService {
 	public get onRunQueryComplete(): Event<string> { return this._onRunQueryComplete.event; }
 	public get onQueryEvent(): Event<IQueryEvent> { return this._onQueryEvent.event; }
 	public get onEditSessionReady(): Event<azdata.EditSessionReadyParams> { return this._onEditSessionReady.event; }
+	public get onCellSelectionChanged(): Event<ICellValue[]> { return this._onCellSelectionChangedEmitter.event; }
 
 	// CONSTRUCTOR /////////////////////////////////////////////////////////
 	constructor(
@@ -94,6 +96,14 @@ export class QueryModelService implements IQueryModelService {
 		}
 
 		return dataService;
+	}
+
+	/**
+	 * Notify the event subscribers about the new selected cell values
+	 * @param selectedCells current selected cells
+	 */
+	public notifyCellSelectionChanged(selectedCells: ICellValue[]): void {
+		this._onCellSelectionChangedEmitter.fire(selectedCells);
 	}
 
 	/**

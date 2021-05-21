@@ -14,7 +14,7 @@
 	"activationEvents": [
 		"*"
 	],
-	"main": "./client/out/main",
+	"main": "./out/main",
 	"scripts": {
 		"compile": "gulp compile-extension:profiler-client"
 	},
@@ -85,9 +85,7 @@
 	"dependencies": {
 		"vscode-nls": "^3.2.1"
 	},
-	"devDependencies": {
-		"vscode": "1.0.1"
-	},
+	"devDependencies": { },
 	"__metadata": {
 		"id": "18",
 		"publisherDisplayName": "Microsoft",

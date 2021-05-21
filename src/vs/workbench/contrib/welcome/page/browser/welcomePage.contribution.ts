@@ -12,7 +12,7 @@ import { IWorkbenchActionRegistry, Extensions as ActionExtensions } from 'vs/wor
 import { SyncActionDescriptor, MenuRegistry, MenuId } from 'vs/platform/actions/common/actions';
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
 import { IEditorInputFactoryRegistry, Extensions as EditorExtensions } from 'vs/workbench/common/editor';
-import { LifecyclePhase } from 'vs/platform/lifecycle/common/lifecycle';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 
@@ -21,16 +21,26 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
 		...workbenchConfigurationNodeBase,
 		'properties': {
 			'workbench.startupEditor': {
-				'scope': ConfigurationScope.APPLICATION, // Make sure repositories cannot trigger opening a README for tracking.
+				'scope': ConfigurationScope.RESOURCE,
 				'type': 'string',
-				'enum': ['none', 'welcomePage', 'welcomePageWithTour', 'readme', 'newUntitledFile', 'welcomePageInEmptyWorkbench'],
-				'enumDescriptions': [
+				'enum': [
+					...['none', 'welcomePageWithTour', 'welcomePage', 'readme', 'newUntitledFile', 'welcomePageInEmptyWorkbench'], // {{SQL CARBON EDIT}} Add our own welcomePageWithTour
+					// {{SQL CARBON EDIT}} We don't use the VS Code gettingStarted experience
+					// ...(product.quality !== 'stable'
+					// 	? ['gettingStarted']
+					// 	: [])
+				],
+				'enumDescriptions': [...[
 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.none' }, "Start without an editor."),
 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageWithTur' }, "Open the welcome page with Getting Started Tour (default)"),
 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePage' }, "Open the Welcome page"),
 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.readme' }, "Open the README when opening a folder that contains one, fallback to 'welcomePage' otherwise."),
-					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.newUntitledFile' }, "Open a new untitled file (only applies when opening an empty workspace)."),
-					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),
+					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.newUntitledFile' }, "Open a new untitled file (only applies when opening an empty window)."),
+					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),],
+					// {{SQL CARBON EDIT}} We don't use the VS Code gettingStarted experience
+					// ...(product.quality !== 'stable'
+					// 	? [localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.gettingStarted' }, "Open the Getting Started page (experimental).")]
+					// 	: [])
 				],
 				'default': 'welcomePageWithTour',
 				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")

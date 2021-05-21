@@ -35,13 +35,15 @@ import { endsWith, startsWith } from 'vs/base/common/strings';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { ILogService } from 'vs/platform/log/common/log';
+import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 
 export enum AuthenticationType {
 	SqlLogin = 'SqlLogin',
 	Integrated = 'Integrated',
 	AzureMFA = 'AzureMFA',
 	AzureMFAAndUser = 'AzureMFAAndUser',
-	dSTSAuth = 'dstsAuth'
+	dSTSAuth = 'dstsAuth',
+	None = 'None' // Kusto supports no authentication
 }
 
 export class ConnectionWidget extends lifecycle.Disposable {
@@ -77,7 +79,7 @@ export class ConnectionWidget extends lifecycle.Disposable {
 	protected _databaseNameInputBox: Dropdown;
 	protected _advancedButton: Button;
 	private static readonly _authTypes: AuthenticationType[] =
-		[AuthenticationType.AzureMFA, AuthenticationType.AzureMFAAndUser, AuthenticationType.Integrated, AuthenticationType.SqlLogin, AuthenticationType.dSTSAuth];
+		[AuthenticationType.AzureMFA, AuthenticationType.AzureMFAAndUser, AuthenticationType.Integrated, AuthenticationType.SqlLogin, AuthenticationType.dSTSAuth, AuthenticationType.None];
 	private static readonly _osByName = {
 		Windows: OperatingSystem.Windows,
 		Macintosh: OperatingSystem.Macintosh,
@@ -329,7 +331,7 @@ export class ConnectionWidget extends lifecycle.Disposable {
 		let cellContainer = DOM.append(rowContainer, DOM.$('td'));
 		cellContainer.setAttribute('align', 'right');
 		let divContainer = DOM.append(cellContainer, DOM.$('div.advanced-button'));
-		let button = new Button(divContainer);
+		let button = new Button(divContainer, { secondary: true });
 		button.label = title;
 		button.onDidClick(() => {
 			//open advanced page
@@ -351,7 +353,7 @@ export class ConnectionWidget extends lifecycle.Disposable {
 		this._register(styler.attachInputBoxStyler(this._connectionNameInputBox, this._themeService));
 		this._register(styler.attachInputBoxStyler(this._userNameInputBox, this._themeService));
 		this._register(styler.attachInputBoxStyler(this._passwordInputBox, this._themeService));
-		this._register(styler.attachButtonStyler(this._advancedButton, this._themeService));
+		this._register(attachButtonStyler(this._advancedButton, this._themeService));
 		this._register(styler.attachCheckboxStyler(this._rememberPasswordCheckBox, this._themeService));
 		this._register(styler.attachSelectBoxStyler(this._azureAccountDropdown, this._themeService));
 		if (this._serverGroupSelectBox) {
@@ -519,6 +521,14 @@ export class ConnectionWidget extends lifecycle.Disposable {
 					});
 				}
 			});
+			this._tableContainer.classList.add('hide-username');
+			this._tableContainer.classList.add('hide-password');
+			this._tableContainer.classList.add('hide-azure-accounts');
+		} else if (currentAuthType === AuthenticationType.None) {
+			this._azureAccountDropdown.disable();
+			this._azureAccountDropdown.hideMessage();
+			this._azureTenantDropdown.disable();
+			this._azureTenantDropdown.hideMessage();
 			this._tableContainer.classList.add('hide-username');
 			this._tableContainer.classList.add('hide-password');
 			this._tableContainer.classList.add('hide-azure-accounts');

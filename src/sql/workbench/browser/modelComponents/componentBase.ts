@@ -14,7 +14,6 @@ import * as azdata from 'azdata';
 import { Emitter } from 'vs/base/common/event';
 import { IDisposable, Disposable } from 'vs/base/common/lifecycle';
 import { ModelComponentWrapper } from 'sql/workbench/browser/modelComponents/modelComponentWrapper.component';
-import { URI } from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
 import { EventType, addDisposableListener } from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
@@ -22,8 +21,6 @@ import { IComponentDescriptor, IComponent, IModelStore, IComponentEventArgs, Com
 import { convertSize } from 'sql/base/browser/dom';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { ILogService } from 'vs/platform/log/common/log';
-
-export type IUserFriendlyIcon = string | URI | { light: string | URI; dark: string | URI };
 
 export class ItemDescriptor<T> {
 	constructor(public descriptor: IComponentDescriptor, public config: T) { }
@@ -86,17 +83,9 @@ export abstract class ComponentBase<TPropertyBag extends azdata.ComponentPropert
 	public refreshDataProvider(item: any): void {
 	}
 
-	public updateStyles(): void {
-		const element = (<HTMLElement>this._el.nativeElement);
-		for (const style in this.CSSStyles) {
-			element.style[style] = this.CSSStyles[style];
-		}
-	}
-
 	public setProperties(properties: { [key: string]: any; }): void {
 		properties = properties || {};
 		this.properties = properties;
-		this.updateStyles();
 		this.layout();
 		this.validate().catch(onUnexpectedError);
 	}
@@ -105,7 +94,6 @@ export abstract class ComponentBase<TPropertyBag extends azdata.ComponentPropert
 	public updateProperty(key: string, value: any): void {
 		if (key) {
 			this.properties[key] = value;
-			this.updateStyles();
 			this.layout();
 			this.validate().catch(onUnexpectedError);
 		}
@@ -209,12 +197,12 @@ export abstract class ComponentBase<TPropertyBag extends azdata.ComponentPropert
 		this.setPropertyFromUI<boolean>((props, value) => props.ariaHidden = value, newValue);
 	}
 
-	public get CSSStyles(): { [key: string]: string } {
-		return this.getPropertyOrDefault<{ [key: string]: string }>((props) => props.CSSStyles, {});
+	public get CSSStyles(): azdata.CssStyles {
+		return this.getPropertyOrDefault<azdata.CssStyles>((props) => props.CSSStyles, {});
 	}
 
-	public set CSSStyles(newValue: { [key: string]: string }) {
-		this.setPropertyFromUI<{ [key: string]: string }>((properties, CSSStyles) => { properties.CSSStyles = CSSStyles; }, newValue);
+	public set CSSStyles(newValue: azdata.CssStyles) {
+		this.setPropertyFromUI<azdata.CssStyles>((properties, CSSStyles) => { properties.CSSStyles = CSSStyles; }, newValue);
 	}
 
 	protected getWidth(): string {
@@ -273,6 +261,17 @@ export abstract class ComponentBase<TPropertyBag extends azdata.ComponentPropert
 
 	protected onkeydown(domNode: HTMLElement, listener: (e: StandardKeyboardEvent) => void): void {
 		this._register(addDisposableListener(domNode, EventType.KEY_DOWN, (e: KeyboardEvent) => listener(new StandardKeyboardEvent(e))));
+	}
+
+	protected mergeCss(...styles: azdata.CssStyles[]): azdata.CssStyles {
+		const x = styles.reduce((previous, current) => {
+			if (current) {
+				return Object.assign(previous, current);
+			}
+			return previous;
+		}, {});
+
+		return x;
 	}
 }
 
@@ -387,17 +386,6 @@ export abstract class ContainerBase<T, TPropertyBag extends azdata.ComponentProp
 			throw new Error(`Unable to set item layout - unknown item ${componentDescriptor.id}`);
 		}
 		return;
-	}
-
-	public mergeCss(...styles: azdata.CssStyles[]): azdata.CssStyles {
-		const x = styles.reduce((previous, current) => {
-			if (current) {
-				return Object.assign(previous, current);
-			}
-			return previous;
-		}, {});
-
-		return x;
 	}
 
 	protected onItemsUpdated(): void {

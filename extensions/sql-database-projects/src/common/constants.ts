@@ -30,6 +30,33 @@ export const edgeSqlDatabaseProjectTypeId = 'SqlDbEdgeProj';
 export const edgeProjectTypeDisplayName = localize('edgeProjectTypeDisplayName', "SQL Edge");
 export const edgeProjectTypeDescription = localize('edgeProjectTypeDescription', "Start with the core pieces to develop and publish schemas for SQL Edge");
 
+// Dashboard
+export const addItemAction = localize('addItemAction', "Add Item");
+export const schemaCompareAction = localize('schemaCompareAction', "Schema Compare");
+export const buildAction = localize('buildAction', "Build");
+export const publishAction = localize('publishAction', "Publish");
+export const changeTargetPlatformAction = localize('changeTargetPlatformAction', "Change Target Platform");
+
+export const Status = localize('Status', "Status");
+export const Time = localize('Time', "Time");
+export const Date = localize('Date', "Date");
+export const TargetPlatform = localize('TargetPlatform', "Target Platform");
+export const TargetServer = localize('TargetServer', "Target Server");
+export const TargetDatabase = localize('TargetDatabase', "Target Database");
+export const BuildHistory = localize('BuildHistory', "Build History");
+export const PublishHistory = localize('PublishHistory', "Publish History");
+
+export const Success = localize('Success', "Success");
+export const Failed = localize('Failed', "Failed");
+export const InProgress = localize('InProgress', "In progress");
+
+export const hr = localize('hr', "hr");
+export const min = localize('min', "min");
+export const sec = localize('sec', "sec");
+export const msec = localize('msec', "msec");
+
+export const at = localize('at', "at");
+
 // commands
 export const revealFileInOsCommand = 'revealFileInOS';
 export const schemaCompareStartCommand = 'schemaCompare.start';
@@ -111,6 +138,7 @@ export const databaseNameServerNameVariableRequired = localize('databaseNameServ
 export const otherServer = 'OtherServer';
 export const otherSeverVariable = 'OtherServer';
 export const databaseProject = localize('databaseProject', "Database project");
+export const dacpacNotOnSameDrive = (projectLocation: string): string => { return localize('dacpacNotOnSameDrive', "Dacpac references need to be located on the same drive as the project file. The project file is located at {0}", projectLocation); };
 
 // Create Project From Database dialog strings
 
@@ -146,8 +174,6 @@ export const missingVersion = localize('missingVersion', "Missing 'version' entr
 export const unrecognizedDataSourcesVersion = localize('unrecognizedDataSourcesVersion', "Unrecognized version: ");
 export const unknownDataSourceType = localize('unknownDataSourceType', "Unknown data source type: ");
 export const invalidSqlConnectionString = localize('invalidSqlConnectionString', "Invalid SQL connection string");
-export const projectNameRequired = localize('projectNameRequired', "Name is required to create a new database project.");
-export const projectLocationRequired = localize('projectLocationRequired', "Location is required to create a new database project.");
 export const extractTargetRequired = localize('extractTargetRequired', "Target information for extract is required to create database project.");
 export const schemaCompareNotInstalled = localize('schemaCompareNotInstalled', "Schema compare extension installation is required to run schema compare");
 export const buildFailedCannotStartSchemaCompare = localize('buildFailedCannotStartSchemaCompare', "Schema compare could not start because build failed");
@@ -170,9 +196,12 @@ export const externalStreamingJobValidationPassed = localize('externalStreamingJ
 export function projectAlreadyOpened(path: string) { return localize('projectAlreadyOpened', "Project '{0}' is already opened.", path); }
 export function projectAlreadyExists(name: string, path: string) { return localize('projectAlreadyExists', "A project named {0} already exists in {1}.", name, path); }
 export function noFileExist(fileName: string) { return localize('noFileExist', "File {0} doesn't exist", fileName); }
+export function fileOrFolderDoesNotExist(name: string) { return localize('fileOrFolderDoesNotExist', "File or directory '{0}' doesn't exist", name); }
 export function cannotResolvePath(path: string) { return localize('cannotResolvePath', "Cannot resolve path {0}", path); }
 export function fileAlreadyExists(filename: string) { return localize('fileAlreadyExists', "A file with the name '{0}' already exists on disk at this location. Please choose another name.", filename); }
 export function folderAlreadyExists(filename: string) { return localize('folderAlreadyExists', "A folder with the name '{0}' already exists on disk at this location. Please choose another name.", filename); }
+export function fileAlreadyAddedToProject(filepath: string) { return localize('fileAlreadyAddedToProject', "A file with the path '{0}' has already been added to the project", filepath); }
+export function folderAlreadyAddedToProject(folderpath: string) { return localize('folderAlreadyAddedToProject', "A folder with the path '{0}' has already been added to the project", folderpath); }
 export function invalidInput(input: string) { return localize('invalidInput', "Invalid input: {0}", input); }
 export function unableToCreatePublishConnection(input: string) { return localize('unableToCreatePublishConnection', "Unable to construct connection: {0}", input); }
 export function circularProjectReference(project1: string, project2: string) { return localize('cicularProjectReference', "Circular reference from project {0} to project {1}", project1, project2); }
@@ -311,6 +340,7 @@ export const sqlServer2016 = 'SQL Server 2016';
 export const sqlServer2017 = 'SQL Server 2017';
 export const sqlServer2019 = 'SQL Server 2019';
 export const sqlAzure = 'Microsoft Azure SQL Database';
+export const sqlDW = 'Microsoft Azure SQL Data Warehouse';
 
 export const targetPlatformToVersion: Map<string, string> = new Map<string, string>([
 	[sqlServer2005, '90'],
@@ -320,7 +350,8 @@ export const targetPlatformToVersion: Map<string, string> = new Map<string, stri
 	[sqlServer2016, '130'],
 	[sqlServer2017, '140'],
 	[sqlServer2019, '150'],
-	[sqlAzure, 'AzureV12']
+	[sqlAzure, 'AzureV12'],
+	[sqlDW, 'Dw']
 ]);
 
 export function getTargetPlatformFromVersion(version: string): string {

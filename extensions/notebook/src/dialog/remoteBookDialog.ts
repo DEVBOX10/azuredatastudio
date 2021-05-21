@@ -63,7 +63,8 @@ export class RemoteBookDialog {
 			this.searchButton = this.view.modelBuilder.button().withProperties<azdata.ButtonProperties>({
 				label: loc.search,
 				title: loc.search,
-				width: '200px'
+				width: '200px',
+				secondary: true
 			}).component();
 			this.searchButton.onDidClick(async () => await this.validate());
 
@@ -249,13 +250,15 @@ export class RemoteBookDialog {
 	}
 
 	public async fillVersionDropdown(): Promise<void> {
-		let filtered_assets = (await this.controller.getAssets()).filter(asset => asset.book === this.bookDropdown.value);
+		const assets = await this.controller.getAssets();
+		let filtered_assets = assets.filter(asset => asset.book === this.bookDropdown.value);
 		this.versionDropdown.values = ['-'].concat(filtered_assets.map(asset => asset.version));
 		this.checkValues();
 	}
 
 	public async fillLanguageDropdown(): Promise<void> {
-		let filtered_assets = (await this.controller.getAssets()).filter(asset => asset.book === this.bookDropdown.value &&
+		const assets = await this.controller.getAssets();
+		let filtered_assets = assets.filter(asset => asset.book === this.bookDropdown.value &&
 			asset.version === this.versionDropdown.value);
 		this.languageDropdown.values = ['-'].concat(filtered_assets.map(asset => asset.language));
 		this.checkValues();

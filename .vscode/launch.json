@@ -41,10 +41,7 @@
 			"port": 5876,
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
-			],
-			"presentation": {
-				"hidden": true,
-			}
+			]
 		},
 		{
 			"type": "node",
@@ -108,8 +105,7 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"browserLaunchLocation": "workspace",
-			"preLaunchTask": "Ensure Prelaunch Dependencies",
+			"browserLaunchLocation": "workspace"
 		},
 		{
 			"type": "node",
@@ -141,9 +137,11 @@
 			}
 		},
 		{
-			"type": "chrome",
+			"type": "pwa-chrome",
 			"request": "launch",
-			"name": "Launch ADS (Web, Chrome) (TBD)",
+			"outFiles": [],
+			"perScriptSourcemaps": "yes",
+			"name": "VS Code (Web, Chrome)",
 			"url": "http://localhost:8080",
 			"preLaunchTask": "Run web",
 			"presentation": {
@@ -154,6 +152,8 @@
 		{
 			"type": "pwa-msedge",
 			"request": "launch",
+			"outFiles": [],
+			"perScriptSourcemaps": "yes",
 			"name": "VS Code (Web, Edge)",
 			"url": "http://localhost:8080",
 			"pauseForSourceMap": false,
@@ -193,7 +193,7 @@
 			}
 		},
 		{
-			"type": "node",
+			"type": "pwa-node",
 			"request": "launch",
 			"name": "Run Unit Tests",
 			"program": "${workspaceFolder}/test/unit/electron/index.js",
@@ -212,11 +212,43 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
+			"cascadeTerminateToConfigurations": [
+				"Attach to azuredatastudio"
+			],
 			"env": {
 				"MOCHA_COLORS": "true"
 			},
 			"presentation": {
 				"hidden": true
+			}
+		},
+		{
+			"type": "pwa-node",
+			"request": "launch",
+			"name": "Run Unit Tests For Current File",
+			"program": "${workspaceFolder}/test/unit/electron/index.js",
+			"runtimeExecutable": "${workspaceFolder}/.build/electron/Azure Data Studio.app/Contents/MacOS/Electron",
+			"windows": {
+				"runtimeExecutable": "${workspaceFolder}/.build/electron/azuredatastudio.exe"
+			},
+			"linux": {
+				"runtimeExecutable": "${workspaceFolder}/.build/electron/azuredatastudio"
+			},
+			"cascadeTerminateToConfigurations": [
+				"Attach to azuredatastudio"
+			],
+			"outputCapture": "std",
+			"args": [
+				"--remote-debugging-port=9222",
+				"--run",
+				"${relativeFile}"
+			],
+			"cwd": "${workspaceFolder}",
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js"
+			],
+			"env": {
+				"MOCHA_COLORS": "true"
 			}
 		},
 		{
@@ -310,6 +342,17 @@
 			"configurations": [
 				"Attach to azuredatastudio",
 				"Attach to Extension Host"
+			],
+			"presentation": {
+				"group": "1_vscode",
+				"order": 2
+			}
+		},
+		{
+			"name": "Debug Unit Tests (Current File)",
+			"configurations": [
+				"Attach to azuredatastudio",
+				"Run Unit Tests For Current File"
 			],
 			"presentation": {
 				"group": "1_vscode",
