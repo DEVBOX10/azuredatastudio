@@ -7,9 +7,12 @@ text-cell-component {
 	display: block;
 }
 text-cell-component .notebook-text {
-	display: flex;
+	display: inline-block;
 	outline: none;
 	min-height: 50px;
+}
+text-cell-component .notebook-text.show-preview.show-markdown{
+	display: flex;
 }
 text-cell-component code-component {
 	flex-direction: column;

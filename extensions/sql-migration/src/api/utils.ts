@@ -3,7 +3,10 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { CategoryValue, DropDownComponent } from 'azdata';
 import { DAYS, HRS, MINUTE, SEC } from '../constants/strings';
+import { AdsMigrationStatus } from '../dialog/migrationStatus/migrationStatusDialogModel';
+import { MigrationContext } from '../models/migrationLocalStorage';
 
 export function deepClone<T>(obj: T): T {
 	if (!obj || typeof obj !== 'object') {
@@ -82,4 +85,52 @@ export function convertTimeDifferenceToDuration(startTime: Date, endTime: Date):
 	else {
 		return DAYS(parseFloat(days));
 	}
+}
+
+export function filterMigrations(databaseMigrations: MigrationContext[], statusFilter: string, databaseNameFilter?: string): MigrationContext[] {
+	let filteredMigration: MigrationContext[] = [];
+	if (statusFilter === AdsMigrationStatus.ALL) {
+		filteredMigration = databaseMigrations;
+	} else if (statusFilter === AdsMigrationStatus.ONGOING) {
+		filteredMigration = databaseMigrations.filter((value) => {
+			const status = value.migrationContext.properties.migrationStatus;
+			const provisioning = value.migrationContext.properties.provisioningState;
+			return status === 'InProgress' || status === 'Creating' || provisioning === 'Creating';
+		});
+	} else if (statusFilter === AdsMigrationStatus.SUCCEEDED) {
+		filteredMigration = databaseMigrations.filter((value) => {
+			const status = value.migrationContext.properties.migrationStatus;
+			return status === 'Succeeded';
+		});
+	} else if (statusFilter === AdsMigrationStatus.FAILED) {
+		filteredMigration = databaseMigrations.filter((value) => {
+			const status = value.migrationContext.properties.migrationStatus;
+			const provisioning = value.migrationContext.properties.provisioningState;
+			return status === 'Failed' || provisioning === 'Failed';
+		});
+	} else if (statusFilter === AdsMigrationStatus.COMPLETING) {
+		filteredMigration = databaseMigrations.filter((value) => {
+			const status = value.migrationContext.properties.migrationStatus;
+			return status === 'Completing';
+		});
+	}
+	if (databaseNameFilter) {
+		filteredMigration = filteredMigration.filter((value) => {
+			return value.migrationContext.name.toLowerCase().includes(databaseNameFilter.toLowerCase());
+		});
+	}
+	return filteredMigration;
+}
+
+export function selectDropDownIndex(dropDown: DropDownComponent, index: number): void {
+	if (index >= 0 && dropDown.values && index <= dropDown.values.length - 1) {
+		const value = dropDown.values[index];
+		dropDown.value = value as CategoryValue;
+	}
+}
+
+export function findDropDownItemIndex(dropDown: DropDownComponent, value: string): number {
+	return dropDown.values &&
+		dropDown.values.findIndex((v: any) => ((v as CategoryValue)?.displayName?.toLowerCase() === value?.toLowerCase())) ||
+		-1;
 }
