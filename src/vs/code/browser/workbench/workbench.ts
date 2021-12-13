@@ -275,28 +275,35 @@ class WorkspaceProvider implements IWorkspaceProvider {
 
 	static QUERY_PARAM_PAYLOAD = 'payload';
 
+	readonly trusted = true;
+
 	constructor(
-		public readonly workspace: IWorkspace,
-		public readonly payload: object
+		readonly workspace: IWorkspace,
+		readonly payload: object
 	) { }
 
-	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<void> {
+	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<boolean> {
 		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
-			return; // return early if workspace and environment is not changing and we are reusing window
+			return true; // return early if workspace and environment is not changing and we are reusing window
 		}
 
 		const targetHref = this.createTargetUrl(workspace, options);
 		if (targetHref) {
 			if (options?.reuse) {
 				window.location.href = targetHref;
+				return true;
 			} else {
+				let result;
 				if (isStandalone) {
-					window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
+					result = window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
 				} else {
-					window.open(targetHref);
+					result = window.open(targetHref);
 				}
+
+				return !!result;
 			}
 		}
+		return false;
 	}
 
 	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): string | undefined {
@@ -404,14 +411,10 @@ class WindowIndicator implements IWindowIndicator {
 		throw new Error('Missing web configuration element');
 	}
 
-	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
-
-	// Revive static extension locations
-	if (Array.isArray(config.staticExtensions)) {
-		config.staticExtensions.forEach(extension => {
-			extension.extensionLocation = URI.revive(extension.extensionLocation);
-		});
-	}
+	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = {
+		...JSON.parse(configElementAttribute),
+		webviewEndpoint: `${window.location.origin}${window.location.pathname.replace(/\/+$/, '')}/webview`
+	}; // {{SQL CARBON EDIT}} Use local webview endpoint
 
 	// Find workspace to open and payload
 	let foundWorkspace = false;
@@ -520,7 +523,10 @@ class WindowIndicator implements IWindowIndicator {
 	// Finally create workbench
 	create(document.body, {
 		...config,
-		logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
+		developmentOptions: {
+			logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
+			...config.developmentOptions
+		},
 		settingsSyncOptions,
 		homeIndicator,
 		windowIndicator,

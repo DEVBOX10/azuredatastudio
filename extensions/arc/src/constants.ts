@@ -28,11 +28,13 @@ export class IconPathHelper {
 	public static collapseUp: IconPath;
 	public static collapseDown: IconPath;
 	public static postgres: IconPath;
+	public static extensions: IconPath;
 	public static computeStorage: IconPath;
 	public static connection: IconPath;
 	public static backup: IconPath;
 	public static properties: IconPath;
 	public static networking: IconPath;
+	public static pitr: IconPath;
 	public static refresh: IconPath;
 	public static reset: IconPath;
 	public static support: IconPath;
@@ -73,6 +75,10 @@ export class IconPathHelper {
 		IconPathHelper.postgres = {
 			light: IconPathHelper.context.asAbsolutePath('images/postgres.svg'),
 			dark: IconPathHelper.context.asAbsolutePath('images/postgres.svg')
+		};
+		IconPathHelper.extensions = {
+			light: IconPathHelper.context.asAbsolutePath('images/extensions.svg'),
+			dark: IconPathHelper.context.asAbsolutePath('images/extensions.svg')
 		};
 		IconPathHelper.computeStorage = {
 			light: context.asAbsolutePath('images/billing.svg'),
@@ -149,6 +155,10 @@ export class IconPathHelper {
 		IconPathHelper.gearGray = {
 			light: context.asAbsolutePath('images/gear-colored-gray.svg'),
 			dark: context.asAbsolutePath('images/gear-colored-gray.svg'),
+		};
+		IconPathHelper.pitr = {
+			light: context.asAbsolutePath('images/pitr.svg'),
+			dark: context.asAbsolutePath('images/pitr.svg'),
 		};
 	}
 }

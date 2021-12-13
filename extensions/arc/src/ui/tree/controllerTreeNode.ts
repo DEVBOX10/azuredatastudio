@@ -37,14 +37,14 @@ export class ControllerTreeNode extends TreeNode {
 		});
 	}
 
-	public async getChildren(): Promise<TreeNode[]> {
+	public override async getChildren(): Promise<TreeNode[]> {
 		try {
-			await this.model.refresh(false);
+			await this.model.refresh(false, this.model.info.namespace);
 			this.updateChildren(this.model.registrations);
 		} catch (err) {
 			vscode.window.showErrorMessage(loc.errorConnectingToController(err));
 			try {
-				await this.model.refresh(false);
+				await this.model.refresh(false, this.model.info.namespace);
 				this.updateChildren(this.model.registrations);
 			} catch (err) {
 				if (!(err instanceof UserCancelledError)) {
@@ -60,7 +60,7 @@ export class ControllerTreeNode extends TreeNode {
 		return this._children.length > 0 ? this._children : [new NoInstancesTreeNode()];
 	}
 
-	public async openDashboard(): Promise<void> {
+	public override async openDashboard(): Promise<void> {
 		const controllerDashboard = new ControllerDashboard(this.model);
 		await controllerDashboard.showDashboard();
 	}

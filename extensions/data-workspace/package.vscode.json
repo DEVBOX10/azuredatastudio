@@ -1,0 +1,7 @@
+{
+	"name": "data-workspace-vscode",
+	"publisher": "ms-mssql",
+	"extensionDependencies": [
+		"ms-mssql.mssql"
+	]
+}

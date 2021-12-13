@@ -13,6 +13,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TreeNode, TreeDataProvider } from './treeDataProvider';
 import * as dashboard from './modelViewDashboard';
+import { ConnectionProvider } from '../featureProviders/connectionProvider';
+import { IconProvider } from '../featureProviders/iconProvider';
+import { ObjectExplorerProvider } from '../featureProviders/objectExplorerProvider';
 
 /**
  * The main controller class that initializes the extension
@@ -37,10 +40,18 @@ export default class MainController implements vscode.Disposable {
 	}
 
 	public activate(): Promise<boolean> {
+		const connectionProvider = new ConnectionProvider();
+		const iconProvider = new IconProvider();
+		const objectExplorer = new ObjectExplorerProvider(this.context);
+		azdata.dataprotocol.registerConnectionProvider(connectionProvider);
+		azdata.dataprotocol.registerIconProvider(iconProvider);
+		azdata.dataprotocol.registerObjectExplorerProvider(objectExplorer);
+
 		const buttonHtml = fs.readFileSync(path.join(__dirname, 'button.html')).toString();
 		const counterHtml = fs.readFileSync(path.join(__dirname, 'counter.html')).toString();
 		this.registerSqlServicesModelView();
 		this.registerSplitPanelModelView();
+		this.registerModelViewDashboardTab();
 
 		azdata.tasks.registerTask('sqlservices.clickTask', (profile) => {
 			vscode.window.showInformationMessage(`Clicked from profile ${profile.serverName}.${profile.databaseName}`);
@@ -75,6 +86,10 @@ export default class MainController implements vscode.Disposable {
 
 		vscode.commands.registerCommand('sqlservices.openModelViewDashboard', () => {
 			dashboard.openModelViewDashboard(this.context);
+		});
+
+		vscode.commands.registerCommand('sqlservices.updateObjectExplorerNode', async (context: azdata.ObjectExplorerContext) => {
+			await objectExplorer.updateNode(context);
 		});
 
 		return Promise.resolve(true);
@@ -123,7 +138,7 @@ export default class MainController implements vscode.Disposable {
 
 		let treeDataProvider = new TreeDataProvider(root);
 
-		let tree: azdata.TreeComponent<TreeNode> = view.modelBuilder.tree<TreeNode>().withProperties({
+		let tree: azdata.TreeComponent<TreeNode> = view.modelBuilder.tree<TreeNode>().withProps({
 			'withCheckbox': true
 		}).component();
 		let treeView = tree.registerDataProvider(treeDataProvider);
@@ -156,7 +171,7 @@ export default class MainController implements vscode.Disposable {
 	private async getTabContent(view: azdata.ModelView, customButton1: azdata.window.Button, customButton2: azdata.window.Button, componentWidth: number | string
 	): Promise<void> {
 		let inputBox = view.modelBuilder.inputBox()
-			.withProperties({
+			.withProps({
 				multiline: true,
 				height: 100
 			}).component();
@@ -170,7 +185,7 @@ export default class MainController implements vscode.Disposable {
 		let backupFilesInputBox = view.modelBuilder.inputBox().component();
 
 		let checkbox = view.modelBuilder.checkBox()
-			.withProperties({
+			.withProps({
 				label: 'Copy-only backup'
 			})
 			.component();
@@ -179,11 +194,11 @@ export default class MainController implements vscode.Disposable {
 			inputBox.enabled = !inputBox.enabled;
 		});
 		let button = view.modelBuilder.button()
-			.withProperties({
+			.withProps({
 				label: '+'
 			}).component();
 		let button3 = view.modelBuilder.button()
-			.withProperties({
+			.withProps({
 				label: '-'
 
 			}).component();
@@ -191,7 +206,7 @@ export default class MainController implements vscode.Disposable {
 			backupFilesInputBox.value = 'Button clicked';
 		});
 		let dropdown = view.modelBuilder.dropDown()
-			.withProperties({
+			.withProps({
 				value: 'Full',
 				values: ['Full', 'Differential', 'Transaction Log']
 			})
@@ -208,7 +223,7 @@ export default class MainController implements vscode.Disposable {
 			console.info('dropdown change ' + dropdown.value.toString());
 		});
 		let radioButton = view.modelBuilder.radioButton()
-			.withProperties({
+			.withProps({
 				value: 'option1',
 				name: 'radioButtonOptions',
 				label: 'Option 1',
@@ -216,7 +231,7 @@ export default class MainController implements vscode.Disposable {
 				// width: 300
 			}).component();
 		let radioButton2 = view.modelBuilder.radioButton()
-			.withProperties({
+			.withProps({
 				value: 'option2',
 				name: 'radioButtonOptions',
 				label: 'Option 2'
@@ -246,7 +261,7 @@ export default class MainController implements vscode.Disposable {
 			light: path.join(__dirname, '..', 'media', 'monitor.svg'),
 			dark: path.join(__dirname, '..', 'media', 'monitor_inverse.svg')
 		};
-		let table = view.modelBuilder.table().withProperties<azdata.TableComponentProperties>({
+		let table = view.modelBuilder.table().withProps({
 			data: [
 				['1', '2', '2', { enabled: false, checked: false },
 					undefined, // for button/hyperlink column, 'undefined' means to use the default information provided by the column definition
@@ -315,13 +330,13 @@ export default class MainController implements vscode.Disposable {
 			}
 		});
 
-		let listBox = view.modelBuilder.listBox().withProperties({
+		let listBox = view.modelBuilder.listBox().withProps({
 			values: ['1', '2', '3'],
 			selectedRow: 2
 		}).component();
 
 		let declarativeTable = view.modelBuilder.declarativeTable()
-			.withProperties({
+			.withProps({
 				columns: [{
 					displayName: 'Column 1',
 					valueType: azdata.DeclarativeDataType.string,
@@ -570,12 +585,12 @@ export default class MainController implements vscode.Disposable {
 		editor.registerContent(async view => {
 			let count = 0;
 			let webview1 = view.modelBuilder.webView()
-				.withProperties({
+				.withProps({
 					html: html1
 				})
 				.component();
 			let webview2 = view.modelBuilder.webView()
-				.withProperties({
+				.withProps({
 					html: html2
 				})
 				.component();
@@ -585,13 +600,13 @@ export default class MainController implements vscode.Disposable {
 			});
 
 			let editor1 = view.modelBuilder.editor()
-				.withProperties({
+				.withProps({
 					content: 'select * from sys.tables'
 				})
 				.component();
 
 			let editor2 = view.modelBuilder.editor()
-				.withProperties({
+				.withProps({
 					content: 'print("Hello World !")',
 					languageMode: 'python'
 				})
@@ -621,14 +636,14 @@ export default class MainController implements vscode.Disposable {
 
 			let inputBox = view.modelBuilder.inputBox().component();
 			let dropdown = view.modelBuilder.dropDown()
-				.withProperties({
+				.withProps({
 					value: 'aa',
 					values: ['aa', 'bb', 'cc']
 				})
 				.component();
 			let runIcon = path.join(__dirname, '..', 'media', 'start.svg');
 			let runButton = view.modelBuilder.button()
-				.withProperties({
+				.withProps({
 					label: 'Run',
 					iconPath: runIcon,
 					title: 'Run title'
@@ -641,7 +656,7 @@ export default class MainController implements vscode.Disposable {
 			};
 
 			let monitorButton = view.modelBuilder.button()
-				.withProperties({
+				.withProps({
 					label: 'Monitor',
 					iconPath: monitorIcon,
 					title: 'Monitor title'
@@ -700,7 +715,7 @@ export default class MainController implements vscode.Disposable {
 						})
 						.withItems([
 							view.modelBuilder.card()
-								.withProperties<azdata.CardProperties>({
+								.withProps({
 									label: 'label1',
 									value: 'value1',
 									actions: [{ label: 'action' }]
@@ -712,7 +727,7 @@ export default class MainController implements vscode.Disposable {
 						.withLayout({ flexFlow: 'column' })
 						.withItems([
 							view.modelBuilder.card()
-								.withProperties<azdata.CardProperties>({
+								.withProps({
 									label: 'label2',
 									value: 'value2',
 									actions: [{ label: 'action' }]
@@ -722,6 +737,15 @@ export default class MainController implements vscode.Disposable {
 				], { flex: '1 1 50%' })
 				.component();
 			await view.initializeModel(flexModel);
+		});
+	}
+
+	private registerModelViewDashboardTab(): void {
+		azdata.ui.registerModelViewProvider('sqlservices-home', async (view) => {
+			const text = view.modelBuilder.text().withProps({
+				value: 'home tab content place holder'
+			}).component();
+			await view.initializeModel(text);
 		});
 	}
 

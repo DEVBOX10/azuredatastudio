@@ -61,8 +61,13 @@ export namespace Schemas {
 	export const vscodeNotebookCell = 'vscode-notebook-cell';
 
 	export const vscodeNotebookCellMetadata = 'vscode-notebook-cell-metadata';
+	export const vscodeNotebookCellOutput = 'vscode-notebook-cell-output';
 
 	export const vscodeSettings = 'vscode-settings';
+
+	export const vscodeWorkspaceTrust = 'vscode-workspace-trust';
+
+	export const vscodeTerminal = 'vscode-terminal';
 
 	export const webviewPanel = 'webview-panel';
 
@@ -70,11 +75,6 @@ export namespace Schemas {
 	 * Scheme used for loading the wrapper html and script in webviews.
 	 */
 	export const vscodeWebview = 'vscode-webview';
-
-	/**
-	 * Scheme used for loading resources inside of webviews.
-	 */
-	export const vscodeWebviewResource = 'vscode-webview-resource';
 
 	/**
 	 * Scheme used for extension pages
@@ -86,9 +86,16 @@ export namespace Schemas {
 	 * files with our custom protocol handler (desktop only).
 	 */
 	export const vscodeFileResource = 'vscode-file';
+
+	/**
+	 * Scheme used for temporary resources
+	 */
+	export const tmp = 'tmp';
 }
 
 class RemoteAuthoritiesImpl {
+	private readonly _defaultWebPort = 80; // {{SQL CARBON EDIT}}
+
 	private readonly _hosts: { [authority: string]: string | undefined; } = Object.create(null);
 	private readonly _ports: { [authority: string]: number | undefined; } = Object.create(null);
 	private readonly _connectionTokens: { [authority: string]: string | undefined; } = Object.create(null);
@@ -129,7 +136,7 @@ class RemoteAuthoritiesImpl {
 		}
 		return URI.from({
 			scheme: platform.isWeb ? this._preferredWebSchema : Schemas.vscodeRemoteResource,
-			authority: `${host}:${port}`,
+			authority: platform.isWeb && port === this._defaultWebPort ? `${host}` : `${host}:${port}`, // {{SQL CARBON EDIT}} addresses same-origin-policy violation in web mode when port number is in authority, but not in URI.
 			path: `/vscode-remote-resource`,
 			query
 		});
@@ -159,7 +166,7 @@ class FileAccessImpl {
 		}
 
 		// Only convert the URI if we are in a native context and it has `file:` scheme
-		// and we have explicitly enabled the conversion (sandbox, or ENABLE_VSCODE_BROWSER_CODE_LOADING)
+		// and we have explicitly enabled the conversion (sandbox, or VSCODE_BROWSER_CODE_LOADING)
 		if (platform.isNative && (__forceCodeFileUri || platform.isPreferringBrowserCodeLoad) && uri.scheme === Schemas.file) {
 			return uri.with({
 				scheme: Schemas.vscodeFileResource,

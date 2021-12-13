@@ -227,7 +227,7 @@ export class ResourceLabels extends Disposable {
 		this.labels = [];
 	}
 
-	dispose(): void {
+	override dispose(): void {
 		super.dispose();
 
 		this.clear();
@@ -289,7 +289,7 @@ class ResourceLabelWidget extends IconLabel {
 		@IModelService private readonly modelService: IModelService,
 		@IDecorationsService private readonly decorationsService: IDecorationsService,
 		@ILabelService private readonly labelService: ILabelService,
-		// @ITextFileService private readonly textFileService: ITextFileService,
+		// @ITextFileService private readonly textFileService: ITextFileService, {{SQL CARBON EDIT}}
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService
 	) {
 		super(container, options);
@@ -569,6 +569,7 @@ class ResourceLabelWidget extends IconLabel {
 
 				if (this.options.fileDecorations.badges) {
 					iconLabelOptions.extraClasses.push(deco.badgeClassName);
+					iconLabelOptions.extraClasses.push(deco.iconClassName);
 				}
 			}
 		}
@@ -580,7 +581,7 @@ class ResourceLabelWidget extends IconLabel {
 		return true;
 	}
 
-	dispose(): void {
+	override dispose(): void {
 		super.dispose();
 
 		this.label = undefined;

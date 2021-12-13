@@ -104,7 +104,6 @@ export class ModifyColumnsPage extends ImportPage {
 			});
 		});
 
-
 		this.form = this.view.modelBuilder.formContainer()
 			.withFormItems(
 				[
@@ -131,26 +130,33 @@ export class ModifyColumnsPage extends ImportPage {
 		await this.populateTable();
 		this.instance.changeNextButtonLabel(constants.importDataText);
 		this.loading.loading = false;
-
+		this.instance.registerNavigationValidator((info) => {
+			return this.table.data && this.table.data.length > 0;
+		});
 		return true;
 	}
 
-	async onPageLeave(): Promise<boolean> {
+	override async onPageLeave(): Promise<boolean> {
+		await this.emptyTable();
 		this.instance.changeNextButtonLabel(constants.nextText);
+		this.instance.registerNavigationValidator((info) => {
+			return true;
+		});
 		return undefined;
 	}
 
-	async cleanup(): Promise<boolean> {
+	private emptyTable() {
+		this.table.updateProperties({
+			data: [],
+			columns: []
+		});
+	}
+
+	override async cleanup(): Promise<boolean> {
 		delete this.model.proseColumns;
 		this.instance.changeNextButtonLabel(constants.nextText);
 
 		return true;
-	}
-
-	public setupNavigationValidator() {
-		this.instance.registerNavigationValidator((info) => {
-			return !this.loading.loading && this.table.data && this.table.data.length > 0;
-		});
 	}
 
 	private async populateTable() {

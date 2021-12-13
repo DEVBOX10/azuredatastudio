@@ -350,6 +350,7 @@ class TestDeclarativeTableComponent extends TestComponentBase implements azdata.
 	setFilter: undefined;
 	data: any[][];
 	columns: azdata.DeclarativeTableColumn[];
+	setDataValues: undefined;
 }
 
 class TestButtonComponent extends TestComponentBase implements azdata.ButtonComponent {
@@ -440,7 +441,7 @@ class TestComponentBuilder<T extends azdata.Component, TPropertyBag> implements 
 		return this._component;
 	}
 	withProperties<U>(properties: U): azdata.ComponentBuilder<T, TPropertyBag> {
-		this._component.updateProperties(properties);
+		void this._component.updateProperties(properties);
 		return this;
 	}
 	withValidation(validation: (component: T) => boolean): azdata.ComponentBuilder<T, TPropertyBag> {
@@ -448,7 +449,7 @@ class TestComponentBuilder<T extends azdata.Component, TPropertyBag> implements 
 	}
 
 	withProps(properties: TPropertyBag): azdata.ComponentBuilder<T, TPropertyBag> {
-		this._component.updateProperties(properties);
+		void this._component.updateProperties(properties);
 		return this;
 	}
 }

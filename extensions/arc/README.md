@@ -2,8 +2,6 @@
 
 Welcome to Microsoft Azure Arc Extension for Azure Data Studio!
 
-**This extension is only applicable to customers in the Azure Arc data services public preview.**
-
 ## Overview
 
 This extension adds the following features to Azure Data Studio.
@@ -44,7 +42,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ## Privacy Statement
 
-The [Microsoft Enterprise and Developer Privacy Statement](https://privacy.microsoft.com/en-us/privacystatement) describes the privacy statement of this software.
+The [Microsoft Enterprise and Developer Privacy Statement](https://privacy.microsoft.com/privacystatement) describes the privacy statement of this software.
 
 ## License
 

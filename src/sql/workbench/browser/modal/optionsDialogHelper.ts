@@ -116,7 +116,7 @@ export function validateInputs(optionsMap: { [optionName: string]: IOptionElemen
 			optionElement.option.valueType === ServiceOptionType.number);
 
 		if (isInputBox) {
-			if (!widget.validate()) {
+			if (widget.validate() !== undefined) {
 				isValid = false;
 				if (!isFocused) {
 					isFocused = true;
@@ -167,7 +167,7 @@ export function groupOptionsByCategory(options: azdata.ServiceOption[]): { [cate
 	options.forEach(option => {
 		let groupName = option.groupName;
 		if (groupName === null || groupName === undefined) {
-			groupName = 'General';
+			groupName = localize('optionsDialog.defaultGroupName', 'General');
 		}
 
 		if (!!connectionOptionsMap[groupName]) {

@@ -7,15 +7,15 @@ import * as assert from 'assert';
 import * as azdata from 'azdata';
 import * as sinon from 'sinon';
 import { TestConfigurationService } from 'sql/platform/connection/test/common/testConfigurationService';
-import { AddCellAction, ClearAllOutputsAction, CollapseCellsAction, kernelNotSupported, KernelsDropdown, msgChanging, NewNotebookAction, noKernelName, noParameterCell, noParametersInCell, RunAllCellsAction, RunParametersAction, TrustedAction } from 'sql/workbench/contrib/notebook/browser/notebookActions';
-import { ClientSessionStub, ContextViewProviderStub, NotebookComponentStub, NotebookModelStub, NotebookServiceStub } from 'sql/workbench/contrib/notebook/test/stubs';
+import { AddCellAction, ClearAllOutputsAction, CollapseCellsAction, CreateNotebookViewAction, DashboardViewAction, kernelNotSupported, KernelsDropdown, msgChanging, NewNotebookAction, noKernelName, noParameterCell, noParametersInCell, NotebookViewAction, NotebookViewsActionProvider, RunAllCellsAction, RunParametersAction, TrustedAction } from 'sql/workbench/contrib/notebook/browser/notebookActions';
+import { ClientSessionStub, ContextViewProviderStub, NotebookComponentStub, NotebookModelStub, NotebookServiceStub, NotebookViewsStub, NotebookViewStub } from 'sql/workbench/contrib/notebook/test/stubs';
 import { NotebookEditorStub } from 'sql/workbench/contrib/notebook/test/testCommon';
-import { ICellModel, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { ICellModel, INotebookModel, ViewMode } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { IStandardKernelWithProvider } from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 import { INotebookEditor, INotebookService } from 'sql/workbench/services/notebook/browser/notebookService';
 import { CellType, CellTypes } from 'sql/workbench/services/notebook/common/contracts';
 import * as TypeMoq from 'typemoq';
-import { Emitter } from 'vs/base/common/event';
+import { Emitter, Event } from 'vs/base/common/event';
 import { TestCommandService } from 'vs/editor/test/browser/editorTestServices';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import { IConfigurationChangeEvent, IConfigurationOverrides, IConfigurationService } from 'vs/platform/configuration/common/configuration';
@@ -26,14 +26,19 @@ import { workbenchInstantiationService } from 'vs/workbench/test/browser/workben
 import { URI } from 'vs/base/common/uri';
 import { NullAdsTelemetryService } from 'sql/platform/telemetry/common/adsTelemetryService';
 import { MockQuickInputService } from 'sql/workbench/contrib/notebook/test/common/quickInputServiceMock';
+import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
+import { Separator } from 'vs/base/common/actions';
+import { INotebookView, INotebookViews } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViews';
+import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
+import { ITelemetryEventProperties } from 'sql/platform/telemetry/common/telemetry';
 
 class TestClientSession extends ClientSessionStub {
 	private _errorState: boolean = false;
 	setErrorState = (value: boolean) => this._errorState = value;
-	get isInErrorState(): boolean {
+	override get isInErrorState(): boolean {
 		return this._errorState;
 	}
-	get kernel(): azdata.nb.IKernel {
+	override get kernel(): azdata.nb.IKernel {
 		return <azdata.nb.IKernel>{
 			name: 'StandardKernel1'
 		};
@@ -43,11 +48,11 @@ class TestNotebookModel extends NotebookModelStub {
 	private _clientSession: TestClientSession = new TestClientSession();
 	public kernelChangedEmitter: Emitter<azdata.nb.IKernelChangedArgs> = new Emitter<azdata.nb.IKernelChangedArgs>();
 
-	public get kernelChanged() {
+	public override get kernelChanged() {
 		return this.kernelChangedEmitter.event;
 	}
 
-	public get clientSession(): TestClientSession {
+	public override get clientSession(): TestClientSession {
 		return this._clientSession;
 	}
 
@@ -80,7 +85,7 @@ class TestNotebookModel extends NotebookModelStub {
 		return [...this._standardKernelsMap.values()].map(x => x.displayName);
 	}
 
-	public get specs(): azdata.nb.IAllKernels | undefined {
+	public override get specs(): azdata.nb.IAllKernels | undefined {
 		return {
 			defaultKernel: 'SpecKernel1',
 			// The name and displayName are set to same value
@@ -100,8 +105,11 @@ class TestNotebookModel extends NotebookModelStub {
 		};
 	}
 
-	public getStandardKernelFromName(name: string): IStandardKernelWithProvider {
+	public override getStandardKernelFromName(name: string): IStandardKernelWithProvider {
 		return this._standardKernelsMap.get(name);
+	}
+
+	public override sendNotebookTelemetryActionEvent(action: TelemetryKeys.TelemetryAction | TelemetryKeys.NbTelemetryAction, additionalProperties?: ITelemetryEventProperties): void {
 	}
 }
 
@@ -110,9 +118,11 @@ suite('Notebook Actions', function (): void {
 	let mockNotebookEditor: TypeMoq.Mock<INotebookEditor>;
 	let mockNotebookService: TypeMoq.Mock<INotebookService>;
 	const testUri = URI.parse('untitled');
+	let testNotebookModel = new TestNotebookModel();
 
 	suiteSetup(function (): void {
 		mockNotebookEditor = TypeMoq.Mock.ofType<INotebookEditor>(NotebookEditorStub);
+		mockNotebookEditor.setup(x => x.model).returns(() => testNotebookModel);
 		mockNotebookService = TypeMoq.Mock.ofType<INotebookService>(NotebookServiceStub);
 		mockNotebookService.setup(x => x.findNotebookEditor(TypeMoq.It.isAny())).returns(uri => mockNotebookEditor.object);
 	});
@@ -126,7 +136,7 @@ suite('Notebook Actions', function (): void {
 		let actualCellType: CellType;
 
 
-		let action = new AddCellAction('TestId', 'TestLabel', 'TestClass', mockNotebookService.object, new NullAdsTelemetryService());
+		let action = new AddCellAction('TestId', 'TestLabel', 'TestClass', mockNotebookService.object);
 		action.cellType = testCellType;
 
 		// Normal use case
@@ -186,10 +196,14 @@ suite('Notebook Actions', function (): void {
 	});
 
 	test('Run All Cells Action', async function (): Promise<void> {
+		const testNotebookModel = TypeMoq.Mock.ofType<INotebookModel>(NotebookModelStub);
+		testNotebookModel.setup(x => x.getMetaValue(TypeMoq.It.isAny())).returns(() => undefined);
+		mockNotebookEditor.setup(x => x.model).returns(() => testNotebookModel.object);
+
 		let mockNotification = TypeMoq.Mock.ofType<INotificationService>(TestNotificationService);
 		mockNotification.setup(n => n.notify(TypeMoq.It.isAny()));
 
-		let action = new RunAllCellsAction('TestId', 'TestLabel', 'TestClass', mockNotification.object, mockNotebookService.object, new NullAdsTelemetryService());
+		let action = new RunAllCellsAction('TestId', 'TestLabel', 'TestClass', mockNotification.object, mockNotebookService.object);
 
 		// Normal use case
 		mockNotebookEditor.setup(c => c.runAllCells()).returns(() => Promise.resolve(true));
@@ -519,6 +533,50 @@ suite('Notebook Actions', function (): void {
 		assert.strictEqual(actualMsg, expectedMsg);
 	});
 
+	test('notebookViewsActionProvider', async () => {
+		const testGuid = '1';
+		const testName = 'Notebook-0';
+
+		const testNotebookModel: INotebookModel = <INotebookModel>{
+			viewMode: ViewMode.Notebook
+		};
+
+		const notebookEditor = new NotebookEditorStub({ model: testNotebookModel });
+
+		const mockNotification = TypeMoq.Mock.ofType<INotificationService>(TestNotificationService);
+		const notebookViews = TypeMoq.Mock.ofType<INotebookViews>(NotebookViewsStub);
+
+		const notebookView = TypeMoq.Mock.ofType<INotebookView>(NotebookViewStub);
+		notebookView.setup(x => x.guid).returns(() => testGuid);
+		notebookView.setup(x => x.name).returns(() => testName);
+		const views: INotebookView[] = [notebookView.object];
+
+		notebookViews.setup(x => x.getViews()).returns(() => views);
+		notebookViews.setup(x => x.getActiveView()).returns(() => undefined);
+
+		const notebookViewAction = new NotebookViewAction('notebookView.backToNotebook', 'Editor', 'notebook-button', mockNotebookService.object);
+		const createNotebookViewAction = new CreateNotebookViewAction('notebookView.newView', 'Create New View', 'notebook-button notebook-button-newview', mockNotebookService.object);
+		const separator = new Separator();
+
+		// Create a mocked out instantiation service
+		const mockInstantiationService = TypeMoq.Mock.ofType(InstantiationService, TypeMoq.MockBehavior.Strict);
+		mockInstantiationService.setup(x => x.createInstance(TypeMoq.It.isValue(NotebookViewAction), TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => notebookViewAction);
+		mockInstantiationService.setup(x => x.createInstance(TypeMoq.It.isValue(CreateNotebookViewAction), TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => createNotebookViewAction);
+		mockInstantiationService.setup(x => x.createInstance(TypeMoq.It.isValue(Separator))).returns(() => separator);
+
+		const viewsContainer = document.createElement('li');
+		const viewsActionsProvider = new NotebookViewsActionProvider(viewsContainer, notebookViews.object, notebookEditor.modelReady, mockNotebookService.object, mockNotification.object, mockInstantiationService.object);
+
+		await Event.toPromise(viewsActionsProvider.onUpdated);
+
+		const actions = viewsActionsProvider.getActions();
+
+		// It includes all the options
+		assert.strictEqual(actions.filter(a => a instanceof DashboardViewAction).length, 1);
+		assert.strictEqual(actions.filter(a => a instanceof NotebookViewAction).length, 1);
+		assert.strictEqual(actions.filter(a => a instanceof CreateNotebookViewAction).length, 1);
+	});
+
 	suite('Kernels dropdown', async () => {
 		let kernelsDropdown: KernelsDropdown;
 		let contextViewProvider: ContextViewProviderStub;
@@ -530,7 +588,7 @@ suite('Notebook Actions', function (): void {
 		let setOptionsSpy: sinon.SinonSpy;
 
 		setup(async () => {
-			sandbox = sinon.sandbox.create();
+			sandbox = sinon.createSandbox();
 			container = document.createElement('div');
 			contextViewProvider = new ContextViewProviderStub();
 			const instantiationService = <TestInstantiationService>workbenchInstantiationService();

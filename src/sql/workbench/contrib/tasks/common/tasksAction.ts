@@ -23,8 +23,8 @@ export class CancelAction extends Action {
 	) {
 		super(id, label);
 	}
-	public async run(element: TaskNode): Promise<void> {
-		if (element instanceof TaskNode && element.providerName) {
+	public override async run(element: TaskNode): Promise<void> {
+		if (element instanceof TaskNode) {
 			try {
 				const result = await this._taskService.cancelTask(element.providerName, element.id);
 				if (!result) {
@@ -56,7 +56,7 @@ export class ScriptAction extends Action {
 		super(id, label);
 	}
 
-	public async run(element: TaskNode): Promise<void> {
+	public override async run(element: TaskNode): Promise<void> {
 		if (element instanceof TaskNode) {
 			if (element.script) {
 				await this._queryEditorService.newSqlEditor({ initalContent: element.script });

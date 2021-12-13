@@ -32,6 +32,14 @@ export class IconPathHelper {
 	public static info: IconPath;
 	public static error: IconPath;
 	public static completingCutover: IconPath;
+	public static migrationService: IconPath;
+	public static sendFeedback: IconPath;
+	public static expandButtonClosed: IconPath;
+	public static expandButtonOpen: IconPath;
+	public static newSupportRequest: IconPath;
+	public static emptyTable: IconPath;
+	public static addAzureAccount: IconPath;
+	public static retry: IconPath;
 
 	public static setExtensionContext(context: vscode.ExtensionContext) {
 		IconPathHelper.copy = {
@@ -55,8 +63,8 @@ export class IconPathHelper {
 			dark: context.asAbsolutePath('images/sqlVmVideoThumbnail.svg')
 		};
 		IconPathHelper.migrationDashboardHeaderBackground = {
-			light: context.asAbsolutePath('images/background.svg'),
-			dark: context.asAbsolutePath('images/background.svg')
+			light: context.asAbsolutePath('images/dashboardWatermark.svg'),
+			dark: context.asAbsolutePath('images/dashboardWatermark.svg')
 		};
 		IconPathHelper.sqlMigrationLogo = {
 			light: context.asAbsolutePath('images/migration.svg'),
@@ -108,7 +116,7 @@ export class IconPathHelper {
 		};
 		IconPathHelper.info = {
 			light: context.asAbsolutePath('images/info.svg'),
-			dark: context.asAbsolutePath('images/infoBox.svg')
+			dark: context.asAbsolutePath('images/info.svg')
 		};
 		IconPathHelper.error = {
 			light: context.asAbsolutePath('images/error.svg'),
@@ -117,6 +125,38 @@ export class IconPathHelper {
 		IconPathHelper.completingCutover = {
 			light: context.asAbsolutePath('images/completingCutover.svg'),
 			dark: context.asAbsolutePath('images/completingCutover.svg')
+		};
+		IconPathHelper.migrationService = {
+			light: context.asAbsolutePath('images/migrationService.svg'),
+			dark: context.asAbsolutePath('images/migrationService.svg')
+		};
+		IconPathHelper.sendFeedback = {
+			light: context.asAbsolutePath('images/sendFeedback.svg'),
+			dark: context.asAbsolutePath('images/sendFeedback.svg')
+		};
+		IconPathHelper.expandButtonClosed = {
+			light: context.asAbsolutePath('images/expandButtonClosedLight.svg'),
+			dark: context.asAbsolutePath('images/expandButtonClosedDark.svg')
+		};
+		IconPathHelper.expandButtonOpen = {
+			light: context.asAbsolutePath('images/expandButtonOpenLight.svg'),
+			dark: context.asAbsolutePath('images/expandButtonOpenDark.svg')
+		};
+		IconPathHelper.newSupportRequest = {
+			light: context.asAbsolutePath('images/newSupportRequest.svg'),
+			dark: context.asAbsolutePath('images/newSupportRequest.svg')
+		};
+		IconPathHelper.emptyTable = {
+			light: context.asAbsolutePath('images/emptyTable.svg'),
+			dark: context.asAbsolutePath('images/emptyTable.svg')
+		};
+		IconPathHelper.addAzureAccount = {
+			light: context.asAbsolutePath('images/noAzureAccount.svg'),
+			dark: context.asAbsolutePath('images/noAzureAccount.svg')
+		};
+		IconPathHelper.retry = {
+			light: context.asAbsolutePath('images/retry.svg'),
+			dark: context.asAbsolutePath('images/retry.svg')
 		};
 	}
 }

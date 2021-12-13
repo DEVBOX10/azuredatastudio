@@ -87,26 +87,23 @@ export function msgDownloadLocation(downloadLocation: string): string { return l
 export const newBook = localize('newBook', "New Jupyter Book (Preview)");
 export const bookDescription = localize('bookDescription', "Jupyter Books are used to organize Notebooks.");
 export const learnMore = localize('learnMore', "Learn more.");
-export const locationBrowser = localize('locationBrowser', "Browse locations...");
-export const selectContentFolder = localize('selectContentFolder', "Select content folder");
+export const contentFolder = localize('contentFolder', "Content folder");
 export const browse = localize('browse', "Browse");
 export const create = localize('create', "Create");
 export const name = localize('name', "Name");
 export const saveLocation = localize('saveLocation', "Save location");
-export const contentFolder = localize('contentFolder', "Content folder (Optional)");
+export const contentFolderOptional = localize('contentFolderOptional', "Content folder (Optional)");
 export const msgContentFolderError = localize('msgContentFolderError', "Content folder path does not exist");
 export const msgSaveFolderError = localize('msgSaveFolderError', "Save location path does not exist.");
 export function msgCreateBookWarningMsg(file: string): string { return localize('msgCreateBookWarningMsg', "Error while trying to access: {0}", file); }
 
-// Add a notebook dialog constants
+// Add a new entry in toc dialog constants
 export const newNotebook = localize('newNotebook', "New Notebook (Preview)");
 export const newMarkdown = localize('newMarkdown', "New Markdown (Preview)");
+export const newSection = localize('newSection', "New Section (Preview)");
 export const fileExtension = localize('fileExtension', "File Extension");
 export const confirmOverwrite = localize('confirmOverwrite', "File already exists. Are you sure you want to overwrite this file?");
 export const title = localize('title', "Title");
 export const fileName = localize('fileName', "File Name");
 export const msgInvalidSaveFolder = localize('msgInvalidSaveFolder', "Save location path is not valid.");
-export function msgDuplicadFileName(file: string): string { return localize('msgDuplicadFileName', "File {0} already exists in the destination folder", file); }
-
-
-
+export function msgDuplicateFileName(file: string): string { return localize('msgDuplicateFileName', "File {0} already exists in the destination folder", file); }

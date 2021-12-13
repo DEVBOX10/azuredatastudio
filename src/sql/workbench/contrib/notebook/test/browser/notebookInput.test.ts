@@ -17,9 +17,11 @@ import { NodeStub, NotebookServiceStub } from 'sql/workbench/contrib/notebook/te
 import { basenameOrAuthority } from 'vs/base/common/resources';
 import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
 import { IExtensionService, NullExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-import { INotebookService, IProviderInfo } from 'sql/workbench/services/notebook/browser/notebookService';
+import { INotebookService, IProviderInfo, ISerializationManager } from 'sql/workbench/services/notebook/browser/notebookService';
 import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService';
+import { EditorInputCapabilities } from 'vs/workbench/common/editor';
+import { LocalContentManager } from 'sql/workbench/services/notebook/common/localContentManager';
 
 suite('Notebook Input', function (): void {
 	const instantiationService = workbenchInstantiationService();
@@ -38,9 +40,14 @@ suite('Notebook Input', function (): void {
 			name: 'TestName',
 			displayName: 'TestDisplayName',
 			connectionProviderIds: ['TestId'],
-			notebookProvider: 'TestProvider'
+			notebookProvider: testProvider
 		}];
 	});
+	let testManager: ISerializationManager = {
+		providerId: testProvider,
+		contentManager: instantiationService.createInstance(LocalContentManager)
+	};
+	mockNotebookService.setup(s => s.getOrCreateSerializationManager(TypeMoq.It.isAny(), TypeMoq.It.isAny())).returns(() => Promise.resolve(testManager));
 
 	(instantiationService as TestInstantiationService).stub(INotebookService, mockNotebookService.object);
 
@@ -59,18 +66,18 @@ suite('Notebook Input', function (): void {
 	test('File Notebook Input', async function (): Promise<void> {
 		let fileUri = URI.from({ scheme: Schemas.file, path: 'TestPath' });
 		let fileNotebookInput = new FileNotebookInput(
-			testTitle, fileUri, undefined,
+			testTitle, fileUri, undefined, true,
 			undefined, instantiationService, mockNotebookService.object, mockExtensionService.object);
 
-		let inputId = fileNotebookInput.getTypeId();
+		let inputId = fileNotebookInput.typeId;
 		assert.strictEqual(inputId, FileNotebookInput.ID);
-		assert.strictEqual(fileNotebookInput.isUntitled(), false, 'File Input should not be untitled');
+		assert.strictEqual(fileNotebookInput.hasCapability(EditorInputCapabilities.Untitled), false, 'File Input should not be untitled');
 	});
 
 	test('Untitled Notebook Input', async function (): Promise<void> {
-		let inputId = untitledNotebookInput.getTypeId();
+		let inputId = untitledNotebookInput.typeId;
 		assert.strictEqual(inputId, UntitledNotebookInput.ID);
-		assert.ok(untitledNotebookInput.isUntitled(), 'Untitled Input should be untitled');
+		assert.ok(untitledNotebookInput.hasCapability(EditorInputCapabilities.Untitled), 'Untitled Input should be untitled');
 	});
 
 	test('Getters and Setters', async function (): Promise<void> {
@@ -86,11 +93,11 @@ suite('Notebook Input', function (): void {
 		// Notebook URI
 		assert.deepStrictEqual(untitledNotebookInput.notebookUri, untitledUri);
 
-		// Content Manager
+		// Notebook editor timestamp
 		assert.notStrictEqual(untitledNotebookInput.editorOpenedTimestamp, undefined);
 
-		// Notebook editor timestamp
-		assert.notStrictEqual(untitledNotebookInput.contentManager, undefined);
+		// Content Loader
+		assert.notStrictEqual(untitledNotebookInput.contentLoader, undefined);
 
 		// Layout changed event
 		assert.notStrictEqual(untitledNotebookInput.layoutChanged, undefined);

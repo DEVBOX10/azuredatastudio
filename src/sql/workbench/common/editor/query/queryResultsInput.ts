@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
-import { EditorInput } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 
 import { TopOperationsState } from 'sql/workbench/common/editor/query/topOperationsState';
 import { ChartState } from 'sql/workbench/common/editor/query/chartState';
@@ -46,27 +46,27 @@ export class QueryResultsInput extends EditorInput {
 		return this._state;
 	}
 
-	constructor(private _uri: string) {
+	constructor(public uri: string) {
 		super();
 	}
 
-	getTypeId(): string {
+	override get typeId(): string {
 		return QueryResultsInput.ID;
 	}
 
-	getName(): string {
+	override getName(): string {
 		return localize('extensionsInputName', "Extension");
 	}
 
-	matches(other: any): boolean {
+	override matches(other: any): boolean {
 		if (other instanceof QueryResultsInput) {
-			return (other._uri === this._uri);
+			return (other.uri === this.uri);
 		}
 
 		return false;
 	}
 
-	resolve(refresh?: boolean): Promise<any> {
+	override resolve(refresh?: boolean): Promise<any> {
 		return Promise.resolve(null);
 	}
 
@@ -74,7 +74,7 @@ export class QueryResultsInput extends EditorInput {
 		return false;
 	}
 
-	public dispose(): void {
+	public override dispose(): void {
 		super.dispose();
 	}
 
@@ -82,10 +82,6 @@ export class QueryResultsInput extends EditorInput {
 
 	static get ID() {
 		return 'workbench.query.queryResultsInput';
-	}
-
-	get uri(): string {
-		return this._uri;
 	}
 
 	get resource(): URI | undefined {

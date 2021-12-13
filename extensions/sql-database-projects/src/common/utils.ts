@@ -3,6 +3,7 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type * as azdataType from 'azdata';
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as constants from './constants';
@@ -10,7 +11,16 @@ import * as path from 'path';
 import * as glob from 'fast-glob';
 import * as dataworkspace from 'dataworkspace';
 import * as mssql from '../../../mssql';
+import * as vscodeMssql from 'vscode-mssql';
+import * as fse from 'fs-extra';
+import * as which from 'which';
 import { promises as fs } from 'fs';
+import { Project } from '../models/project';
+
+export interface ValidationResult {
+	errorMessage: string;
+	validated: boolean
+}
 
 /**
  * Consolidates on the error message string
@@ -35,7 +45,7 @@ export function trimUri(innerUri: vscode.Uri, outerUri: vscode.Uri): string {
 	if (path.isAbsolute(outerUri.path)
 		&& innerParts.length > 0 && outerParts.length > 0
 		&& innerParts[0].toLowerCase() !== outerParts[0].toLowerCase()) {
-		throw new Error(constants.ousiderFolderPath);
+		throw new Error(constants.outsideFolderPath);
 	}
 
 	while (innerParts.length > 0 && outerParts.length > 0 && innerParts[0].toLocaleLowerCase() === outerParts[0].toLocaleLowerCase()) {
@@ -66,6 +76,18 @@ export function trimChars(input: string, chars: string): string {
 	output = output.substring(0, output.length - i);
 
 	return output;
+}
+
+/**
+ * Ensures that folder path terminates with the slash.
+ * By default SSDT-style slash (`\`) is used.
+ *
+ * @param path Folder path to ensure trailing slash for.
+ * @param slashCharacter Slash character to ensure is present at the end of the path.
+ * @returns Path that ends with the given slash character.
+ */
+export function ensureTrailingSlash(path: string, slashCharacter: string = constants.SqlProjPathSeparator): string {
+	return path.endsWith(slashCharacter) ? path : path + slashCharacter;
 }
 
 /**
@@ -120,33 +142,37 @@ export function getPlatformSafeFileEntryPath(filePath: string): string {
 }
 
 /**
- * Standardizes slashes to be "\\" for consistency between platforms and compatibility with SSDT
+ * Standardizes slashes to be "\" for consistency between platforms and compatibility with SSDT
  *
  * @param filePath Path to the file of folder.
  */
 export function convertSlashesForSqlProj(filePath: string): string {
 	return filePath.includes('/')
-		? filePath.split('/').join('\\')
+		? filePath.split('/').join(constants.SqlProjPathSeparator)
 		: filePath;
 }
 
 /**
  * Read SQLCMD variables from xmlDoc and return them
  * @param xmlDoc xml doc to read SQLCMD variables from. Format must be the same that sqlproj and publish profiles use
+ * @param publishProfile true if reading from publish profile
  */
-export function readSqlCmdVariables(xmlDoc: any): Record<string, string> {
+export function readSqlCmdVariables(xmlDoc: Document, publishProfile: boolean): Record<string, string> {
 	let sqlCmdVariables: Record<string, string> = {};
 	for (let i = 0; i < xmlDoc.documentElement.getElementsByTagName(constants.SqlCmdVariable)?.length; i++) {
 		const sqlCmdVar = xmlDoc.documentElement.getElementsByTagName(constants.SqlCmdVariable)[i];
-		const varName = sqlCmdVar.getAttribute(constants.Include);
+		const varName = sqlCmdVar.getAttribute(constants.Include)!;
 
-		if (sqlCmdVar.getElementsByTagName(constants.DefaultValue)[0] !== undefined) {
+		// Publish profiles only support Value, so don't use DefaultValue even if it's there
+		// SSDT uses the Value (like <Value>$(SqlCmdVar__1)</Value>) where there
+		// are local variable values you can set in VS in the properties. Since we don't support that in ADS, only DefaultValue is supported for sqlproj.
+		if (!publishProfile && sqlCmdVar.getElementsByTagName(constants.DefaultValue)[0] !== undefined) {
 			// project file path
-			sqlCmdVariables[varName] = sqlCmdVar.getElementsByTagName(constants.DefaultValue)[0].childNodes[0].nodeValue;
+			sqlCmdVariables[varName] = sqlCmdVar.getElementsByTagName(constants.DefaultValue)[0].childNodes[0].nodeValue!;
 		}
 		else {
 			// profile path
-			sqlCmdVariables[varName] = sqlCmdVar.getElementsByTagName(constants.Value)[0].childNodes[0].nodeValue;
+			sqlCmdVariables[varName] = sqlCmdVar.getElementsByTagName(constants.Value)[0].childNodes[0].nodeValue!;
 		}
 	}
 
@@ -240,30 +266,75 @@ export async function getSqlProjectFilesInFolder(folderPath: string): Promise<st
 /**
  * Get all the projects in the workspace that are sqlproj
  */
-export function getSqlProjectsInWorkspace(): vscode.Uri[] {
+export function getSqlProjectsInWorkspace(): Promise<vscode.Uri[]> {
 	const api = getDataWorkspaceExtensionApi();
 	return api.getProjectsInWorkspace(constants.sqlprojExtension);
 }
 
 export function getDataWorkspaceExtensionApi(): dataworkspace.IExtension {
-	const extension = vscode.extensions.getExtension(dataworkspace.extension.name)!;
+	const dataworkspaceExtName = getAzdataApi() ? dataworkspace.extension.name : dataworkspace.extension.vscodeName;
+	const extension = vscode.extensions.getExtension(dataworkspaceExtName)!;
 	return extension.exports;
 }
 
-/**
- * if the current workspace is untitled, the returned URI of vscode.workspace.workspaceFile will use the `untitled` scheme
- */
-export function isCurrentWorkspaceUntitled(): boolean {
-	return !!vscode.workspace.workspaceFile && vscode.workspace.workspaceFile.scheme.toLowerCase() === 'untitled';
+export type IDacFxService = mssql.IDacFxService | vscodeMssql.IDacFxService;
+export type ISchemaCompareService = mssql.ISchemaCompareService | vscodeMssql.ISchemaCompareService;
+
+export async function getDacFxService(): Promise<IDacFxService> {
+	if (getAzdataApi()) {
+		const ext = vscode.extensions.getExtension(mssql.extension.name) as vscode.Extension<mssql.IExtension>;
+		const api = await ext.activate();
+		return api.dacFx;
+	} else {
+		const api = await getVscodeMssqlApi();
+		return api.dacFx;
+	}
+}
+
+export async function getSchemaCompareService(): Promise<ISchemaCompareService> {
+	if (getAzdataApi()) {
+		const ext = vscode.extensions.getExtension(mssql.extension.name) as vscode.Extension<mssql.IExtension>;
+		const api = await ext.activate();
+		return api.schemaCompare;
+	} else {
+		const api = await getVscodeMssqlApi();
+		return api.schemaCompare;
+	}
+}
+
+export async function getAzureFunctionService(): Promise<vscodeMssql.IAzureFunctionsService> {
+	if (getAzdataApi()) {
+		// this isn't supported in ADS
+		throw new Error('Azure Functions service is not supported in Azure Data Studio');
+	} else {
+		const api = await getVscodeMssqlApi();
+		return api.azureFunctions;
+	}
+}
+
+export async function getVscodeMssqlApi(): Promise<vscodeMssql.IExtension> {
+	const ext = vscode.extensions.getExtension(vscodeMssql.extension.name) as vscode.Extension<vscodeMssql.IExtension>;
+	return ext.activate();
 }
 
 /*
- * Returns the default deployment options from DacFx
+ * Returns the default deployment options from DacFx, filtered to appropriate options for the given project.
  */
-export async function GetDefaultDeploymentOptions(): Promise<mssql.DeploymentOptions> {
-	const service = (vscode.extensions.getExtension(mssql.extension.name)!.exports as mssql.IExtension).schemaCompare;
-	const result = await service.schemaCompareGetDefaultOptions();
+export async function getDefaultPublishDeploymentOptions(project: Project): Promise<mssql.DeploymentOptions | vscodeMssql.DeploymentOptions> {
+	const schemaCompareService = await getSchemaCompareService();
+	const result = await schemaCompareService.schemaCompareGetDefaultOptions();
+	const deploymentOptions = result.defaultDeploymentOptions;
+	// re-include database-scoped credentials
+	if (getAzdataApi()) {
+		deploymentOptions.excludeObjectTypes = (deploymentOptions as mssql.DeploymentOptions).excludeObjectTypes.filter(x => x !== mssql.SchemaObjectType.DatabaseScopedCredentials);
+	} else {
+		deploymentOptions.excludeObjectTypes = (deploymentOptions as vscodeMssql.DeploymentOptions).excludeObjectTypes.filter(x => x !== vscodeMssql.SchemaObjectType.DatabaseScopedCredentials);
+	}
 
+	// this option needs to be true for same database references validation to work
+	if (project.databaseReferences.length > 0) {
+		deploymentOptions.includeCompositeObjects = true;
+	}
 	return result.defaultDeploymentOptions;
 }
 
@@ -323,4 +394,187 @@ export function timeConversion(duration: number): string {
 	}
 
 	return portions.join(', ');
+}
+
+// Try to load the azdata API - but gracefully handle the failure in case we're running
+// in a context where the API doesn't exist (such as VS Code)
+let azdataApi: typeof azdataType | undefined = undefined;
+try {
+	azdataApi = require('azdata');
+	if (!azdataApi?.version) {
+		// webpacking makes the require return an empty object instead of throwing an error so make sure we clear the var
+		azdataApi = undefined;
+	}
+} catch {
+	// no-op
+}
+
+/**
+ * Gets the azdata API if it's available in the context this extension is running in.
+ * @returns The azdata API if it's available
+ */
+export function getAzdataApi(): typeof azdataType | undefined {
+	return azdataApi;
+}
+
+export async function createFolderIfNotExist(folderPath: string): Promise<void> {
+	try {
+		await fse.mkdir(folderPath);
+	} catch {
+		// Ignore if failed
+	}
+}
+
+export async function retry<T>(
+	name: string,
+	attempt: () => Promise<T>,
+	verify: (result: T) => Promise<ValidationResult>,
+	formatResult: (result: T) => Promise<string>,
+	outputChannel: vscode.OutputChannel,
+	numberOfAttempts: number = 10,
+	waitInSeconds: number = 2
+): Promise<T | undefined> {
+	for (let count = 0; count < numberOfAttempts; count++) {
+		outputChannel.appendLine(constants.retryWaitMessage(waitInSeconds, name));
+		await new Promise(c => setTimeout(c, waitInSeconds * 1000));
+		outputChannel.appendLine(constants.retryRunMessage(count, numberOfAttempts, name));
+
+		try {
+			let result = await attempt();
+			const validationResult = await verify(result);
+			const formattedResult = await formatResult(result);
+			if (validationResult.validated) {
+				outputChannel.appendLine(constants.retrySucceedMessage(name, formattedResult));
+				return result;
+			} else {
+				outputChannel.appendLine(constants.retryFailedMessage(name, formattedResult, validationResult.errorMessage));
+			}
+
+		} catch (err) {
+			outputChannel.appendLine(constants.retryMessage(name, err));
+		}
+	}
+
+	return undefined;
+}
+
+/**
+ * Detects whether the specified command-line command is available on the current machine
+ */
+export async function detectCommandInstallation(command: string): Promise<boolean> {
+	try {
+		const found = await which(command);
+
+		if (found) {
+			return true;
+		}
+	} catch (err) {
+		console.log(getErrorMessage(err));
+	}
+
+	return false;
+}
+
+/**
+ * Gets all the projects of the specified extension in the folder
+ * @param folder
+ * @param projectExtension project extension to filter on
+ * @returns array of project uris
+ */
+export async function getAllProjectsInFolder(folder: vscode.Uri, projectExtension: string): Promise<vscode.Uri[]> {
+	// path needs to use forward slashes for glob to work
+	const escapedPath = glob.escapePath(folder.fsPath.replace(/\\/g, '/'));
+
+	// filter for projects with the specified project extension
+	const projFilter = path.posix.join(escapedPath, '**', `*${projectExtension}`);
+
+	// glob will return an array of file paths with forward slashes, so they need to be converted back if on windows
+	return (await glob(projFilter)).map(p => vscode.Uri.file(path.resolve(p)));
+}
+
+export function validateSqlServerPortNumber(port: string | undefined): boolean {
+	if (!port) {
+		return false;
+	}
+	const valueAsNum = +port;
+	return !isNaN(valueAsNum) && valueAsNum > 0 && valueAsNum < 65535;
+}
+
+export function isEmptyString(input: string | undefined): boolean {
+	return input === undefined || input === '';
+}
+
+export function isValidSQLPassword(password: string, userName: string = 'sa'): boolean {
+	// Validate SQL Server password
+	const containsUserName = password && userName !== undefined && password.toUpperCase().includes(userName.toUpperCase());
+	// Instead of using one RegEx, I am separating it to make it more readable.
+	const hasUpperCase = /[A-Z]/.test(password) ? 1 : 0;
+	const hasLowerCase = /[a-z]/.test(password) ? 1 : 0;
+	const hasNumbers = /\d/.test(password) ? 1 : 0;
+	const hasNonAlphas = /\W/.test(password) ? 1 : 0;
+	return !containsUserName && password.length >= 8 && password.length <= 128 && (hasUpperCase + hasLowerCase + hasNumbers + hasNonAlphas >= 3);
+}
+
+export async function showErrorMessageWithOutputChannel(errorMessageFunc: (error: string) => string, error: any, outputChannel: vscode.OutputChannel): Promise<void> {
+	const result = await vscode.window.showErrorMessage(errorMessageFunc(getErrorMessage(error)), constants.checkoutOutputMessage);
+	if (result === constants.checkoutOutputMessage) {
+		outputChannel.show();
+	}
+}
+
+export async function showInfoMessageWithOutputChannel(message: string, outputChannel: vscode.OutputChannel): Promise<void> {
+	const result = await vscode.window.showInformationMessage(message, constants.checkoutOutputMessage);
+	if (result === constants.checkoutOutputMessage) {
+		outputChannel.show();
+	}
+}
+
+/**
+ * Returns the results of the glob pattern
+ * @param pattern Glob pattern to search for
+ */
+export async function globWithPattern(pattern: string): Promise<string[]> {
+	const forwardSlashPattern = pattern.replace(/\\/g, '/');
+	return await glob(forwardSlashPattern);
+}
+
+/**
+ * Recursively gets all the sql files at any depth in a folder
+ * @param folderPath
+ * @param ignoreBinObj ignore sql files in bin and obj folders
+ */
+export async function getSqlFilesInFolder(folderPath: string, ignoreBinObj?: boolean): Promise<string[]> {
+	// path needs to use forward slashes for glob to work
+	folderPath = folderPath.replace(/\\/g, '/');
+	const sqlFilter = path.posix.join(folderPath, '**', '*.sql');
+
+	if (ignoreBinObj) {
+		// don't add files in bin and obj folders
+		const binIgnore = path.posix.join(folderPath, 'bin', '**', '*.sql');
+		const objIgnore = path.posix.join(folderPath, 'obj', '**', '*.sql');
+
+		return await glob(sqlFilter, { ignore: [binIgnore, objIgnore] });
+	} else {
+		return await glob(sqlFilter);
+	}
+}
+
+/**
+ * Recursively gets all the folders at any depth in the given folder
+ * @param folderPath
+ * @param ignoreBinObj ignore bin and obj folders
+ */
+export async function getFoldersInFolder(folderPath: string, ignoreBinObj?: boolean): Promise<string[]> {
+	// path needs to use forward slashes for glob to work
+	const escapedPath = glob.escapePath(folderPath.replace(/\\/g, '/'));
+	const folderFilter = path.posix.join(escapedPath, '/**');
+
+	if (ignoreBinObj) {
+		// don't add bin and obj folders
+		const binIgnore = path.posix.join(escapedPath, 'bin');
+		const objIgnore = path.posix.join(escapedPath, 'obj');
+		return await glob(folderFilter, { onlyDirectories: true, ignore: [binIgnore, objIgnore] });
+	} else {
+		return await glob(folderFilter, { onlyDirectories: true });
+	}
 }

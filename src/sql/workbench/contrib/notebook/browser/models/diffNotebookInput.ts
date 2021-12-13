@@ -3,8 +3,8 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FileEditorInput } from 'vs/workbench/contrib/files/common/editors/fileEditorInput';
-import { SideBySideEditorInput } from 'vs/workbench/common/editor';
+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
+import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
 import { DiffEditorInput } from 'vs/workbench/common/editor/diffEditorInput';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { FileNotebookInput } from 'sql/workbench/contrib/notebook/browser/models/fileNotebookInput';
@@ -13,7 +13,7 @@ import { Deferred } from 'sql/base/common/promise';
 import { ILogService } from 'vs/platform/log/common/log';
 
 export class DiffNotebookInput extends SideBySideEditorInput {
-	public static ID: string = 'workbench.editorinputs.DiffNotebookInput';
+	public static override ID: string = 'workbench.editorinputs.DiffNotebookInput';
 	private _notebookService: INotebookService;
 	private _logService: ILogService;
 
@@ -24,15 +24,15 @@ export class DiffNotebookInput extends SideBySideEditorInput {
 		@INotebookService notebookService: INotebookService,
 		@ILogService logService: ILogService
 	) {
-		let originalInput = instantiationService.createInstance(FileNotebookInput, diffInput.primary.getName(), diffInput.primary.resource, diffInput.originalInput as FileEditorInput);
-		let modifiedInput = instantiationService.createInstance(FileNotebookInput, diffInput.secondary.getName(), diffInput.secondary.resource, diffInput.modifiedInput as FileEditorInput);
+		let originalInput = instantiationService.createInstance(FileNotebookInput, diffInput.primary.getName(), diffInput.primary.resource, diffInput.originalInput as FileEditorInput, false);
+		let modifiedInput = instantiationService.createInstance(FileNotebookInput, diffInput.secondary.getName(), diffInput.secondary.resource, diffInput.modifiedInput as FileEditorInput, false);
 		super(title, diffInput.getTitle(), modifiedInput, originalInput);
 		this._notebookService = notebookService;
 		this._logService = logService;
 		this.setupScrollListeners(originalInput, modifiedInput);
 	}
 
-	public getTypeId(): string {
+	override get typeId(): string {
 		return DiffNotebookInput.ID;
 	}
 

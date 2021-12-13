@@ -109,7 +109,8 @@ export function createViewContext(): ViewTestContext {
 		onRowSelected: undefined!,
 		setFilter: undefined!,
 		data: [],
-		columns: []
+		columns: [],
+		setDataValues: undefined!
 	});
 
 	let loadingComponent: () => azdata.LoadingComponent = () => Object.assign({}, componentBase, {
@@ -302,6 +303,7 @@ export function createViewContext(): ViewTestContext {
 		registerCloseValidator: () => { },
 		registerOperation: () => { },
 		onValidityChanged: new vscode.EventEmitter<boolean>().event,
+		onClosed: new vscode.EventEmitter<azdata.window.CloseReason>().event,
 		registerContent: () => { },
 		modelView: undefined!,
 		valid: true

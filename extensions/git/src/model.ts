@@ -268,7 +268,7 @@ export class Model implements IRemoteSourceProviderRegistry, IPushErrorHandlerRe
 
 			// This can happen whenever `path` has the wrong case sensitivity in
 			// case insensitive file systems
-			// https://github.com/Microsoft/vscode/issues/33498
+			// https://github.com/microsoft/vscode/issues/33498
 			const repositoryRoot = Uri.file(rawRoot).fsPath;
 
 			if (this.getRepository(repositoryRoot)) {
@@ -284,8 +284,9 @@ export class Model implements IRemoteSourceProviderRegistry, IPushErrorHandlerRe
 
 			this.open(repository);
 			await repository.status();
-		} catch (err) {
+		} catch (ex) {
 			// noop
+			this.outputChannel.appendLine(`Opening repository for path='${path}' failed; ex=${ex}`);
 		}
 	}
 

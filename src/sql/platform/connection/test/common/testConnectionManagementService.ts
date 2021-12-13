@@ -50,6 +50,10 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 
 	}
 
+	changeConnectionUri(newUri: string, oldUri: string): void {
+
+	}
+
 	showConnectionDialog(params?: INewConnectionParams, options?: IConnectionCompletionOptions, model?: IConnectionProfile, connectionResult?: IConnectionResult): Promise<void> {
 		return undefined!;
 	}
@@ -267,7 +271,7 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 	}
 
 	getServerInfo(profileId: string): azdata.ServerInfo {
-		return undefined!;
+		return undefined;
 	}
 
 	getConnectionString(connectionId: string): Thenable<string> {
@@ -302,11 +306,20 @@ export class TestConnectionManagementService implements IConnectionManagementSer
 		return undefined!;
 	}
 
+	getDefaultAuthenticationTypeId(): string {
+		return undefined!;
+	}
+
+
 	getConnections(activeConnectionsOnly?: boolean): ConnectionProfile[] {
 		return [];
 	}
 
 	getConnection(uri: string): ConnectionProfile {
 		return undefined!;
+	}
+
+	refreshAzureAccountTokenIfNecessary(uri: string): Promise<boolean> {
+		return undefined;
 	}
 }

@@ -6,7 +6,7 @@
 import * as azdata from 'azdata';
 import * as vscode from 'vscode';
 import { ImportDataModel, ColumnMetadata } from '../wizard/api/models';
-import { FlatFileProvider, PROSEDiscoveryParams, InsertDataParams, GetColumnInfoParams, ChangeColumnSettingsParams, PROSEDiscoveryResponse, InsertDataResponse, ChangeColumnSettingsResponse, GetColumnInfoResponse } from '../services/contracts';
+import { FlatFileProvider, PROSEDiscoveryParams, InsertDataParams, GetColumnInfoParams, ChangeColumnSettingsParams, PROSEDiscoveryResponse, InsertDataResponse, ChangeColumnSettingsResponse, GetColumnInfoResponse, LearnTransformationParams, LearnTransformationResponse, SaveTransformationParams, SaveTransformationResponse } from '../services/contracts';
 
 export class ImportTestUtils {
 
@@ -70,6 +70,9 @@ export class TestQueryProvider implements azdata.QueryProvider {
 		throw new Error('Method not implemented.');
 	}
 	disposeQuery(ownerUri: string): Thenable<void> {
+		throw new Error('Method not implemented.');
+	}
+	connectionUriChanged(newUri: string, oldUri: string): Thenable<void> {
 		throw new Error('Method not implemented.');
 	}
 	saveResults(requestParams: azdata.SaveResultsRequestParams): Thenable<azdata.SaveResultRequestResult> {
@@ -153,6 +156,7 @@ export class TestExtensionContext implements vscode.ExtensionContext {
 	globalStoragePath: string;
 	logPath: string;
 	secrets: vscode.SecretStorage;
+	extension: vscode.Extension<any>;
 }
 
 export class TestImportDataModel implements ImportDataModel {
@@ -166,6 +170,10 @@ export class TestImportDataModel implements ImportDataModel {
 	schema: string;
 	filePath: string;
 	fileType: string;
+	transPreviews: string[][];
+	originalProseColumns: ColumnMetadata[];
+	derivedColumnName: string;
+	newFileSelected: boolean;
 }
 
 export class TestFlatFileProvider implements FlatFileProvider {
@@ -182,5 +190,45 @@ export class TestFlatFileProvider implements FlatFileProvider {
 	sendChangeColumnSettingsRequest(params: ChangeColumnSettingsParams): Thenable<ChangeColumnSettingsResponse> {
 		throw new Error('Method not implemented.');
 	}
+	sendLearnTransformationRequest(params: LearnTransformationParams): Thenable<LearnTransformationResponse> {
+		throw new Error('Method not implemented.');
+	}
+	sendSaveTransformationRequest(params: SaveTransformationParams): Thenable<SaveTransformationResponse> {
+		throw new Error('Method not implemented.');
+	}
 
 }
+
+export function getAzureAccounts(): azdata.Account[] {
+	return [
+		{
+			isStale: false,
+			key: {
+				providerId: 'account1Provider',
+				accountId: 'account1Id'
+			},
+			displayInfo: {
+				accountType: 'account1Type',
+				contextualDisplayName: 'account1ContextualDisplayName',
+				displayName: 'account1DisplayName',
+				userId: 'account1@microsoft.com'
+			},
+			properties: {}
+		},
+		{
+			isStale: false,
+			key: {
+				providerId: 'account2Provider',
+				accountId: 'account2Id'
+			},
+			displayInfo: {
+				accountType: 'account2Type',
+				contextualDisplayName: 'account2ContextualDisplayName',
+				displayName: 'account2DisplayName',
+				userId: 'account2@microsoft.com'
+			},
+			properties: {}
+		},
+	];
+}
+

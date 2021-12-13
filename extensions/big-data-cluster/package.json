@@ -27,6 +27,12 @@
     "type": "git",
     "url": "https://github.com/Microsoft/azuredatastudio.git"
   },
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "main": "./out/extension",
   "contributes": {
     "dataExplorer": {
@@ -247,8 +253,8 @@
                 "name": "azure-cli"
               },
               {
-                "name": "azdata-old",
-                "version": "20.3.4"
+                "name": "azdata",
+                "version": "20.3.9"
               }
             ],
             "when": "target=new-aks&&version=bdc2019"
@@ -265,8 +271,8 @@
                 "version": "1.13.0"
               },
               {
-                "name": "azdata-old",
-                "version": "20.3.4"
+                "name": "azdata",
+                "version": "20.3.9"
               }
             ],
             "when": "target=existing-aks&&version=bdc2019"
@@ -283,8 +289,8 @@
                 "version": "1.13.0"
               },
               {
-                "name": "azdata-old",
-                "version": "20.3.4"
+                "name": "azdata",
+                "version": "20.3.9"
               }
             ],
             "when": "target=existing-kubeadm&&version=bdc2019"
@@ -301,8 +307,8 @@
                 "version": "1.13.0"
               },
               {
-                "name": "azdata-old",
-                "version": "20.3.4"
+                "name": "azdata",
+                "version": "20.3.9"
               }
             ],
             "when": "target=existing-aro&&version=bdc2019"
@@ -319,8 +325,8 @@
                 "version": "1.13.0"
               },
               {
-                "name": "azdata-old",
-                "version": "20.3.4"
+                "name": "azdata",
+                "version": "20.3.9"
               }
             ],
             "when": "target=existing-openshift&&version=bdc2019"
@@ -356,5 +362,8 @@
   },
   "devDependencies": {
     "@types/request": "^2.48.3"
+  },
+  "resolutions": {
+    "json-schema": "0.4.0"
   }
 }

@@ -294,7 +294,7 @@ export class ClusterSettingsPage extends ResourceTypePage {
 		});
 	}
 
-	public async onLeave(): Promise<void> {
+	public override async onLeave(): Promise<void> {
 		await setModelValues(this.inputComponents, this.wizard.model);
 		if (this._model.authenticationMode === AuthenticationMode.ActiveDirectory) {
 			const variableDNSPrefixMapping: { [s: string]: string } = {};
@@ -315,7 +315,7 @@ export class ClusterSettingsPage extends ResourceTypePage {
 		});
 	}
 
-	public async onEnter(): Promise<void> {
+	public override async onEnter(): Promise<void> {
 		getInputBoxComponent(VariableNames.DockerRegistry_VariableName, this.inputComponents).value = this.wizard.model.getStringValue(VariableNames.DockerRegistry_VariableName);
 		getInputBoxComponent(VariableNames.DockerRepository_VariableName, this.inputComponents).value = this.wizard.model.getStringValue(VariableNames.DockerRepository_VariableName);
 		getInputBoxComponent(VariableNames.DockerImageTag_VariableName, this.inputComponents).value = this.wizard.model.getStringValue(VariableNames.DockerImageTag_VariableName);
@@ -353,7 +353,7 @@ export class ClusterSettingsPage extends ResourceTypePage {
 
 					if (messages.length > 0) {
 						this._model.wizard.wizardObject.message = {
-							text: messages.length === 1 ? messages[0] : localize('deployCluster.ValidationError', "There are some errors on this page, click 'Show Details' to view the errors."),
+							text: messages.length === 1 ? messages[0] : localizedConstants.multipleValidationErrors,
 							description: messages.length === 1 ? undefined : messages.join(EOL),
 							level: azdata.window.MessageLevel.Error
 						};

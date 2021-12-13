@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
-import * as azdataExt from 'azdata-ext';
+import * as azExt from 'az-ext';
 import * as azurecore from 'azurecore';
 import * as vscode from 'vscode';
 import { getDatabaseStateDisplayText, promptForInstanceDeletion } from '../../../common/utils';
@@ -14,7 +14,6 @@ import { ControllerModel } from '../../../models/controllerModel';
 import { MiaaModel } from '../../../models/miaaModel';
 import { DashboardPage } from '../../components/dashboardPage';
 import { ResourceType } from 'arc';
-import { UserCancelledError } from '../../../common/api';
 
 export class MiaaDashboardOverviewPage extends DashboardPage {
 
@@ -34,7 +33,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 	private _connectToServerButton!: azdata.ButtonComponent;
 	private _databasesTableLoading!: azdata.LoadingComponent;
 
-	private readonly _azdataApi: azdataExt.IExtension;
+	private readonly _azApi: azExt.IExtension;
 	private readonly _azurecoreApi: azurecore.IExtension;
 
 	private _instanceProperties = {
@@ -50,7 +49,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 
 	constructor(modelView: azdata.ModelView, dashboard: azdata.window.ModelViewDashboard, private _controllerModel: ControllerModel, private _miaaModel: MiaaModel) {
 		super(modelView, dashboard);
-		this._azdataApi = vscode.extensions.getExtension(azdataExt.extension.name)?.exports;
+		this._azApi = vscode.extensions.getExtension(azExt.extension.name)?.exports;
 		this._azurecoreApi = vscode.extensions.getExtension(azurecore.extension.name)?.exports;
 
 		this._instanceProperties.miaaAdmin = this._miaaModel.username || this._instanceProperties.miaaAdmin;
@@ -75,7 +74,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 	}
 
 	protected async refresh(): Promise<void> {
-		await Promise.all([this._controllerModel.refresh(), this._miaaModel.refresh()]);
+		await Promise.all([this._controllerModel.refresh(false, this._controllerModel.info.namespace), this._miaaModel.refresh()]);
 	}
 
 	public get container(): azdata.Component {
@@ -112,7 +111,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 		this._databasesContainer.addItem(this._connectToServerLoading, { CSSStyles: { 'margin-top': '20px' } });
 
 		this._databasesTableLoading = this.modelView.modelBuilder.loadingComponent().component();
-		this._databasesTable = this.modelView.modelBuilder.declarativeTable().withProperties<azdata.DeclarativeTableProperties>({
+		this._databasesTable = this.modelView.modelBuilder.declarativeTable().withProps({
 			width: '100%',
 			columns: [
 				{
@@ -132,11 +131,11 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 					rowCssStyles: cssStyles.tableRow
 				}
 			],
-			data: []
+			dataValues: []
 		}).component();
 
 		this._databasesMessage = this.modelView.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>({ CSSStyles: { 'text-align': 'center' } })
+			.withProps({ CSSStyles: { 'text-align': 'center' } })
 			.component();
 
 		// Update loaded components with data
@@ -154,7 +153,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 		// Assemble the container
 		const rootContainer = this.modelView.modelBuilder.flexContainer()
 			.withLayout({ flexFlow: 'column' })
-			.withProperties({ CSSStyles: { 'margin': '18px' } })
+			.withProps({ CSSStyles: { 'margin': '18px' } })
 			.component();
 
 		// Properties
@@ -162,9 +161,9 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 
 		// Service endpoints
 		const titleCSS = { ...cssStyles.title, 'margin-block-start': '2em', 'margin-block-end': '0' };
-		rootContainer.addItem(this.modelView.modelBuilder.text().withProperties<azdata.TextComponentProperties>({ value: loc.serviceEndpoints, CSSStyles: titleCSS }).component());
+		rootContainer.addItem(this.modelView.modelBuilder.text().withProps({ value: loc.serviceEndpoints, CSSStyles: titleCSS }).component());
 
-		const endpointsTable = this.modelView.modelBuilder.declarativeTable().withProperties<azdata.DeclarativeTableProperties>({
+		const endpointsTable = this.modelView.modelBuilder.declarativeTable().withProps({
 			width: '100%',
 			columns: [
 				{
@@ -198,21 +197,21 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 					rowCssStyles: cssStyles.tableRow
 				}
 			],
-			data: [
-				[loc.kibanaDashboard, this._kibanaLoading, loc.kibanaDashboardDescription],
-				[loc.grafanaDashboard, this._grafanaLoading, loc.grafanaDashboardDescription]]
+			dataValues: [
+				[{ value: loc.kibanaDashboard }, { value: this._kibanaLoading }, { value: loc.kibanaDashboardDescription }],
+				[{ value: loc.grafanaDashboard }, { value: this._grafanaLoading }, { value: loc.grafanaDashboardDescription }]]
 		}).component();
 
 		rootContainer.addItem(endpointsTable);
 
 		// Databases
-		rootContainer.addItem(this.modelView.modelBuilder.text().withProperties<azdata.TextComponentProperties>({ value: loc.databases, CSSStyles: titleCSS }).component());
+		rootContainer.addItem(this.modelView.modelBuilder.text().withProps({ value: loc.databases, CSSStyles: titleCSS }).component());
 		this.disposables.push(
 			this._connectToServerButton!.onDidClick(async () => {
 				this._connectToServerButton!.enabled = false;
 				this._databasesTableLoading!.loading = true;
 				try {
-					await this.callGetDatabases();
+					await this._miaaModel.callGetDatabases();
 				} catch {
 					this._connectToServerButton!.enabled = true;
 				}
@@ -227,7 +226,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 
 	public get toolbarContainer(): azdata.ToolbarContainer {
 
-		const deleteButton = this.modelView.modelBuilder.button().withProperties<azdata.ButtonProperties>({
+		const deleteButton = this.modelView.modelBuilder.button().withProps({
 			label: loc.deleteText,
 			iconPath: IconPathHelper.delete
 		}).component();
@@ -244,7 +243,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 								cancellable: false
 							},
 							async (_progress, _token) => {
-								return await this._azdataApi.azdata.arc.sql.mi.delete(this._miaaModel.info.name, this._controllerModel.azdataAdditionalEnvVars, this._controllerModel.controllerContext);
+								return await this._azApi.az.sql.miarc.delete(this._miaaModel.info.name, this._controllerModel.info.namespace, this._controllerModel.azAdditionalEnvVars);
 							}
 						);
 						await this._controllerModel.refreshTreeNode();
@@ -265,7 +264,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 			}));
 
 		// Refresh
-		const refreshButton = this.modelView.modelBuilder.button().withProperties<azdata.ButtonProperties>({
+		const refreshButton = this.modelView.modelBuilder.button().withProps({
 			label: loc.refresh,
 			iconPath: IconPathHelper.refresh
 		}).component();
@@ -285,7 +284,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 				}
 			}));
 
-		this._openInAzurePortalButton = this.modelView.modelBuilder.button().withProperties<azdata.ButtonProperties>({
+		this._openInAzurePortalButton = this.modelView.modelBuilder.button().withProps({
 			label: loc.openInAzurePortal,
 			iconPath: IconPathHelper.openInTab,
 			enabled: !!this._controllerModel.controllerConfig
@@ -302,7 +301,7 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 				}
 			}));
 
-		const troubleshootButton = this.modelView.modelBuilder.button().withProperties<azdata.ButtonProperties>({
+		const troubleshootButton = this.modelView.modelBuilder.button().withProps({
 			label: loc.troubleshoot,
 			iconPath: IconPathHelper.wrench
 		}).component();
@@ -320,19 +319,6 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 				{ component: this._openInAzurePortalButton }
 			]
 		).component();
-	}
-
-	private async callGetDatabases(): Promise<void> {
-		try {
-			await this._miaaModel.getDatabases();
-		} catch (error) {
-			if (error instanceof UserCancelledError) {
-				vscode.window.showWarningMessage(loc.miaaConnectionRequired);
-			} else {
-				vscode.window.showErrorMessage(loc.fetchDatabasesFailed(this._miaaModel.info.name, error));
-			}
-			throw error;
-		}
 	}
 
 	private handleRegistrationsUpdated(): void {
@@ -366,7 +352,13 @@ export class MiaaDashboardOverviewPage extends DashboardPage {
 		// If we were able to get the databases it means we have a good connection so update the username too
 		this._instanceProperties.miaaAdmin = this._miaaModel.username || this._instanceProperties.miaaAdmin;
 		this.refreshDisplayedProperties();
-		this._databasesTable.data = this._miaaModel.databases.map(d => [d.name, getDatabaseStateDisplayText(d.status)]);
+		let databaseDisplayText = this._miaaModel.databases.map(d => [d.name, getDatabaseStateDisplayText(d.status)]);
+		let databasesTextValues = databaseDisplayText.map(d => {
+			return d.map((value): azdata.DeclarativeTableCellValue => {
+				return { value: value };
+			});
+		});
+		this._databasesTable.setDataValues(databasesTextValues);
 		this._databasesTableLoading.loading = false;
 
 		if (this._miaaModel.databasesLastUpdated) {

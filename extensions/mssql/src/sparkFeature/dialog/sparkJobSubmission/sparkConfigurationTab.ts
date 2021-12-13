@@ -56,7 +56,7 @@ export class SparkConfigurationTab {
 
 			let formContainer = builder.formContainer();
 
-			this._jobNameInputBox = builder.inputBox().withProperties({
+			this._jobNameInputBox = builder.inputBox().withProps({
 				placeHolder: localize('sparkJobSubmission.JobNamePlaceHolder', "Enter a name ..."),
 				value: (this._path) ? fspath.basename(this._path) : ''
 			}).component();
@@ -67,7 +67,7 @@ export class SparkConfigurationTab {
 				required: true
 			}, baseFormItemLayout);
 
-			this._sparkContextLabel = builder.text().withProperties({
+			this._sparkContextLabel = builder.text().withProps({
 				value: this._dataModel.getSparkClusterUrl()
 			}).component();
 			formContainer.addFormItem({
@@ -75,16 +75,16 @@ export class SparkConfigurationTab {
 				title: localize('sparkJobSubmission.SparkCluster', "Spark Cluster")
 			}, baseFormItemLayout);
 
-			this._fileSourceDropDown = builder.dropDown().withProperties<azdata.DropDownProperties>({
+			this._fileSourceDropDown = builder.dropDown().withProps({
 				values: [SparkFileSource.Local.toString(), SparkFileSource.HDFS.toString()],
 				value: (this._path) ? SparkFileSource.HDFS.toString() : SparkFileSource.Local.toString()
 			}).component();
 
-			this._fileSourceDropDown.onValueChanged(selection => {
+			this._fileSourceDropDown.onValueChanged(async selection => {
 				let isLocal = selection.selected === SparkFileSource.Local.toString();
 				// Disable browser button for cloud source.
 				if (this._filePickerButton) {
-					this._filePickerButton.updateProperties({
+					await this._filePickerButton.updateProperties({
 						enabled: isLocal,
 						required: isLocal
 					});
@@ -104,12 +104,12 @@ export class SparkConfigurationTab {
 				}
 			});
 
-			this._sparkSourceFileInputBox = builder.inputBox().withProperties({
+			this._sparkSourceFileInputBox = builder.inputBox().withProps({
 				required: true,
 				placeHolder: localize('sparkJobSubmission.FilePathPlaceHolder', "Path to a .jar or .py file"),
 				value: (this._path) ? this._path : ''
 			}).component();
-			this._sparkSourceFileInputBox.onTextChanged(text => {
+			this._sparkSourceFileInputBox.onTextChanged(async text => {
 				if (this._fileSourceDropDown.value === SparkFileSource.Local.toString()) {
 					this._dataModel.updateModelByLocalPath(text);
 					if (this._localUploadDestinationLabel) {
@@ -126,15 +126,14 @@ export class SparkConfigurationTab {
 
 				// main class disable/enable is according to whether it's jar file.
 				let isJarFile = this._dataModel.isJarFile();
-				this._mainClassInputBox.updateProperties({ enabled: isJarFile, required: isJarFile });
+				await this._mainClassInputBox.updateProperties({ enabled: isJarFile, required: isJarFile });
 				if (!isJarFile) {
 					// Clear main class for py file.
 					this._mainClassInputBox.value = '';
 				}
 			});
 
-			this._filePickerButton = builder.button().withProperties({
-				required: (this._path) ? false : true,
+			this._filePickerButton = builder.button().withProps({
 				enabled: (this._path) ? false : true,
 				label: '•••',
 				width: constants.mssqlClusterSparkJobFileSelectorButtonWidth,
@@ -156,7 +155,7 @@ export class SparkConfigurationTab {
 				alignContent: 'stretch'
 			});
 
-			this._localUploadDestinationLabel = builder.text().withProperties({
+			this._localUploadDestinationLabel = builder.text().withProps({
 				value: (this._path) ? '' : LocalizedConstants.sparkLocalFileDestinationHint
 			}).component();
 			this._sourceFlexContainerWithHint = builder.flexContainer().component();
@@ -282,7 +281,7 @@ export class SparkConfigurationTab {
 
 			return undefined;
 		} catch (err) {
-			vscode.window.showErrorMessage(localize('sparkJobSubmission.SelectFileError', "Error in locating the file due to Error: {0}", utils.getErrorMessage(err)));
+			void vscode.window.showErrorMessage(localize('sparkJobSubmission.SelectFileError', "Error in locating the file due to Error: {0}", utils.getErrorMessage(err)));
 			return undefined;
 		}
 	}

@@ -12,7 +12,7 @@ import { URI } from 'vs/base/common/uri';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 
 import { CellType, NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
-import { INotebookManager, ILanguageMagic } from 'sql/workbench/services/notebook/browser/notebookService';
+import { IExecuteManager, ILanguageMagic, ISerializationManager } from 'sql/workbench/services/notebook/browser/notebookService';
 import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { IStandardKernelWithProvider } from 'sql/workbench/services/notebook/browser/models/notebookUtils';
@@ -23,6 +23,10 @@ import { IModelContentChangedEvent } from 'vs/editor/common/model/textModelEvent
 import type { FutureInternal } from 'sql/workbench/services/notebook/browser/interfaces';
 import { ICellValue, ResultSetSummary } from 'sql/workbench/services/query/common/query';
 import { QueryResultId } from 'sql/workbench/services/notebook/browser/models/cell';
+import { IPosition } from 'vs/editor/common/core/position';
+import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
+import { ITelemetryEventProperties } from 'sql/platform/telemetry/common/telemetry';
+
 
 export enum ViewMode {
 	Notebook,
@@ -42,7 +46,7 @@ export interface ISingleNotebookEditOperation {
 
 export interface IClientSessionOptions {
 	notebookUri: URI;
-	notebookManager: INotebookManager;
+	executeManager: IExecuteManager;
 	notificationService: INotificationService;
 	kernelSpec: nb.IKernelSpec;
 }
@@ -254,9 +258,14 @@ export interface INotebookModel {
 	readonly language: string;
 
 	/**
-	 * All notebook managers applicable for a given notebook
+	 * The current serialization manager applicable for a given notebook
 	 */
-	readonly notebookManagers: INotebookManager[];
+	readonly serializationManager: ISerializationManager | undefined;
+
+	/**
+	 * All execute managers applicable for a given notebook
+	 */
+	readonly executeManagers: IExecuteManager[];
 
 	/**
 	 * Event fired on first initialization of the kernel and
@@ -433,6 +442,12 @@ export interface INotebookModel {
 
 	requestConnection(): Promise<boolean>;
 
+	/**
+	 * Create and send a Notebook Telemetry Event
+	 * @param action Telemetry action
+	 * @param additionalProperties Additional properties to send.
+	*/
+	sendNotebookTelemetryActionEvent(action: TelemetryKeys.TelemetryAction | TelemetryKeys.NbTelemetryAction, additionalProperties?: ITelemetryEventProperties): void;
 }
 
 export interface NotebookContentChange {
@@ -528,12 +543,11 @@ export interface ICellModel {
 	showPreview: boolean;
 	showMarkdown: boolean;
 	defaultTextEditMode: string;
-	readonly onCellPreviewModeChanged: Event<boolean>;
-	readonly onCellMarkdownModeChanged: Event<boolean>;
 	sendChangeToNotebook(change: NotebookChangeType): void;
 	cellSourceChanged: boolean;
 	readonly savedConnectionName: string | undefined;
-	readonly attachments: nb.ICellAttachments;
+	attachments: nb.ICellAttachments | undefined;
+	readonly onCurrentEditModeChanged: Event<CellEditModes>;
 	readonly currentMode: CellEditModes;
 	/**
 	 * Adds image as an attachment to cell metadata
@@ -543,6 +557,15 @@ export interface ICellModel {
 	 * Returns the name of the attachment added to metadata.
 	 */
 	addAttachment(mimeType: string, base64Encoding: string, name: string): string;
+	richTextCursorPosition: ICaretPosition;
+	markdownCursorPosition: IPosition;
+}
+
+export interface ICaretPosition {
+	startElementNodes: number[];
+	startOffset: number;
+	endElementNodes: number[];
+	endOffset: number;
 }
 
 export interface IModelFactory {
@@ -551,7 +574,7 @@ export interface IModelFactory {
 	createClientSession(options: IClientSessionOptions): IClientSession;
 }
 
-export interface IContentManager {
+export interface IContentLoader {
 	/**
 	 * This is a specialized method intended to load for a default context - just the current Notebook's URI
 	 */
@@ -569,8 +592,9 @@ export interface INotebookModelOptions {
 	 */
 	factory: IModelFactory;
 
-	contentManager: IContentManager;
-	notebookManagers: INotebookManager[];
+	contentLoader: IContentLoader;
+	serializationManagers: ISerializationManager[];
+	executeManagers: IExecuteManager[];
 	providerId: string;
 	defaultKernel: nb.IKernelSpec;
 	cellMagicMapper: ICellMagicMapper;

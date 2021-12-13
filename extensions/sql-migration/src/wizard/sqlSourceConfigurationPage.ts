@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
+import * as vscode from 'vscode';
 import { MigrationWizardPage } from '../models/migrationWizardPage';
 import { MigrationSourceAuthenticationType, MigrationStateModel, StateChangeEvent } from '../models/stateMachine';
 import * as constants from '../constants/strings';
@@ -13,12 +14,14 @@ export class SqlSourceConfigurationPage extends MigrationWizardPage {
 	private _view!: azdata.ModelView;
 	private _usernameInput!: azdata.InputBoxComponent;
 	private _password!: azdata.InputBoxComponent;
+	private _disposables: vscode.Disposable[] = [];
 
 	constructor(wizard: azdata.window.Wizard, migrationStateModel: MigrationStateModel) {
 		super(wizard, azdata.window.createWizardPage(constants.SOURCE_CONFIGURATION, 'MigrationModePage'), migrationStateModel);
 	}
 
 	protected async registerContent(view: azdata.ModelView): Promise<void> {
+		this.wizard.customButtons[0].enabled = true;
 		this._view = view;
 		const form = view.modelBuilder.formContainer()
 			.withFormItems(
@@ -26,15 +29,21 @@ export class SqlSourceConfigurationPage extends MigrationWizardPage {
 					await this.createSourceCredentialContainer(),
 				]
 			);
+
+		this._disposables.push(this._view.onClosed(e => {
+			this._disposables.forEach(
+				d => { try { d.dispose(); } catch { } });
+		}));
+
 		await view.initializeModel(form.component());
 	}
 
-	public async onPageEnter(): Promise<void> {
+	public async onPageEnter(pageChangeInfo: azdata.window.WizardPageChangeInfo): Promise<void> {
 		this.wizard.registerNavigationValidator((pageChangeInfo) => {
 			return true;
 		});
 	}
-	public async onPageLeave(): Promise<void> {
+	public async onPageLeave(pageChangeInfo: azdata.window.WizardPageChangeInfo): Promise<void> {
 		this.wizard.registerNavigationValidator((pageChangeInfo) => {
 			return true;
 		});
@@ -52,7 +61,7 @@ export class SqlSourceConfigurationPage extends MigrationWizardPage {
 		const username = results.rows[0][0].displayValue;
 		this.migrationStateModel._authenticationType = connectionProfile.authenticationType === 'SqlLogin' ? MigrationSourceAuthenticationType.Sql : connectionProfile.authenticationType === 'Integrated' ? MigrationSourceAuthenticationType.Integrated : undefined!;
 
-		const sourceCredText = createHeadingTextComponent(this._view, constants.SOURCE_CREDENTIALS);
+		const sourceCredText = await createHeadingTextComponent(this._view, constants.SOURCE_CREDENTIALS);
 
 		const enterYourCredText = createLabelTextComponent(
 			this._view,
@@ -107,9 +116,9 @@ export class SqlSourceConfigurationPage extends MigrationWizardPage {
 			enabled: false,
 			width: WIZARD_INPUT_COMPONENT_WIDTH
 		}).component();
-		this._usernameInput.onTextChanged(value => {
+		this._disposables.push(this._usernameInput.onTextChanged(value => {
 			this.migrationStateModel._sqlServerUsername = value;
-		});
+		}));
 
 		const passwordLabel = this._view.modelBuilder.text().withProps({
 			value: constants.DATABASE_BACKUP_NETWORK_SHARE_PASSWORD_LABEL,
@@ -125,9 +134,9 @@ export class SqlSourceConfigurationPage extends MigrationWizardPage {
 			inputType: 'password',
 			width: WIZARD_INPUT_COMPONENT_WIDTH
 		}).component();
-		this._password.onTextChanged(value => {
+		this._disposables.push(this._password.onTextChanged(value => {
 			this.migrationStateModel._sqlServerPassword = value;
-		});
+		}));
 
 		const container = this._view.modelBuilder.flexContainer().withItems(
 			[

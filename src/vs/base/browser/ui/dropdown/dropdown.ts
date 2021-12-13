@@ -57,7 +57,7 @@ export class BaseDropdown extends ActionRunner {
 		for (const event of [EventType.MOUSE_DOWN, GestureEventType.Tap]) {
 			this._register(addDisposableListener(this._label, event, e => {
 				if (e instanceof MouseEvent && e.detail > 1) {
-					return; // prevent multiple clicks to open multiple context menus (https://github.com/Microsoft/vscode/issues/41363)
+					return; // prevent multiple clicks to open multiple context menus (https://github.com/microsoft/vscode/issues/41363)
 				}
 
 				if (this.visible) {
@@ -71,7 +71,7 @@ export class BaseDropdown extends ActionRunner {
 		this._register(addDisposableListener(this._label, EventType.KEY_UP, e => {
 			const event = new StandardKeyboardEvent(e);
 			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
-				EventHelper.stop(e, true); // https://github.com/Microsoft/vscode/issues/57997
+				EventHelper.stop(e, true); // https://github.com/microsoft/vscode/issues/57997
 
 				if (this.visible) {
 					this.hide();
@@ -125,7 +125,7 @@ export class BaseDropdown extends ActionRunner {
 		this.hide();
 	}
 
-	dispose(): void {
+	override dispose(): void {
 		super.dispose();
 		this.hide();
 
@@ -159,7 +159,7 @@ export class Dropdown extends BaseDropdown {
 		this.contextViewProvider = options.contextViewProvider;
 	}
 
-	show(): void {
+	override show(): void {
 		super.show();
 
 		this.element.classList.add('active');
@@ -187,7 +187,7 @@ export class Dropdown extends BaseDropdown {
 		this.element.classList.remove('active');
 	}
 
-	hide(): void {
+	override hide(): void {
 		super.hide();
 
 		if (this.contextViewProvider) {
@@ -250,7 +250,7 @@ export class DropdownMenu extends BaseDropdown {
 		this._actions = actions;
 	}
 
-	show(): void {
+	override show(): void {
 		super.show();
 
 		this.element.classList.add('active');
@@ -269,7 +269,7 @@ export class DropdownMenu extends BaseDropdown {
 		});
 	}
 
-	hide(): void {
+	override hide(): void {
 		super.hide();
 	}
 

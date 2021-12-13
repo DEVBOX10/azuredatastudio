@@ -7,7 +7,7 @@ import { nb } from 'azdata';
 import * as assert from 'assert';
 
 import { URI } from 'vs/base/common/uri';
-import { NotebookManagerStub } from 'sql/workbench/contrib/notebook/test/stubs';
+import { ExecuteManagerStub, SerializationManagerStub } from 'sql/workbench/contrib/notebook/test/stubs';
 import { CellTypes } from 'sql/workbench/services/notebook/common/contracts';
 import { IClientSession, INotebookModelOptions } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
@@ -26,12 +26,12 @@ import { ServiceCollection } from 'vs/platform/instantiation/common/serviceColle
 import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { ClientSession } from 'sql/workbench/services/notebook/browser/models/clientSession';
 import { TestStorageService } from 'vs/workbench/test/common/workbenchTestServices';
-import { NotebookEditorContentManager } from 'sql/workbench/contrib/notebook/browser/models/notebookInput';
+import { NotebookEditorContentLoader } from 'sql/workbench/contrib/notebook/browser/models/notebookInput';
 import { NotebookRange } from 'sql/workbench/services/notebook/browser/notebookService';
 import { NotebookMarkdownRenderer } from 'sql/workbench/contrib/notebook/browser/outputs/notebookMarkdown';
 import { NullAdsTelemetryService } from 'sql/platform/telemetry/common/adsTelemetryService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
+import { TestConfigurationService } from 'sql/platform/connection/test/common/testConfigurationService';
 
 let expectedNotebookContent: nb.INotebookContents = {
 	cells: [{
@@ -67,20 +67,20 @@ let instantiationService: IInstantiationService;
 let serviceCollection = new ServiceCollection();
 
 suite('Notebook Find Model', function (): void {
-
-	let notebookManagers = [new NotebookManagerStub()];
+	let serializationManagers = [new SerializationManagerStub()];
+	let executeManagers = [new ExecuteManagerStub()];
 	let memento: TypeMoq.Mock<Memento>;
 	let queryConnectionService: TypeMoq.Mock<TestConnectionManagementService>;
 	let defaultModelOptions: INotebookModelOptions;
 	const logService = new NullLogService();
 	let model: NotebookModel;
-	let markdownRenderer: NotebookMarkdownRenderer = new NotebookMarkdownRenderer();
+	let markdownRenderer: NotebookMarkdownRenderer = new NotebookMarkdownRenderer(new TestConfigurationService());
 	let configurationService: IConfigurationService;
 
 	setup(async () => {
 		sessionReady = new Deferred<void>();
-		notificationService = TypeMoq.Mock.ofType(TestNotificationService, TypeMoq.MockBehavior.Loose);
-		capabilitiesService = TypeMoq.Mock.ofType(TestCapabilitiesService);
+		notificationService = TypeMoq.Mock.ofType<INotificationService>(TestNotificationService, TypeMoq.MockBehavior.Loose);
+		capabilitiesService = TypeMoq.Mock.ofType<ICapabilitiesService>(TestCapabilitiesService);
 		memento = TypeMoq.Mock.ofType(Memento, TypeMoq.MockBehavior.Loose, '');
 		memento.setup(x => x.getMemento(TypeMoq.It.isAny(), TypeMoq.It.isAny()
 		)).returns(() => void 0);
@@ -92,8 +92,9 @@ suite('Notebook Find Model', function (): void {
 		defaultModelOptions = {
 			notebookUri: defaultUri,
 			factory: new ModelFactory(instantiationService),
-			notebookManagers,
-			contentManager: undefined,
+			serializationManagers: serializationManagers,
+			executeManagers: executeManagers,
+			contentLoader: undefined,
 			notificationService: notificationService.object,
 			connectionService: queryConnectionService.object,
 			providerId: 'SQL',
@@ -102,7 +103,7 @@ suite('Notebook Find Model', function (): void {
 			layoutChanged: undefined,
 			capabilitiesService: capabilitiesService.object
 		};
-		mockClientSession = TypeMoq.Mock.ofType(ClientSession, undefined, defaultModelOptions);
+		mockClientSession = TypeMoq.Mock.ofType<IClientSession>(ClientSession, undefined, defaultModelOptions);
 		mockClientSession.setup(c => c.initialize()).returns(() => {
 			return Promise.resolve();
 		});
@@ -119,15 +120,15 @@ suite('Notebook Find Model', function (): void {
 	test('Should set notebook model on initialize', async function (): Promise<void> {
 		//initialize find
 		let notebookFindModel = new NotebookFindModel(model);
-		assert.equal(notebookFindModel.notebookModel, model, 'Failed to set notebook model');
+		assert.strictEqual(notebookFindModel.notebookModel, model, 'Failed to set notebook model');
 	});
 
 	test('Should have no decorations on initialize', async function (): Promise<void> {
 		//initialize find
 		let notebookFindModel = new NotebookFindModel(model);
-		assert.equal(notebookFindModel.findDecorations, undefined, 'findDecorations should be undefined on initialize');
-		assert.equal(notebookFindModel.getPosition(), undefined, 'currentMatch should be undefined on initialize');
-		assert.equal(notebookFindModel.getLastPosition(), undefined, 'previousMatch should be undefined on initialize');
+		assert.strictEqual(notebookFindModel.findDecorations, undefined, 'findDecorations should be undefined on initialize');
+		assert.strictEqual(notebookFindModel.getPosition(), undefined, 'currentMatch should be undefined on initialize');
+		assert.strictEqual(notebookFindModel.getLastPosition(), undefined, 'previousMatch should be undefined on initialize');
 	});
 
 	test('Should find results in the notebook', async function (): Promise<void> {
@@ -139,9 +140,9 @@ suite('Notebook Find Model', function (): void {
 		await notebookFindModel.find('markdown', false, false, max_find_count);
 
 		assert(notebookFindModel.findMatches, 'Find in notebook failed.');
-		assert.equal(notebookFindModel.findMatches.length, 2, 'Find could not find all occurrences');
-		assert.equal(notebookFindModel.findArray.length, 2, 'Find could not find all occurrences');
-		assert.equal(notebookFindModel.getFindCount(), 2, 'Find count do not match find results');
+		assert.strictEqual(notebookFindModel.findMatches.length, 2, 'Find could not find all occurrences');
+		assert.strictEqual(notebookFindModel.findArray.length, 2, 'Find could not find all occurrences');
+		assert.strictEqual(notebookFindModel.getFindCount(), 2, 'Find count do not match find results');
 	});
 
 	test('Should not find results in the notebook', async function (): Promise<void> {
@@ -149,7 +150,7 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('notFound', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.findMatches.length, 0, 'Find failed');
+		assert.strictEqual(notebookFindModel.findMatches.length, 0, 'Find failed');
 	});
 
 	test('Should match find result ranges', async function (): Promise<void> {
@@ -160,10 +161,10 @@ suite('Notebook Find Model', function (): void {
 		await notebookFindModel.find('markdown', false, false, max_find_count);
 
 		let expectedFindRange1 = new NotebookRange(model.cells[0], 2, 13, 2, 21);
-		assert.deepEqual(notebookFindModel.findMatches[0].range, expectedFindRange1, 'Find in markdown range is wrong :\n' + JSON.stringify(expectedFindRange1) + '\n ' + JSON.stringify(notebookFindModel.findMatches[0].range));
+		assert.deepStrictEqual(notebookFindModel.findMatches[0].range, expectedFindRange1, 'Find in markdown range is wrong :\n' + JSON.stringify(expectedFindRange1) + '\n ' + JSON.stringify(notebookFindModel.findMatches[0].range));
 
 		let expectedFindRange2 = new NotebookRange(model.cells[1], 1, 6, 1, 14);
-		assert.deepEqual(notebookFindModel.findMatches[1].range, expectedFindRange2, 'Find in markdown range is wrong :\n' + JSON.stringify(expectedFindRange2) + '\n ' + JSON.stringify(notebookFindModel.findMatches[1].range));
+		assert.deepStrictEqual(notebookFindModel.findMatches[1].range, expectedFindRange2, 'Find in markdown range is wrong :\n' + JSON.stringify(expectedFindRange2) + '\n ' + JSON.stringify(notebookFindModel.findMatches[1].range));
 	});
 
 	test('Should set selection when find matches results', async function (): Promise<void> {
@@ -176,7 +177,7 @@ suite('Notebook Find Model', function (): void {
 
 		notebookFindModel.setSelection(notebookFindModel.findMatches[0].range);
 		let expectedFindRange1 = new NotebookRange(model.cells[0], 2, 13, 2, 21);
-		assert.deepEqual(notebookFindModel.currentMatch, expectedFindRange1, 'Find failed to set selection on finding results');
+		assert.deepStrictEqual(notebookFindModel.currentMatch, expectedFindRange1, 'Find failed to set selection on finding results');
 	});
 
 	test('Should ignore hyperlink markdown data and find correctly', async function (): Promise<void> {
@@ -205,10 +206,10 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('best', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.findMatches.length, 1, 'Find failed on markdown link');
+		assert.strictEqual(notebookFindModel.findMatches.length, 1, 'Find failed on markdown link');
 
 		let expectedFindRange1 = new NotebookRange(model.cells[0], 1, 21, 1, 25);
-		assert.deepEqual(notebookFindModel.findMatches[0].range, expectedFindRange1, 'Find in markdown range is wrong :\n' + JSON.stringify(expectedFindRange1) + '\n ' + JSON.stringify(notebookFindModel.findMatches[0].range));
+		assert.deepStrictEqual(notebookFindModel.findMatches[0].range, expectedFindRange1, 'Find in markdown range is wrong :\n' + JSON.stringify(expectedFindRange1) + '\n ' + JSON.stringify(notebookFindModel.findMatches[0].range));
 
 	});
 
@@ -235,7 +236,7 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('x', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.findMatches.length, 3, 'Find failed');
+		assert.strictEqual(notebookFindModel.findMatches.length, 3, 'Find failed');
 	});
 
 	test('Should match find results for multiple results on same line', async function (): Promise<void> {
@@ -262,15 +263,15 @@ suite('Notebook Find Model', function (): void {
 		// Intentionally not using max_find_count here, as 7 items should be found
 		await notebookFindModel.find('abc', false, false, 10);
 
-		assert.equal(notebookFindModel.findMatches.length, 7, 'Find failed to find number of matches correctly');
+		assert.strictEqual(notebookFindModel.findMatches.length, 7, 'Find failed to find number of matches correctly');
 
-		assert.deepEqual(notebookFindModel.findMatches[0].range, new NotebookRange(model.cells[0], 1, 1, 1, 4));
-		assert.deepEqual(notebookFindModel.findMatches[1].range, new NotebookRange(model.cells[0], 1, 5, 1, 8));
-		assert.deepEqual(notebookFindModel.findMatches[2].range, new NotebookRange(model.cells[0], 1, 9, 1, 12));
-		assert.deepEqual(notebookFindModel.findMatches[3].range, new NotebookRange(model.cells[0], 1, 13, 1, 16));
-		assert.deepEqual(notebookFindModel.findMatches[4].range, new NotebookRange(model.cells[0], 1, 17, 1, 20));
-		assert.deepEqual(notebookFindModel.findMatches[5].range, new NotebookRange(model.cells[0], 1, 21, 1, 24));
-		assert.deepEqual(notebookFindModel.findMatches[6].range, new NotebookRange(model.cells[0], 1, 24, 1, 27));
+		assert.deepStrictEqual(notebookFindModel.findMatches[0].range, new NotebookRange(model.cells[0], 1, 1, 1, 4));
+		assert.deepStrictEqual(notebookFindModel.findMatches[1].range, new NotebookRange(model.cells[0], 1, 5, 1, 8));
+		assert.deepStrictEqual(notebookFindModel.findMatches[2].range, new NotebookRange(model.cells[0], 1, 9, 1, 12));
+		assert.deepStrictEqual(notebookFindModel.findMatches[3].range, new NotebookRange(model.cells[0], 1, 13, 1, 16));
+		assert.deepStrictEqual(notebookFindModel.findMatches[4].range, new NotebookRange(model.cells[0], 1, 17, 1, 20));
+		assert.deepStrictEqual(notebookFindModel.findMatches[5].range, new NotebookRange(model.cells[0], 1, 21, 1, 24));
+		assert.deepStrictEqual(notebookFindModel.findMatches[6].range, new NotebookRange(model.cells[0], 1, 24, 1, 27));
 	});
 
 
@@ -283,10 +284,10 @@ suite('Notebook Find Model', function (): void {
 		await notebookFindModel.find('insert', false, false, max_find_count);
 
 		assert(notebookFindModel.findMatches, 'Find in notebook failed.');
-		assert.equal(notebookFindModel.findMatches.length, 3, 'Find couldn\'t find all occurrences');
+		assert.strictEqual(notebookFindModel.findMatches.length, 3, 'Find couldn\'t find all occurrences');
 
 		await notebookFindModel.find('insert', true, false, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 2, 'Find failed to apply match case while searching');
+		assert.strictEqual(notebookFindModel.findMatches.length, 2, 'Find failed to apply match case while searching');
 
 	});
 
@@ -295,7 +296,7 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 
 		await notebookFindModel.find('insert', true, true, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 1, 'Find failed to apply whole word filter while searching');
+		assert.strictEqual(notebookFindModel.findMatches.length, 1, 'Find failed to apply whole word filter while searching');
 
 	});
 
@@ -322,14 +323,14 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		// test for string with special character
 		await notebookFindModel.find('{special}', true, true, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 1, 'Find failed for search term with special character');
+		assert.strictEqual(notebookFindModel.findMatches.length, 1, 'Find failed for search term with special character');
 		// test for only special character !!
 		await notebookFindModel.find('!!', false, false, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 2, 'Find failed for special character');
+		assert.strictEqual(notebookFindModel.findMatches.length, 2, 'Find failed for special character');
 
 		// test for only special character combination
 		await notebookFindModel.find('!!!$}', false, false, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 1, 'Find failed for special character combination');
+		assert.strictEqual(notebookFindModel.findMatches.length, 1, 'Find failed for special character combination');
 	});
 
 	test('Should find // characters in the search term correctly', async function (): Promise<void> {
@@ -355,13 +356,13 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 
 		await notebookFindModel.find('/', true, false, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 2, 'Find failed to find number of / occurrences');
+		assert.strictEqual(notebookFindModel.findMatches.length, 2, 'Find failed to find number of / occurrences');
 
 		await notebookFindModel.find('//', true, false, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 1, 'Find failed to find number of // occurrences');
+		assert.strictEqual(notebookFindModel.findMatches.length, 1, 'Find failed to find number of // occurrences');
 
 		await notebookFindModel.find('//', true, true, max_find_count);
-		assert.equal(notebookFindModel.findMatches.length, 0, 'Find failed to apply match whole word for //');
+		assert.strictEqual(notebookFindModel.findMatches.length, 0, 'Find failed to apply match whole word for //');
 	});
 
 	test('Should find results in the code cell on markdown edit', async function (): Promise<void> {
@@ -390,14 +391,14 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('SOP', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.findMatches.length, 1, 'Find failed on markdown');
+		assert.strictEqual(notebookFindModel.findMatches.length, 1, 'Find failed on markdown');
 
 		// fire the edit mode on cell
 		model.cells[0].isEditMode = true;
 		notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('SOP', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.findMatches.length, 2, 'Find failed on markdown edit');
+		assert.strictEqual(notebookFindModel.findMatches.length, 2, 'Find failed on markdown edit');
 	});
 
 	test('Find next/previous should return the correct find index', async function (): Promise<void> {
@@ -408,13 +409,13 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('insert', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.getFindIndex(), 1, 'Failed to get the correct find index');
+		assert.strictEqual(notebookFindModel.getFindIndex(), 1, 'Failed to get the correct find index');
 
 		notebookFindModel.findNext();
-		assert.equal(notebookFindModel.getFindIndex(), 2, 'Failed to get the correct find index');
+		assert.strictEqual(notebookFindModel.getFindIndex(), 2, 'Failed to get the correct find index');
 
 		notebookFindModel.findPrevious();
-		assert.equal(notebookFindModel.getFindIndex(), 1, 'Failed to get the correct find index');
+		assert.strictEqual(notebookFindModel.getFindIndex(), 1, 'Failed to get the correct find index');
 	});
 
 	test('Should clear results on clear', async function (): Promise<void> {
@@ -425,20 +426,20 @@ suite('Notebook Find Model', function (): void {
 		let notebookFindModel = new NotebookFindModel(model);
 		await notebookFindModel.find('insert', false, false, max_find_count);
 
-		assert.equal(notebookFindModel.findMatches.length, 3, 'Failed to find all occurrences');
+		assert.strictEqual(notebookFindModel.findMatches.length, 3, 'Failed to find all occurrences');
 
 		notebookFindModel.clearFind();
-		assert.equal(notebookFindModel.findMatches.length, 0, 'Failed to clear find results');
-		assert.equal(notebookFindModel.findDecorations, undefined, 'Failed to clear find decorations on clear');
+		assert.strictEqual(notebookFindModel.findMatches.length, 0, 'Failed to clear find results');
+		assert.strictEqual(notebookFindModel.findDecorations, undefined, 'Failed to clear find decorations on clear');
 	});
 
 
 	async function initNotebookModel(contents: nb.INotebookContents): Promise<void> {
-		let mockContentManager = TypeMoq.Mock.ofType(NotebookEditorContentManager);
+		let mockContentManager = TypeMoq.Mock.ofType(NotebookEditorContentLoader);
 		mockContentManager.setup(c => c.loadContent()).returns(() => Promise.resolve(contents));
-		defaultModelOptions.contentManager = mockContentManager.object;
+		defaultModelOptions.contentLoader = mockContentManager.object;
 		// Initialize the model
-		model = new NotebookModel(defaultModelOptions, undefined, logService, undefined, new NullAdsTelemetryService(), queryConnectionService.object, configurationService);
+		model = new NotebookModel(defaultModelOptions, undefined, logService, undefined, new NullAdsTelemetryService(), queryConnectionService.object, configurationService, undefined);
 		await model.loadContents();
 		await model.requestModelLoad();
 	}

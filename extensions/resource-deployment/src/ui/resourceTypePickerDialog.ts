@@ -48,7 +48,7 @@ export class ResourceTypePickerDialog extends DialogBase {
 				.sort((a: ResourceType, b: ResourceType) => {
 					return (a.displayIndex || Number.MAX_VALUE) - (b.displayIndex || Number.MAX_VALUE);
 				});
-			this._cardGroup = view.modelBuilder.radioCardGroup().withProperties<azdata.RadioCardGroupComponentProperties>({
+			this._cardGroup = view.modelBuilder.radioCardGroup().withProps({
 				cards: this._resourceTypes.map((resourceType) => {
 					return this.createOrGetCard(resourceType);
 				}),
@@ -75,7 +75,7 @@ export class ResourceTypePickerDialog extends DialogBase {
 				this._resourceTagsListView = this.createTagsListView();
 				resourceComponents.push(this._resourceTagsListView);
 			}
-			this._resourceSearchBox = view.modelBuilder.inputBox().withProperties({
+			this._resourceSearchBox = view.modelBuilder.inputBox().withProps({
 				placeHolder: loc.resourceTypeSearchBoxDescription,
 				ariaLabel: loc.resourceTypeSearchBoxDescription
 			}).component();
@@ -142,7 +142,8 @@ export class ResourceTypePickerDialog extends DialogBase {
 				'margin-top': '35px'
 			},
 			options: items,
-			selectedOptionId: items[0].id
+			selectedOptionId: items[0].id,
+			ariaLabel: loc.resourceTypeCategoryListViewTitle
 		}).component();
 		this._toDispose.push(listView.onDidClick((e) => {
 			this._resourceSearchBox.value = '';
@@ -189,7 +190,7 @@ export class ResourceTypePickerDialog extends DialogBase {
 		this._selectedResourceType = resourceType;
 	}
 
-	protected async onComplete(): Promise<void> {
+	protected override async onComplete(): Promise<void> {
 		this.resourceTypeService.startDeployment(this._selectedResourceType, this._optionValuesFilter, this._initialVariableValues);
 	}
 

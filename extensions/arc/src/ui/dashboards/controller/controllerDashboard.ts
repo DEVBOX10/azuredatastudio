@@ -15,10 +15,10 @@ export class ControllerDashboard extends Dashboard {
 		super(loc.arcControllerDashboard(_controllerModel.info.name), 'ArcDataControllerDashboard');
 	}
 
-	public async showDashboard(): Promise<void> {
+	public override async showDashboard(): Promise<void> {
 		await super.showDashboard();
 		// Kick off the model refresh but don't wait on it since that's all handled with callbacks anyways
-		this._controllerModel.refresh(false).catch(err => console.log(`Error refreshing Controller dashboard ${err}`));
+		this._controllerModel.refresh(false, this._controllerModel.info.namespace).catch(err => console.log(`Error refreshing Controller dashboard ${err}`));
 	}
 
 	protected async registerTabs(modelView: azdata.ModelView): Promise<(azdata.DashboardTab | azdata.DashboardTabGroup)[]> {

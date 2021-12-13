@@ -38,7 +38,7 @@
 		"dropdown.border": "#888888",
 
 		//badge
-		"badge.background": "#777777",
+		"badge.background": "#4A4A4A",
 		"badge.foreground": "#ffffff",
 
 		//Input Control
@@ -52,7 +52,6 @@
 		"inputValidation.errorBorder": "#b62e00",
 
 		//List and tree
-		"list.activeSelectionBackground": "#3062d6",
 		"list.hoverBackground": "#dcdcdc",
 		"pickerGroup.border": "#0078d7",
 

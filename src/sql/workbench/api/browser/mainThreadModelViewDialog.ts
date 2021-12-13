@@ -16,7 +16,6 @@ import { ModelViewInput, ModelViewInputModel, ModeViewSaveHandler } from 'sql/wo
 
 import * as vscode from 'vscode';
 import * as azdata from 'azdata';
-import { assign } from 'vs/base/common/objects';
 import { TelemetryView, TelemetryAction } from 'sql/platform/telemetry/common/telemetryKeys';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { IEditorInput, IEditorPane } from 'vs/workbench/common/editor';
@@ -92,14 +91,18 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 
 	public $openDialog(handle: number, dialogName?: string): Thenable<void> {
 		let dialog = this.getDialog(handle);
-		const options = assign({}, DefaultDialogOptions);
+		const options = Object.assign({}, DefaultDialogOptions);
 		options.width = dialog.width;
 		options.dialogStyle = dialog.dialogStyle;
 		options.dialogPosition = dialog.dialogPosition;
 		options.renderHeader = dialog.renderHeader;
 		options.renderFooter = dialog.renderFooter;
 		options.dialogProperties = dialog.dialogProperties;
-		this._dialogService.showDialog(dialog, dialogName, options);
+		const modal = this._dialogService.showDialog(dialog, dialogName, options);
+		const onClosed = modal.onClosed(reason => {
+			this._proxy.$onClosed(handle, reason);
+			onClosed.dispose();
+		});
 		return Promise.resolve();
 	}
 
@@ -161,19 +164,10 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 		let button = this._buttons.get(handle);
 		if (!button) {
 			button = new DialogButton(details.label, details.enabled);
-			button.position = details.position;
-			button.hidden = details.hidden;
-			button.secondary = details.secondary;
 			button.onClick(() => this.onButtonClick(handle));
 			this._buttons.set(handle, button);
-		} else {
-			button.label = details.label;
-			button.enabled = details.enabled;
-			button.hidden = details.hidden;
-			button.focused = details.focused;
-			button.position = details.position;
-			button.secondary = details.secondary;
 		}
+		button.setProperties(details);
 
 		return Promise.resolve();
 	}
@@ -256,7 +250,7 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 
 	public $openWizard(handle: number, source?: string): Thenable<void> {
 		let wizard = this.getWizard(handle);
-		const options = assign({}, DefaultWizardOptions);
+		const options = Object.assign({}, DefaultWizardOptions);
 		options.width = wizard.width;
 		this._dialogService.showWizard(wizard, options, source);
 		return Promise.resolve();

@@ -323,6 +323,10 @@ function nodeOrChildIsBlack(node: ts.Node): boolean {
 	return false;
 }
 
+function isSymbolWithDeclarations(symbol: ts.Symbol | undefined | null): symbol is ts.Symbol & { declarations: ts.Declaration[] } {
+	return !!(symbol && symbol.declarations);
+}
+
 function markNodes(ts: typeof import('typescript'), languageService: ts.LanguageService, options: ITreeShakingOptions) {
 	const program = languageService.getProgram();
 	if (!program) {
@@ -410,7 +414,7 @@ function markNodes(ts: typeof import('typescript'), languageService: ts.Language
 			// add to black queue
 			enqueue_black(node);
 
-			// // move from one queue to the other
+			// move from one queue to the other
 			// black_queue.push(node);
 			// setColor(node, NodeColor.Black);
 			return;
@@ -530,9 +534,9 @@ function markNodes(ts: typeof import('typescript'), languageService: ts.Language
 				setColor(symbolImportNode, NodeColor.Black);
 			}
 
-			if (symbol && !nodeIsInItsOwnDeclaration(nodeSourceFile, node, symbol)) {
-				for (let i = 0, len = symbol.declarations.length; i < len; i++) {
-					const declaration = symbol.declarations[i];
+			if (isSymbolWithDeclarations(symbol) && !nodeIsInItsOwnDeclaration(nodeSourceFile, node, symbol)) {
+				for (let i = 0, len = symbol.declarations!.length; i < len; i++) { // {{SQL CARBON EDIT}} Compile fixes
+					const declaration = symbol.declarations![i]; // {{SQL CARBON EDIT}} Compile fixes
 					if (ts.isSourceFile(declaration)) {
 						// Do not enqueue full source files
 						// (they can be the declaration of a module import)
@@ -595,9 +599,9 @@ function markNodes(ts: typeof import('typescript'), languageService: ts.Language
 	}
 }
 
-function nodeIsInItsOwnDeclaration(nodeSourceFile: ts.SourceFile, node: ts.Node, symbol: ts.Symbol): boolean {
-	for (let i = 0, len = symbol.declarations.length; i < len; i++) {
-		const declaration = symbol.declarations[i];
+function nodeIsInItsOwnDeclaration(nodeSourceFile: ts.SourceFile, node: ts.Node, symbol: ts.Symbol & { declarations: ts.Declaration[] }): boolean {
+	for (let i = 0, len = symbol.declarations!.length; i < len; i++) { // {{SQL CARBON EDIT}} Compile fixes
+		const declaration = symbol.declarations![i]; // {{SQL CARBON EDIT}} Compile fixes
 		const declarationSourceFile = declaration.getSourceFile();
 
 		if (nodeSourceFile === declarationSourceFile) {
@@ -838,11 +842,11 @@ function getRealNodeSymbol(ts: typeof import('typescript'), checker: ts.TypeChec
 	// get the aliased symbol instead. This allows for goto def on an import e.g.
 	//   import {A, B} from "mod";
 	// to jump to the implementation directly.
-	if (symbol && symbol.flags & ts.SymbolFlags.Alias && shouldSkipAlias(node, symbol.declarations[0])) {
+	if (symbol && symbol.flags & ts.SymbolFlags.Alias && symbol.declarations && shouldSkipAlias(node, symbol.declarations![0])) { // {{SQL CARBON EDIT}} Compile fixes
 		const aliased = checker.getAliasedSymbol(symbol);
 		if (aliased.declarations) {
 			// We should mark the import as visited
-			importNode = symbol.declarations[0];
+			importNode = symbol.declarations![0]; // {{SQL CARBON EDIT}} Compile fixes
 			symbol = aliased;
 		}
 	}

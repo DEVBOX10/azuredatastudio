@@ -12,10 +12,10 @@ import * as rimraf from 'rimraf';
 import * as os from 'os';
 import * as uuid from 'uuid';
 import { BookTreeViewProvider } from '../../book/bookTreeView';
-import { BookTreeItem, BookTreeItemType } from '../../book/bookTreeItem';
+import { BookTreeItem } from '../../book/bookTreeItem';
 import { promisify } from 'util';
 import { MockExtensionContext } from '../common/stubs';
-import { exists } from '../../common/utils';
+import { exists, BookTreeItemType } from '../../common/utils';
 import { BookModel } from '../../book/bookModel';
 import { BookTrustManager } from '../../book/bookTrustManager';
 import { NavigationProviders } from '../../common/constants';
@@ -846,6 +846,7 @@ describe('BooksTreeViewTests', function () {
 				});
 
 				it('should remove book on closeBook', async () => {
+					await bookTreeViewProvider.openBook(rootFolderPath);
 					let length: number = bookTreeViewProvider.books.length;
 					await bookTreeViewProvider.closeBook(bookTreeViewProvider.books[0].bookItems[0]);
 					should(bookTreeViewProvider.books.length).equal(length - 1, 'Failed to remove the book on close');

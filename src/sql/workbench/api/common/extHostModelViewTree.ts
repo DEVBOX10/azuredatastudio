@@ -14,8 +14,8 @@ import * as azdata from 'azdata';
 import * as  vsTreeExt from 'vs/workbench/api/common/extHostTreeViews';
 import { Emitter } from 'vs/base/common/event';
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
-import { assign } from 'vs/base/common/objects';
 import { ILogService } from 'vs/platform/log/common/log';
+import { TreeDataTransferDTO } from 'vs/workbench/api/common/shared/treeDataTransfer';
 
 export class ExtHostModelViewTreeViews implements ExtHostModelViewTreeViewsShape {
 	private _proxy: MainThreadModelViewShape;
@@ -85,6 +85,10 @@ export class ExtHostModelViewTreeViews implements ExtHostModelViewTreeViewsShape
 		return Promise.resolve(undefined);
 	}
 
+	$onDrop(treeViewId: string, treeDataTransferDTO: TreeDataTransferDTO, newParentItemHandle: string): Promise<void> {
+		return Promise.resolve(undefined);
+	}
+
 	private createExtHostTreeViewer<T>(handle: number, id: string, dataProvider: azdata.TreeComponentDataProvider<T>, extension: IExtensionDescription, logService: ILogService): ExtHostTreeView<T> {
 		const treeView = new ExtHostTreeView<T>(handle, id, dataProvider, this._proxy, undefined, extension, logService);
 		this.treeViews.set(`${handle}-${id}`, treeView);
@@ -123,7 +127,7 @@ export class ExtHostTreeView<T> extends vsTreeExt.ExtHostTreeView<T> {
 		}
 	}
 
-	reveal(element: T, options?: { select?: boolean }): Promise<void> {
+	override reveal(element: T, options?: { select?: boolean }): Promise<void> {
 		if (typeof this.componentDataProvider.getParent !== 'function') {
 			return Promise.reject(new Error(`Required registered TreeDataProvider to implement 'getParent' method to access 'reveal' method`));
 		}
@@ -146,7 +150,7 @@ export class ExtHostTreeView<T> extends vsTreeExt.ExtHostTreeView<T> {
 		}
 	}
 
-	protected refreshHandles(itemHandles: vsTreeExt.TreeItemHandle[]): Promise<void> {
+	protected override refreshHandles(itemHandles: vsTreeExt.TreeItemHandle[]): Promise<void> {
 		const itemsToRefresh: { [treeItemHandle: string]: ITreeComponentItem } = {};
 		return Promise.all(itemHandles.map(treeItemHandle =>
 			this.refreshNode(treeItemHandle)
@@ -158,10 +162,10 @@ export class ExtHostTreeView<T> extends vsTreeExt.ExtHostTreeView<T> {
 			.then(() => Object.keys(itemsToRefresh).length ? this.modelViewProxy.$refreshDataProvider(this.handle, this.componentId, itemsToRefresh) : null);
 	}
 
-	protected createTreeNode(element: T, extensionTreeItem: azdata.TreeComponentItem, parent?: vsTreeExt.TreeNode | vsTreeExt.Root): vsTreeExt.TreeNode {
+	protected override createTreeNode(element: T, extensionTreeItem: azdata.TreeComponentItem, parent?: vsTreeExt.TreeNode | vsTreeExt.Root): vsTreeExt.TreeNode {
 		let node = super.createTreeNode(element, extensionTreeItem, parent);
 		if (node.item) {
-			node.item = assign(node.item, { checked: extensionTreeItem.checked, enabled: extensionTreeItem.enabled });
+			node.item = Object.assign(node.item, { checked: extensionTreeItem.checked, enabled: extensionTreeItem.enabled });
 		}
 		return node;
 	}

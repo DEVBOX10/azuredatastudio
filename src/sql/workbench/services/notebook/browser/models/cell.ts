@@ -12,7 +12,7 @@ import { localize } from 'vs/nls';
 import * as notebookUtils from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 import { CellTypes, CellType, NotebookChangeType, TextCellEditModes } from 'sql/workbench/services/notebook/common/contracts';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
-import { ICellModel, IOutputChangedEvent, CellExecutionState, ICellModelOptions, ITableUpdatedEvent, CellEditModes } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { ICellModel, IOutputChangedEvent, CellExecutionState, ICellModelOptions, ITableUpdatedEvent, CellEditModes, ICaretPosition } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
@@ -29,8 +29,8 @@ import { tryMatchCellMagic, extractCellMagicCommandPlusArgs } from 'sql/workbenc
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { Disposable } from 'vs/base/common/lifecycle';
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
-import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { IInsightOptions } from 'sql/workbench/common/editor/query/chartState';
+import { IPosition } from 'vs/editor/common/core/position';
 
 let modelId = 0;
 const ads_execute_command = 'ads_execute_command';
@@ -57,6 +57,7 @@ export class CellModel extends Disposable implements ICellModel {
 	private _onTableUpdated = new Emitter<ITableUpdatedEvent>();
 	private _onCellModeChanged = new Emitter<boolean>();
 	private _onExecutionStateChanged = new Emitter<CellExecutionState>();
+	private _onCurrentEditModeChanged = new Emitter<CellEditModes>();
 	private _isTrusted: boolean;
 	private _active: boolean;
 	private _hover: boolean;
@@ -71,8 +72,6 @@ export class CellModel extends Disposable implements ICellModel {
 	private _isCollapsed: boolean;
 	private _onCollapseStateChanged = new Emitter<boolean>();
 	private _modelContentChangedEvent: IModelContentChangedEvent;
-	private _onCellPreviewChanged = new Emitter<boolean>();
-	private _onCellMarkdownChanged = new Emitter<boolean>();
 	private _isCommandExecutionSettingEnabled: boolean = false;
 	private _showPreview: boolean = true;
 	private _showMarkdown: boolean = false;
@@ -83,15 +82,17 @@ export class CellModel extends Disposable implements ICellModel {
 	private _isInjectedParameter: boolean;
 	private _previousChartState: IInsightOptions[] = [];
 	private _outputCounter = 0; // When re-executing the same cell, ensure that we apply chart options in the same order
-	private _attachments: nb.ICellAttachments;
+	private _attachments: nb.ICellAttachments | undefined;
 	private _preventNextChartCache: boolean = false;
+	private _lastEditMode: string | undefined;
+	public richTextCursorPosition: ICaretPosition | undefined;
+	public markdownCursorPosition: IPosition | undefined;
 
 	constructor(cellData: nb.ICellContents,
 		private _options: ICellModelOptions,
 		@optional(INotebookService) private _notebookService?: INotebookService,
 		@optional(ICommandService) private _commandService?: ICommandService,
 		@optional(IConfigurationService) private _configurationService?: IConfigurationService,
-		@optional(IAdsTelemetryService) private _telemetryService?: IAdsTelemetryService,
 	) {
 		super();
 		this.id = `${modelId++}`;
@@ -147,6 +148,10 @@ export class CellModel extends Disposable implements ICellModel {
 
 	public get attachments(): nb.ICellAttachments | undefined {
 		return this._attachments;
+	}
+
+	public set attachments(attachments: nb.ICellAttachments | undefined) {
+		this._attachments = attachments ?? {};
 	}
 
 	addAttachment(mimeType: string, base64Encoding: string, name: string): string {
@@ -222,8 +227,9 @@ export class CellModel extends Disposable implements ICellModel {
 	public set isEditMode(isEditMode: boolean) {
 		this._isEditMode = isEditMode;
 		if (this._isEditMode) {
-			this.showPreview = this._defaultTextEditMode !== TextCellEditModes.Markdown;
-			this.showMarkdown = this._defaultTextEditMode !== TextCellEditModes.RichText;
+			const newEditMode = this._lastEditMode ?? this._defaultTextEditMode;
+			this.showPreview = newEditMode !== TextCellEditModes.Markdown;
+			this.showMarkdown = newEditMode !== TextCellEditModes.RichText;
 		}
 		this._onCellModeChanged.fire(this._isEditMode);
 		// Note: this does not require a notebook update as it does not change overall state
@@ -301,6 +307,7 @@ export class CellModel extends Disposable implements ICellModel {
 	}
 
 	public set source(newSource: string | string[]) {
+		this.cleanUnusedAttachments(Array.isArray(newSource) ? newSource.join() : newSource);
 		newSource = this.attachImageFromSource(newSource);
 		newSource = this.getMultilineSource(newSource);
 		if (this._source !== newSource) {
@@ -323,6 +330,22 @@ export class CellModel extends Disposable implements ICellModel {
 		}
 		return newSource;
 	}
+
+	/**
+	 * Cleans up the attachments, removing any ones that aren't being currently used in the specified source string.
+	 * @param source The new source string to check for attachments being used
+	 */
+	private cleanUnusedAttachments(source: string): void {
+		const originalAttachments = this._attachments;
+		this._attachments = {};
+		// Find existing attachments in the form ![...](attachment:...) so that we can make sure we keep those attachments
+		const attachmentRegex = /!\[.*?\]\(attachment:(.*?)\)/g;
+		let match;
+		while (match = attachmentRegex.exec(source)) { // eslint-disable-line no-cond-assign
+			this._attachments[match[1]] = originalAttachments[match[1]];
+		}
+	}
+
 	/**
 	 * Gets unique attachment name to add to cell metadata
 	 * @param imgName a string defining name of the image.
@@ -375,6 +398,10 @@ export class CellModel extends Disposable implements ICellModel {
 		return this._onExecutionStateChanged.event;
 	}
 
+	public get onCurrentEditModeChanged(): Event<CellEditModes> {
+		return this._onCurrentEditModeChanged.event;
+	}
+
 	private fireExecutionStateChanged(): void {
 		this._onExecutionStateChanged.fire(this.executionState);
 	}
@@ -408,7 +435,7 @@ export class CellModel extends Disposable implements ICellModel {
 
 	public set showPreview(val: boolean) {
 		this._showPreview = val;
-		this._onCellPreviewChanged.fire(this._showPreview);
+		this.doModeUpdates();
 	}
 
 	public get showMarkdown(): boolean {
@@ -417,7 +444,14 @@ export class CellModel extends Disposable implements ICellModel {
 
 	public set showMarkdown(val: boolean) {
 		this._showMarkdown = val;
-		this._onCellMarkdownChanged.fire(this._showMarkdown);
+		this.doModeUpdates();
+	}
+
+	private doModeUpdates() {
+		if (this._isEditMode) {
+			this._lastEditMode = this._showPreview && this._showMarkdown ? TextCellEditModes.SplitView : (this._showMarkdown ? TextCellEditModes.Markdown : TextCellEditModes.RichText);
+		}
+		this._onCurrentEditModeChanged.fire(this.currentMode);
 	}
 
 	public get defaultTextEditMode(): string {
@@ -429,14 +463,6 @@ export class CellModel extends Disposable implements ICellModel {
 	}
 	public set cellSourceChanged(val: boolean) {
 		this._cellSourceChanged = val;
-	}
-
-	public get onCellPreviewModeChanged(): Event<boolean> {
-		return this._onCellPreviewChanged.event;
-	}
-
-	public get onCellMarkdownModeChanged(): Event<boolean> {
-		return this._onCellMarkdownChanged.event;
 	}
 
 	public get onParameterStateChanged(): Event<boolean> {
@@ -555,9 +581,9 @@ export class CellModel extends Disposable implements ICellModel {
 				return false;
 			}
 			this._outputCounter = 0;
-			this._telemetryService?.createActionEvent(TelemetryKeys.TelemetryView.Notebook, TelemetryKeys.NbTelemetryAction.RunCell)
-				.withAdditionalProperties({ cell_language: kernel.name })
-				.send();
+			// Hide IntelliSense suggestions list when running cell to match SSMS behavior
+			this._commandService.executeCommand('hideSuggestWidget');
+			this.notebookModel.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.RunCell, { cell_language: kernel.name, azdata_cell_guid: this._cellGuid });
 			// If cell is currently running and user clicks the stop/cancel button, call kernel.interrupt()
 			// This matches the same behavior as JupyterLab
 			if (this.future && this.future.inProgress) {
@@ -589,6 +615,7 @@ export class CellModel extends Disposable implements ICellModel {
 						}, false);
 						this.setFuture(future as FutureInternal);
 						this.fireExecutionStateChanged();
+						this.notebookModel.onCellChange(this, NotebookChangeType.CellExecutionStarted);
 						this._notebookService?.notifyCellExecutionStarted();
 						// For now, await future completion. Later we should just track and handle cancellation based on model notifications
 						let result: nb.IExecuteReplyMsg = <nb.IExecuteReplyMsg><any>await future.done;
@@ -916,6 +943,9 @@ export class CellModel extends Disposable implements ICellModel {
 				}
 			}
 		};
+
+		this.sendChangeToNotebook(NotebookChangeType.CellAwaitingInput);
+
 		return handler();
 	}
 

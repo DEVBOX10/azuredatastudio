@@ -10,6 +10,7 @@ export interface ExtensionGlobalMemento extends vscode.Memento {
 }
 
 export class MockExtensionContext implements vscode.ExtensionContext {
+	extensionRuntime = 1;
 	logger: undefined;
 	logPath: './';
 	subscriptions: { dispose(): any; }[];
@@ -27,6 +28,7 @@ export class MockExtensionContext implements vscode.ExtensionContext {
 	constructor() {
 		this.subscriptions = [];
 	}
+	extension: vscode.Extension<any>;
 	storageUri: vscode.Uri;
 	globalStorageUri: vscode.Uri;
 	logUri: vscode.Uri;

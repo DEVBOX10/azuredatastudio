@@ -8,7 +8,7 @@ import { ComponentBase } from 'sql/workbench/browser/modelComponents/componentBa
 import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
-import { IListOptions, List } from 'vs/base/browser/ui/list/listWidget';
+import { IListAccessibilityProvider, IListOptions, List } from 'vs/base/browser/ui/list/listWidget';
 
 import 'vs/css!./media/listView';
 
@@ -47,10 +47,13 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 			mouseSupport: true,
 			smoothScrolling: true,
 			verticalScrollMode: ScrollbarVisibility.Auto,
-
+			accessibilityProvider: new OptionsListAccessibilityProvider(this)
 		};
 
-		this._optionsList = new List<azdata.ListViewOption>('ModelViewListView', this._vscodeList.nativeElement, new OptionListDelegate(ListViewComponent.ROW_HEIGHT), [new OptionsListRenderer()], vscodelistOption);
+		this._optionsList = new List<azdata.ListViewOption>('ModelViewListView',
+			this._vscodeList.nativeElement,
+			new OptionListDelegate(ListViewComponent.ROW_HEIGHT), [new OptionsListRenderer()],
+			vscodelistOption);
 		this._register(attachListStyler(this._optionsList, this.themeService));
 
 		this._register(this._optionsList.onDidChangeSelection((e) => {
@@ -76,7 +79,7 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 		this.layout();
 	}
 
-	ngOnDestroy(): void {
+	override ngOnDestroy(): void {
 		this.baseDestroy();
 	}
 
@@ -84,11 +87,11 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 		return this.getProperties().options ?? [];
 	}
 
-	public get width(): string | number | undefined {
+	public override get width(): string | number | undefined {
 		return this.getProperties().width ?? undefined;
 	}
 
-	public get height(): string | number | undefined {
+	public override get height(): string | number | undefined {
 		return this.getProperties().height ?? undefined;
 	}
 
@@ -100,7 +103,7 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 		return this.getProperties().selectedOptionId ?? undefined;
 	}
 
-	public setProperties(properties: { [key: string]: any }) {
+	public override setProperties(properties: { [key: string]: any }) {
 		super.setProperties(properties);
 		if (this.options) {
 			this._optionsList!.splice(0, this._optionsList!.length, this.options);
@@ -112,8 +115,7 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 		if (this.selectedOptionId) {
 			this._optionsList.setSelection([this.options.map(v => v.id).indexOf(this.selectedOptionId)]);
 		}
-
-
+		this._optionsList.ariaLabel = this.ariaLabel;
 	}
 
 	public selectOptionByIdx(idx: number): void {
@@ -131,7 +133,7 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 		});
 	}
 
-	public focus(): void {
+	public override focus(): void {
 		super.focus();
 		if (this._selectedElementIdx !== undefined) {
 			this._optionsList.domFocus();
@@ -140,7 +142,7 @@ export default class ListViewComponent extends ComponentBase<azdata.ListViewComp
 		}
 	}
 
-	public get CSSStyles(): azdata.CssStyles {
+	public override get CSSStyles(): azdata.CssStyles {
 		return this.mergeCss(super.CSSStyles, {
 			'width': this.getWidth(),
 			'height': this.getHeight()
@@ -191,4 +193,27 @@ class OptionsListRenderer implements IListRenderer<azdata.ListViewOption, Extens
 	public disposeElement(element: azdata.ListViewOption, index: number, templateData: ExtensionListTemplate): void {
 		// noop
 	}
+}
+
+class OptionsListAccessibilityProvider implements IListAccessibilityProvider<azdata.ListViewOption> {
+
+	constructor(private _listViewComponent: ListViewComponent) { }
+
+	getAriaLabel(element: azdata.ListViewOption): string {
+		return element.label;
+	}
+
+	getWidgetAriaLabel(): string {
+		return this._listViewComponent.ariaLabel;
+	}
+
+	getRole(element: azdata.ListViewOption): string {
+		// Currently hardcode this to option since we don't support nested lists (which would use listitem)
+		return 'option';
+	}
+
+	getWidgetRole(): string {
+		return 'listbox';
+	}
+
 }

@@ -42,14 +42,15 @@ import { ILogService } from 'vs/platform/log/common/log';
 import * as interfaces from 'sql/platform/connection/common/interfaces';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 import { Memento, MementoObject } from 'vs/workbench/common/memento';
-import { INotificationService } from 'vs/platform/notification/common/notification';
+import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
 import { entries } from 'sql/base/common/collections';
 import { values } from 'vs/base/common/collections';
-import { assign } from 'vs/base/common/objects';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 import { toErrorMessage } from 'vs/base/common/errorMessage';
 import { IQueryEditorConfiguration } from 'sql/platform/query/common/query';
+import { URI } from 'vs/base/common/uri';
+import { QueryEditorInput } from 'sql/workbench/common/editor/query/queryEditorInput';
 
 export class ConnectionManagementService extends Disposable implements IConnectionManagementService {
 
@@ -67,15 +68,17 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 	private _onConnectionChanged = new Emitter<IConnectionParams>();
 	private _onLanguageFlavorChanged = new Emitter<azdata.DidChangeLanguageFlavorParams>();
 	private _connectionGlobalStatus = new ConnectionGlobalStatus(this._notificationService);
+	private _uriToReconnectPromiseMap: { [uri: string]: Promise<IConnectionResult> } = {};
 
 	private _mementoContext: Memento;
 	private _mementoObj: MementoObject;
 	private _connectionStore: ConnectionStore;
 	private _connectionStatusManager: ConnectionStatusManager;
+	private _connectionsGotUnsupportedVersionWarning: string[] = [];
 
 	private static readonly CONNECTION_MEMENTO = 'ConnectionManagement';
 	private static readonly _azureResources: AzureResource[] =
-		[AzureResource.ResourceManagement, AzureResource.Sql, AzureResource.OssRdbms, AzureResource.AzureLogAnalytics];
+		[AzureResource.ResourceManagement, AzureResource.Sql, AzureResource.OssRdbms, AzureResource.AzureLogAnalytics, AzureResource.AzureKusto];
 
 	constructor(
 		@IConnectionDialogService private _connectionDialogService: IConnectionDialogService,
@@ -306,6 +309,11 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 			// Fill in the Azure account token if needed and open the connection dialog if it fails
 			let tokenFillSuccess = await this.fillInOrClearToken(newConnection);
 
+			// If there is no authentication type set, set it using configuration
+			if (!newConnection.authenticationType || newConnection.authenticationType === '') {
+				newConnection.authenticationType = this.getDefaultAuthenticationTypeId();
+			}
+
 			// If the password is required and still not loaded show the dialog
 			if ((!foundPassword && this._connectionStore.isPasswordRequired(newConnection) && !newConnection.password) || !tokenFillSuccess) {
 				return this.showConnectionDialogOnError(connection, owner, { connected: false, errorMessage: undefined, callStack: undefined, errorCode: undefined }, options);
@@ -466,12 +474,22 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		if (!tokenFillSuccess) {
 			throw new Error(nls.localize('connection.noAzureAccount', "Failed to get Azure account token for connection"));
 		}
+		if (options.saveTheConnection) {
+			connection.options.originalDatabase = connection.databaseName;
+		}
 		return this.createNewConnection(uri, connection).then(async connectionResult => {
 			if (connectionResult && connectionResult.connected) {
 				// The connected succeeded so add it to our active connections now, optionally adding it to the MRU based on
 				// the options.saveTheConnection setting
 				let connectionMgmtInfo = this._connectionStatusManager.findConnection(uri);
+				if (!connectionMgmtInfo) {
+					this._logService.info(`Could not find connection management info for ${uri} after connection`);
+				}
+				// Currently this could potentially throw an error because it expects there to always be
+				// a connection management info. See https://github.com/microsoft/azuredatastudio/issues/16556
 				this.tryAddActiveConnection(connectionMgmtInfo, connection, options.saveTheConnection);
+
+
 
 				if (callbacks.onConnectSuccess) {
 					callbacks.onConnectSuccess(options.params, connectionResult.connectionProfile);
@@ -555,6 +573,11 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 
 	private doActionsAfterConnectionComplete(uri: string, options: IConnectionCompletionOptions): void {
 		let connectionManagementInfo = this._connectionStatusManager.findConnection(uri);
+		if (!connectionManagementInfo) {
+			// Currently this could potentially throw an error because it expects there to always be
+			// a connection management info. See https://github.com/microsoft/azuredatastudio/issues/16556
+			this._logService.info(`Could not find connection management info for ${uri} after connection complete`);
+		}
 		if (options.showDashboard) {
 			this.showDashboardForConnectionManagementInfo(connectionManagementInfo.connectionProfile);
 		}
@@ -611,27 +634,20 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 	}
 
 	private focusDashboard(profile: interfaces.IConnectionProfile): boolean {
-		let found: boolean = false;
+		const matchingEditor = this._editorService.editors.find(editor => {
+			return editor instanceof DashboardInput && DashboardInput.profileMatches(profile, editor.connectionProfile);
+		}) as DashboardInput;
 
-		this._editorService.editors.map(editor => {
-			if (editor instanceof DashboardInput) {
-				if (DashboardInput.profileMatches(profile, editor.connectionProfile)) {
-					editor.connectionProfile.connectionName = profile.connectionName;
-					editor.connectionProfile.databaseName = profile.databaseName;
-					this._editorService.openEditor(editor)
-						.then(() => {
-							if (!profile.databaseName || Utils.isMaster(profile)) {
-								this._angularEventing.sendAngularEvent(editor.uri, AngularEventType.NAV_SERVER);
-							} else {
-								this._angularEventing.sendAngularEvent(editor.uri, AngularEventType.NAV_DATABASE);
-							}
-							found = true;
-						}, errors.onUnexpectedError);
-				}
-			}
-		});
+		if (matchingEditor) {
+			matchingEditor.connectionProfile.connectionName = profile.connectionName;
+			matchingEditor.connectionProfile.databaseName = profile.databaseName;
+			this._editorService.openEditor(matchingEditor).then(() => {
+				const target = !profile.databaseName || Utils.isServerConnection(profile) ? AngularEventType.NAV_SERVER : AngularEventType.NAV_DATABASE;
+				this._angularEventing.sendAngularEvent(matchingEditor.uri, target);
+			}, errors.onUnexpectedError);
+		}
 
-		return found;
+		return !!matchingEditor;
 	}
 
 	public closeDashboard(uri: string): void {
@@ -780,6 +796,11 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		return defaultProvider && this._providers.has(defaultProvider) ? defaultProvider : undefined;
 	}
 
+	public getDefaultAuthenticationTypeId(): string {
+		let defaultAuthenticationType = WorkbenchUtils.getSqlConfigValue<string>(this._configurationService, Constants.defaultAuthenticationType);
+		return defaultAuthenticationType;
+	}
+
 	/**
 	 * Previously, the only resource available for AAD access tokens was for Azure SQL / SQL Server.
 	 * Use that as a default if the provider extension does not configure a different one. If one is
@@ -852,6 +873,7 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 					this._logService.info(`No security tokens found for account`);
 				}
 				connection.options['azureAccountToken'] = token.token;
+				connection.options['expiresOn'] = token.expiresOn;
 				connection.options['password'] = '';
 				return true;
 			} else {
@@ -863,9 +885,65 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		return false;
 	}
 
+	/**
+	 * Refresh Azure access token if it's expired.
+	 * @param uri connection uri
+	 * @returns true if no need to refresh or successfully refreshed token
+	 */
+	public async refreshAzureAccountTokenIfNecessary(uri: string): Promise<boolean> {
+		const profile = this._connectionStatusManager.getConnectionProfile(uri);
+		if (!profile) {
+			this._logService.warn(`Connection not found for uri ${uri}`);
+			return false;
+		}
+
+		//wait for the pending reconnction promise if any
+		const previousReconnectPromise = this._uriToReconnectPromiseMap[uri];
+		if (previousReconnectPromise) {
+			this._logService.info(`Found pending reconnect promise for uri ${uri}, waiting.`);
+			try {
+				const previousConnectionResult = await previousReconnectPromise;
+				if (previousConnectionResult && previousConnectionResult.connected) {
+					this._logService.info(`Previous pending reconnection for uri ${uri} succeeded.`);
+					return true;
+				}
+				this._logService.info(`Previous pending reconnection for uri ${uri} failed.`);
+			} catch (err) {
+				this._logService.info(`Previous pending reconnect promise for uri ${uri} is rejected with error ${err}, will attempt to reconnect if necessary.`);
+			}
+		}
+
+		const expiry = profile.options.expiresOn;
+		if (typeof expiry === 'number' && !Number.isNaN(expiry)) {
+			const currentTime = new Date().getTime() / 1000;
+			const maxTolerance = 2 * 60; // two minutes
+			if (expiry - currentTime < maxTolerance) {
+				this._logService.info(`Access token expired for connection ${profile.id} with uri ${uri}`);
+				try {
+					const connectionResultPromise = this.connect(profile, uri);
+					this._uriToReconnectPromiseMap[uri] = connectionResultPromise;
+					const connectionResult = await connectionResultPromise;
+					if (!connectionResult) {
+						this._logService.error(`Failed to refresh connection ${profile.id} with uri ${uri}, invalid connection result.`);
+						throw new Error(nls.localize('connection.invalidConnectionResult', "Connection result is invalid"));
+					} else if (!connectionResult.connected) {
+						this._logService.error(`Failed to refresh connection ${profile.id} with uri ${uri}, error code: ${connectionResult.errorCode}, error message: ${connectionResult.errorMessage}`);
+						throw new Error(nls.localize('connection.refreshAzureTokenFailure', "Failed to refresh Azure account token for connection"));
+					}
+					this._logService.info(`Successfully refreshed token for connection ${profile.id} with uri ${uri}, result: ${connectionResult.connected} ${connectionResult.connectionProfile}, isConnected: ${this.isConnected(uri)}, ${this._connectionStatusManager.getConnectionProfile(uri)}`);
+					return true;
+				} finally {
+					delete this._uriToReconnectPromiseMap[uri];
+				}
+			}
+			this._logService.info(`No need to refresh Azure acccount token for connection ${profile.id} with uri ${uri}`);
+		}
+		return true;
+	}
+
 	// Request Senders
 	private async sendConnectRequest(connection: interfaces.IConnectionProfile, uri: string): Promise<boolean> {
-		let connectionInfo = assign({}, {
+		let connectionInfo = Object.assign({}, {
 			options: connection.options
 		});
 
@@ -874,9 +952,12 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		return this._providers.get(connection.providerName).onReady.then((provider) => {
 			provider.connect(uri, connectionInfo);
 			this._onConnectRequestSent.fire();
-
+			// Connections are made per URI so while there may possibly be multiple editors with
+			// that URI they all share the same state
+			const editor = this._editorService.findEditors(URI.parse(uri))[0]?.editor;
 			// TODO make this generic enough to handle non-SQL languages too
-			this.doChangeLanguageFlavor(uri, 'sql', connection.providerName);
+			const language = editor instanceof QueryEditorInput && editor.state.isSqlCmdMode ? 'sqlcmd' : 'sql';
+			this.doChangeLanguageFlavor(uri, language, connection.providerName);
 			return true;
 		});
 	}
@@ -965,6 +1046,23 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 
 			if (this._connectionStatusManager.isDefaultTypeUri(info.ownerUri)) {
 				this._connectionGlobalStatus.setStatusToConnected(info.connectionSummary);
+			}
+
+			const connectionUniqueId = connection.connectionProfile.getConnectionInfoId();
+			if (info.isSupportedVersion === false
+				&& this._connectionsGotUnsupportedVersionWarning.indexOf(connectionUniqueId) === -1
+				&& this._configurationService.getValue<boolean>('connection.showUnsupportedServerVersionWarning')) {
+				const warningMessage = nls.localize('connection.unsupportedServerVersionWarning', "The server version is not supported by Azure Data Studio, you may still connect to it but some features in Azure Data Studio might not work as expected.");
+				this._connectionsGotUnsupportedVersionWarning.push(connectionUniqueId);
+				this._notificationService.prompt(Severity.Warning,
+					`${warningMessage} ${info.unsupportedVersionMessage ?? ''}`, [
+					{
+						label: nls.localize('connection.neverShowUnsupportedVersionWarning', "Don't show again"),
+						run: () => {
+							this._configurationService.updateValue('connection.showUnsupportedServerVersionWarning', false).catch(e => errors.onUnexpectedError(e));
+						}
+					}
+				]);
 			}
 		} else {
 			connection.connectHandler(false, info.errorMessage, info.errorNumber, info.messages);
@@ -1059,6 +1157,20 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 	}
 
 	/**
+	 * Replaces connection info uri with new uri.
+	 */
+	public changeConnectionUri(newUri: string, oldUri: string): void {
+		this._connectionStatusManager.changeConnectionUri(newUri, oldUri);
+		if (!this._uriToProvider[oldUri]) {
+			this._logService.error(`No provider found for old URI : '${oldUri}'`);
+			throw new Error(nls.localize('connectionManagementService.noProviderForUri', 'Could not find provider for uri: {0}', oldUri));
+		}
+		// Provider will persist after disconnect, it is okay to overwrite the map if it exists from a previously deleted connection.
+		this._uriToProvider[newUri] = this._uriToProvider[oldUri];
+		delete this._uriToProvider[oldUri];
+	}
+
+	/**
 	 * Functions to handle the connecting life cycle
 	 */
 
@@ -1072,11 +1184,13 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 			connectionInfo.connectHandler = ((connectResult, errorMessage, errorCode, callStack) => {
 				let connectionMngInfo = this._connectionStatusManager.findConnection(uri);
 				if (connectionMngInfo && connectionMngInfo.deleted) {
+					this._logService.info(`Found deleted connection management info for ${uri} - removing`);
 					this._connectionStatusManager.deleteConnection(uri);
 					resolve({ connected: connectResult, errorMessage: undefined, errorCode: undefined, callStack: undefined, errorHandled: true, connectionProfile: connection });
 				} else {
 					if (errorMessage) {
 						// Connection to the server failed
+						this._logService.info(`Error occurred while connecting, removing connection management info for ${uri}`);
 						this._connectionStatusManager.deleteConnection(uri);
 						resolve({ connected: connectResult, errorMessage: errorMessage, errorCode: errorCode, callStack: callStack, connectionProfile: connection });
 					} else {
@@ -1116,6 +1230,7 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		return this.sendDisconnectRequest(fileUri).then((result) => {
 			// If the request was sent
 			if (result) {
+				this._logService.info(`Disconnect request sent for ${fileUri} - deleting connection`);
 				this._connectionStatusManager.deleteConnection(fileUri);
 				if (connection) {
 					this._notifyDisconnected(connection, fileUri);
@@ -1167,7 +1282,7 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		// Create a new set of cancel connection params with our file URI
 		let cancelParams: ConnectionContracts.CancelConnectParams = new ConnectionContracts.CancelConnectParams();
 		cancelParams.ownerUri = fileUri;
-
+		this._logService.info(`Cancelling connection for URI ${fileUri}`);
 		this._connectionStatusManager.deleteConnection(fileUri);
 		// Send connection cancellation request
 		return this.sendCancelRequest(fileUri);
@@ -1226,8 +1341,9 @@ export class ConnectionManagementService extends Disposable implements IConnecti
 		return this._connectionStatusManager.isConnected(fileUri) ? this._connectionStatusManager.findConnection(fileUri) : undefined;
 	}
 
-	public listDatabases(connectionUri: string): Thenable<azdata.ListDatabasesResult | undefined> {
+	public async listDatabases(connectionUri: string): Promise<azdata.ListDatabasesResult | undefined> {
 		const self = this;
+		await this.refreshAzureAccountTokenIfNecessary(connectionUri);
 		if (self.isConnected(connectionUri)) {
 			return self.sendListDatabasesRequest(connectionUri);
 		}

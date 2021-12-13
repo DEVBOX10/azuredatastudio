@@ -8,7 +8,6 @@ import {
 	OnDestroy, AfterViewInit, ElementRef, ViewChild
 } from '@angular/core';
 
-import * as DOM from 'vs/base/browser/dom';
 import * as azdata from 'azdata';
 import { ITitledComponent } from 'sql/workbench/browser/modelComponents/interfaces';
 import { ComponentWithIconBase } from 'sql/workbench/browser/modelComponents/componentWithIconBase';
@@ -36,7 +35,7 @@ export default class ImageComponent extends ComponentWithIconBase<azdata.ImageCo
 		this.baseInit();
 	}
 
-	ngOnDestroy(): void {
+	override ngOnDestroy(): void {
 		this.baseDestroy();
 	}
 
@@ -46,17 +45,17 @@ export default class ImageComponent extends ComponentWithIconBase<azdata.ImageCo
 		this.layout();
 	}
 
-	public setProperties(properties: { [key: string]: any; }): void {
+	public override setProperties(properties: { [key: string]: any; }): void {
 		super.setProperties(properties);
 		this.updateIcon();
 		this._changeRef.detectChanges();
 	}
 
-	protected updateIcon() {
+	protected override updateIcon() {
 		if (this.iconPath) {
 			if (!this._iconClass) {
 				super.updateIcon();
-				DOM.addClasses(this.imageContainer.nativeElement, this._iconClass, 'icon');
+				this.imageContainer.nativeElement.classList.add(this._iconClass, 'icon');
 			} else {
 				super.updateIcon();
 			}
@@ -70,7 +69,7 @@ export default class ImageComponent extends ComponentWithIconBase<azdata.ImageCo
 		return `${this.getIconWidth()} ${this.getIconHeight()}`;
 	}
 
-	public get CSSStyles(): azdata.CssStyles {
+	public override get CSSStyles(): azdata.CssStyles {
 		return this.mergeCss(super.CSSStyles, {
 			'background-size': this.getImageSize(),
 			'width': this.getWidth(),

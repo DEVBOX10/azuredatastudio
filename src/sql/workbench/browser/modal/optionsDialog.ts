@@ -29,6 +29,7 @@ import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { attachModalDialogStyler } from 'sql/workbench/common/styler';
 import { ServiceOptionType } from 'sql/platform/connection/common/interfaces';
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
+import { GroupHeaderBackground } from 'sql/platform/theme/common/colorRegistry';
 
 export interface IOptionsDialogOptions extends IModalOptions {
 	cancelLabel?: string;
@@ -66,7 +67,7 @@ export class OptionsDialog extends Modal {
 		super(title, name, telemetryService, layoutService, clipboardService, themeService, logService, textResourcePropertiesService, contextKeyService, options);
 	}
 
-	public render() {
+	public override render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
 		if (this.backButton) {
@@ -99,7 +100,7 @@ export class OptionsDialog extends Modal {
 	private updateTheme(theme: IColorTheme): void {
 		const borderColor = theme.getColor(contrastBorder);
 		const border = borderColor ? borderColor.toString() : '';
-		const backgroundColor = theme.getColor(SIDE_BAR_BACKGROUND);
+		const backgroundColor = theme.getColor(GroupHeaderBackground);
 		if (this._dividerBuilder) {
 			this._dividerBuilder.style.borderTopWidth = border ? '1px' : '';
 			this._dividerBuilder.style.borderTopStyle = border ? 'solid' : '';
@@ -163,12 +164,12 @@ export class OptionsDialog extends Modal {
 	}
 
 	/* Overwrite escape key behavior */
-	protected onClose() {
+	protected override onClose() {
 		this.close();
 	}
 
 	/* Overwrite enter key behavior */
-	protected onAccept() {
+	protected override onAccept() {
 		this.ok();
 	}
 
@@ -192,7 +193,6 @@ export class OptionsDialog extends Modal {
 
 	public open(options: azdata.ServiceOption[], optionValues: { [name: string]: any }) {
 		this._optionValues = optionValues;
-		let firstOption: string | undefined;
 		let categoryMap = OptionsDialogHelper.groupOptionsByCategory(options);
 		clearNode(this._optionGroupsContainer!);
 		for (let category in categoryMap) {
@@ -202,24 +202,19 @@ export class OptionsDialog extends Modal {
 
 			let serviceOptions: azdata.ServiceOption[] = categoryMap[category];
 			let bodyContainer = $('table.optionsDialog-table');
+			bodyContainer.setAttribute('role', 'presentation');
 			this.fillInOptions(bodyContainer, serviceOptions);
 			append(this._optionGroupsContainer!, bodyContainer);
-
-			if (!firstOption) {
-				firstOption = serviceOptions[0].name;
-			}
 		}
 		this.updateTheme(this._themeService.getColorTheme());
-		this.show();
-		let firstOptionWidget = this._optionElements[firstOption!].optionWidget;
 		this.registerStyling();
-		setTimeout(() => firstOptionWidget.focus(), 1);
+		this.show();
 	}
 
 	protected layout(height?: number): void {
 	}
 
-	public dispose(): void {
+	public override dispose(): void {
 		super.dispose();
 		this._optionElements = {};
 	}

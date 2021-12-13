@@ -3,7 +3,14 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export enum ModalDialogName {
+export const enum EventName {
+	Action = 'action',
+	Error = 'error',
+	Metrics = 'metrics',
+	View = 'view'
+}
+
+export const enum ModalDialogName {
 	ErrorMessage = 'ErrorMessage',
 	WebView = 'WebView',
 	ConnectionAdvancedProperties = 'ConnectionAdvancedProperties',
@@ -22,7 +29,7 @@ export enum ModalDialogName {
 	CalloutDialog = 'CalloutDialog'
 }
 
-export enum TelemetryView {
+export const enum TelemetryView {
 	Agent = 'Agent',
 	AgentJobs = 'AgentJobs',
 	AgentJobHistory = 'AgentJobHistory',
@@ -30,18 +37,20 @@ export enum TelemetryView {
 	AgentNotebookHistory = 'AgentNotebookHistory',
 	AgentNotebooks = 'AgentNotebooks',
 	ConnectionDialog = 'ConnectionDialog',
-	Shell = 'Shell',
+	ExtensionHost = 'ExtensionHost',
 	ExtensionRecommendationDialog = 'ExtensionRecommendationDialog',
-	ResultsPanel = 'ResultsPanel',
 	Notebook = 'Notebook',
-	SqlAssessment = 'SqlAssessment'
+	ResultsPanel = 'ResultsPanel',
+	Shell = 'Shell',
+	SqlAssessment = 'SqlAssessment',
+	TableDesigner = 'TableDesigner'
 }
 
-export enum TelemetryError {
+export const enum TelemetryError {
 	DatabaseConnectionError = 'DatabaseConnectionError'
 }
 
-export enum TelemetryAction {
+export const enum TelemetryAction {
 	AddServerGroup = 'AddServerGroup',
 	adsCommandExecuted = 'adsCommandExecuted',
 	ConnectToServer = 'ConnectToServer',
@@ -82,15 +91,17 @@ export enum TelemetryAction {
 	SearchCompleted = 'SearchCompleted'
 }
 
-export enum NbTelemetryAction {
+export const enum NbTelemetryAction {
 	RunCell = 'RunCell',
 	RunAll = 'RunNotebook',
 	AddCell = 'AddCell',
 	KernelChanged = 'KernelChanged',
-	NewNotebookFromConnections = 'NewNotebookWithConnectionProfile'
+	NewNotebookFromConnections = 'NewNotebookWithConnectionProfile',
+	UndoCell = 'UndoCell',
+	RedoCell = 'RedoCell'
 }
 
-export enum TelemetryPropertyName {
+export const enum TelemetryPropertyName {
 	ChartMaxRowCountExceeded = 'chartMaxRowCountExceeded',
 	ConnectionSource = 'connectionSource'
 }

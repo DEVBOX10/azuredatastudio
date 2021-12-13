@@ -65,7 +65,7 @@ describe('Jupyter Session Manager', function (): void {
 		sessionManager.ready.then(() => {
 			should(sessionManager.isReady).be.true();
 			done();
-		});
+		}).catch(err => done(err));
 	});
 
 	it('should passthrough the ready calls', function (done): void {
@@ -75,7 +75,7 @@ describe('Jupyter Session Manager', function (): void {
 
 		// When I wait on the ready method before completing
 		sessionManager.setJupyterSessionManager(mockJupyterManager.object);
-		sessionManager.ready.then(() => done());
+		sessionManager.ready.then(() => done()).catch(err => done(err));
 
 		// Then session manager should eventually resolve
 		deferred.resolve();
@@ -115,6 +115,7 @@ describe('Jupyter Session Manager', function (): void {
 			}
 		};
 		mockJupyterManager.setup(m => m.startNew(TypeMoq.It.isAny())).returns(() => Promise.resolve(expectedSessionInfo));
+		mockJupyterManager.setup(m => m.specs).returns(() => undefined);
 
 		// When I call startSession
 		let session = await sessionManager.startNew(sessionOptions, true);
@@ -288,6 +289,8 @@ describe('Jupyter Session', function (): void {
 			isCloud: false,
 			azureVersion: 0,
 			osVersion: '',
+			cpuCount: 0,
+			physicalMemoryInMb: -1,
 			options: {
 				isBigDataCluster: true
 			}

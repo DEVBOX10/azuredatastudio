@@ -30,7 +30,7 @@ export class OpenSparkJobSubmissionDialogCommand extends Command {
 		super(constants.mssqlClusterLivySubmitSparkJobCommand, appContext);
 	}
 
-	protected async preExecute(context: ICommandUnknownContext | ICommandObjectExplorerContext, args: object = {}): Promise<any> {
+	protected override async preExecute(context: ICommandUnknownContext | ICommandObjectExplorerContext, args: object = {}): Promise<any> {
 		return this.execute(context, args);
 	}
 
@@ -47,7 +47,7 @@ export class OpenSparkJobSubmissionDialogCommand extends Command {
 			let dialog = new SparkJobSubmissionDialog(sqlClusterConnection, this.appContext, this.outputChannel);
 			await dialog.openDialog();
 		} catch (error) {
-			vscode.window.showErrorMessage(getErrorMessage(error));
+			void vscode.window.showErrorMessage(getErrorMessage(error));
 		}
 	}
 
@@ -118,7 +118,7 @@ export class OpenSparkJobSubmissionDialogFromFileCommand extends Command {
 		super(constants.mssqlClusterLivySubmitSparkJobFromFileCommand, appContext);
 	}
 
-	protected async preExecute(context: ICommandViewContext | ICommandObjectExplorerContext, args: object = {}): Promise<any> {
+	protected override async preExecute(context: ICommandViewContext | ICommandObjectExplorerContext, args: object = {}): Promise<any> {
 		return this.execute(context, args);
 	}
 
@@ -129,11 +129,11 @@ export class OpenSparkJobSubmissionDialogFromFileCommand extends Command {
 			if (node && node.hdfsPath) {
 				path = node.hdfsPath;
 			} else {
-				vscode.window.showErrorMessage(LocalizedConstants.msgMissingNodeContext);
+				void vscode.window.showErrorMessage(LocalizedConstants.msgMissingNodeContext);
 				return;
 			}
 		} catch (err) {
-			vscode.window.showErrorMessage(localize('sparkJobSubmission.GetFilePathFromSelectedNodeFailed', "Error Get File Path: {0}", err));
+			void vscode.window.showErrorMessage(localize('sparkJobSubmission.GetFilePathFromSelectedNodeFailed', "Error Get File Path: {0}", err));
 			return;
 		}
 
@@ -148,7 +148,7 @@ export class OpenSparkJobSubmissionDialogFromFileCommand extends Command {
 			let dialog = new SparkJobSubmissionDialog(sqlClusterConnection, this.appContext, this.outputChannel);
 			await dialog.openDialog(path);
 		} catch (error) {
-			vscode.window.showErrorMessage(getErrorMessage(error));
+			void vscode.window.showErrorMessage(getErrorMessage(error));
 		}
 	}
 }
@@ -166,7 +166,7 @@ export class OpenSparkJobSubmissionDialogTask {
 			let dialog = new SparkJobSubmissionDialog(sqlClusterConnection, this.appContext, this.outputChannel);
 			await dialog.openDialog();
 		} catch (error) {
-			vscode.window.showErrorMessage(getErrorMessage(error));
+			void vscode.window.showErrorMessage(getErrorMessage(error));
 		}
 	}
 }

@@ -18,7 +18,6 @@ import { IFileService } from 'vs/platform/files/common/files';
 import { IFileDialogService, FileFilter } from 'vs/platform/dialogs/common/dialogs';
 import { VSBuffer } from 'vs/base/common/buffer';
 import { IOpenerService } from 'vs/platform/opener/common/opener';
-import { assign } from 'vs/base/common/objects';
 import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
@@ -45,7 +44,7 @@ export class CreateInsightAction extends Action {
 		super(CreateInsightAction.ID, CreateInsightAction.LABEL, CreateInsightAction.ICON);
 	}
 
-	public async run(context: IChartActionContext): Promise<void> {
+	public override async run(context: IChartActionContext): Promise<void> {
 		let uriString = this.getActiveUriString();
 		if (!uriString) {
 			this.showError(localize('createInsightNoEditor', "Cannot create insight as the active editor is not a SQL Editor"));
@@ -55,7 +54,7 @@ export class CreateInsightAction extends Action {
 		let queryFile = uri.fsPath;
 		let query: string | undefined = undefined;
 		let type: { [key: string]: any } = {};
-		let options = assign({}, context.options);
+		let options = Object.assign({}, context.options);
 		delete (options as any).type;
 		type[context.options.type] = options;
 		// create JSON
@@ -115,7 +114,7 @@ export class ConfigureChartAction extends Action {
 		super(ConfigureChartAction.ID, ConfigureChartAction.LABEL, ConfigureChartAction.ICON);
 	}
 
-	public async run(context: IChartActionContext): Promise<void> {
+	public override async run(context: IChartActionContext): Promise<void> {
 		if (!this.dialog) {
 			this.dialog = this.instantiationService.createInstance(ConfigureChartDialog, ConfigureChartAction.LABEL, ConfigureChartAction.ID, this._chart);
 			this.dialog.render();
@@ -136,7 +135,7 @@ export class CopyAction extends Action {
 		super(CopyAction.ID, CopyAction.LABEL, CopyAction.ICON);
 	}
 
-	public async run(context: IChartActionContext): Promise<void> {
+	public override async run(context: IChartActionContext): Promise<void> {
 		if (context.insight instanceof Graph) {
 			let data = context.insight.getCanvasData();
 			if (!data) {
@@ -170,7 +169,7 @@ export class SaveImageAction extends Action {
 		super(SaveImageAction.ID, SaveImageAction.LABEL, SaveImageAction.ICON);
 	}
 
-	public async run(context: IChartActionContext): Promise<void> {
+	public override async run(context: IChartActionContext): Promise<void> {
 		if (context.insight instanceof Graph) {
 			let fileFilters = new Array<FileFilter>({ extensions: ['png'], name: localize('resultsSerializer.saveAsFileExtensionPNGTitle', "PNG") });
 

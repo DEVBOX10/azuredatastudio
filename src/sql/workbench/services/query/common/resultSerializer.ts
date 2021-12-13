@@ -314,7 +314,8 @@ export class ResultSerializer {
 	 * Open the saved file in a new vscode editor pane
 	 */
 	private openSavedFile(filePath: URI, format: string): void {
-		if (format !== SaveFormat.EXCEL) {
+		const openAfterSaveConfig = this._configurationService.getValue<IQueryEditorConfiguration>('queryEditor').results.openAfterSave;
+		if (format !== SaveFormat.EXCEL && openAfterSaveConfig) {
 			this._editorService.openEditor({ resource: filePath }).then((result) => {
 
 			}, (error: any) => {
@@ -326,11 +327,11 @@ export class ResultSerializer {
 		} else {
 			this._notificationService.prompt(
 				Severity.Info,
-				nls.localize('msgSaveSucceeded', "Successfully saved results to {0}", filePath.path),
+				nls.localize('msgSaveSucceeded', "Successfully saved results to {0}", filePath.fsPath),
 				[{
 					label: nls.localize('openFile', "Open file"),
 					run: () => {
-						this.openerService.open(filePath, { openExternal: true });
+						this.openerService.open(filePath, { openExternal: format === SaveFormat.EXCEL });
 					}
 				}]
 			);

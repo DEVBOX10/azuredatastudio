@@ -65,7 +65,7 @@ export class WizardModal extends Modal {
 
 	}
 
-	public render() {
+	public override render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
 
@@ -99,8 +99,8 @@ export class WizardModal extends Modal {
 		this._wizard.onMessageChange(message => messageChangeHandler(message));
 	}
 
-	private addDialogButton(button: DialogButton, onSelect: () => void = () => undefined, registerClickEvent: boolean = true, requirePageValid: boolean = false): Button {
-		let buttonElement = this.addFooterButton(button.label, onSelect, button.position, button.secondary);
+	private addDialogButton(button: DialogButton, onSelect: () => void = () => undefined, registerClickEvent: boolean = true, requirePageValid: boolean = false, index?: number): Button {
+		let buttonElement = this.addFooterButton(button.label, onSelect, button.position, button.secondary, index);
 		buttonElement.enabled = button.enabled;
 		if (registerClickEvent) {
 			button.registerClickEvent(buttonElement.onDidClick);
@@ -133,8 +133,8 @@ export class WizardModal extends Modal {
 		this._mpContainer = append(this._body, $('div.dialog-message-and-page-container'));
 		this._pageContainer = append(this._mpContainer, $('div.dialogModal-page-container'));
 
-		this._wizard.pages.forEach(page => {
-			this.registerPage(page);
+		this._wizard.pages.forEach((page, index) => {
+			this.registerPage(page, index === 0); // only do auto-focus for the first page.
 		});
 		this._wizard.onPageAdded(page => {
 			this.registerPage(page);
@@ -151,7 +151,7 @@ export class WizardModal extends Modal {
 		this.updatePageNumbers();
 	}
 
-	protected set messagesElementVisible(visible: boolean) {
+	protected override set messagesElementVisible(visible: boolean) {
 		if (visible) {
 			this._mpContainer.prepend(this._messageElement);
 		} else {
@@ -167,8 +167,8 @@ export class WizardModal extends Modal {
 		});
 	}
 
-	private registerPage(page: WizardPage): void {
-		let dialogPane = new DialogPane(page.title, page.content, valid => page.notifyValidityChanged(valid), this._instantiationService, this._themeService, this._wizard.displayPageTitles, page.description);
+	private registerPage(page: WizardPage, setInitialFocus: boolean = false): void {
+		let dialogPane = new DialogPane(page.title, page.content, valid => page.notifyValidityChanged(valid), this._instantiationService, this._themeService, this._wizard.displayPageTitles, page.description, setInitialFocus);
 		dialogPane.createBody(this._pageContainer);
 		this._dialogPanes.set(page, dialogPane);
 		page.onUpdate(() => this.setButtonsForPage(this._wizard.currentPage));
@@ -199,6 +199,16 @@ export class WizardModal extends Modal {
 		if (dialogPaneToShow && readHeader) {
 			status(`${dialogPaneToShow.pageNumberDisplayText} ${dialogPaneToShow.title}`);
 		}
+
+		// Remove the current page's custom buttons
+		this._wizard.pages[this._wizard.currentPage]?.customButtons.forEach(button => {
+			this.removeFooterButton(button.label);
+		});
+		// Add the custom buttons for the new page
+		this._wizard.pages[index]?.customButtons.forEach((button, buttonIndex) => {
+			let buttonElement = this.addDialogButton(button, undefined, undefined, undefined, buttonIndex);
+			this.updateButtonElement(buttonElement, button);
+		});
 		this.setButtonsForPage(index);
 		this._wizard.setCurrentPage(index);
 		let currentPageValid = this._wizard.pages[this._wizard.currentPage].valid;
@@ -217,7 +227,10 @@ export class WizardModal extends Modal {
 				.withAdditionalProperties({
 					wizardName: this._wizard.name,
 					pageNavigationFrom: this._wizard.pages[prevPageIndex].pageName ?? prevPageIndex,
-					pageNavigationTo: this._wizard.pages[index].pageName ?? index
+					pageNavigationTo: this._wizard.pages[index].pageName ?? index,
+					pageNavigationFromIndex: prevPageIndex,
+					pageNavigationToIndex: index,
+					direction: index > prevPageIndex ? 'forward' : 'backward'
 				}).send();
 		}
 	}
@@ -309,14 +322,14 @@ export class WizardModal extends Modal {
 	/**
 	 * Overridable to change behavior of escape key
 	 */
-	protected onClose(e: StandardKeyboardEvent): void {
+	protected override onClose(e: StandardKeyboardEvent): void {
 		this.cancel();
 	}
 
 	/**
 	 * Overridable to change behavior of enter key
 	 */
-	protected onAccept(e: StandardKeyboardEvent): void {
+	protected override onAccept(e: StandardKeyboardEvent): void {
 		if (this._wizard.currentPage === this._wizard.pages.length - 1) {
 			this.done().catch(err => onUnexpectedError(err));
 		} else {
@@ -326,7 +339,7 @@ export class WizardModal extends Modal {
 		}
 	}
 
-	public dispose(): void {
+	public override dispose(): void {
 		super.dispose();
 		this._dialogPanes.forEach(dialogPane => dialogPane.dispose());
 	}

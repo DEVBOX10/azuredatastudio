@@ -66,9 +66,19 @@ export class SchemaCompareOptionsDialog {
 		this.optionsModel.setObjectTypeOptions();
 		this.schemaComparison.setDeploymentOptions(this.optionsModel.deploymentOptions);
 
+		const yesItem: vscode.MessageItem = {
+			title: loc.YesButtonText,
+			isCloseAffordance: true
+		};
+
+		const noItem: vscode.MessageItem = {
+			title: loc.NoButtonText,
+			isCloseAffordance: true
+		};
+
 		if (this.optionsChanged) {
-			vscode.window.showWarningMessage(loc.OptionsChangedMessage, loc.YesButtonText, loc.NoButtonText).then((result) => {
-				if (result === loc.YesButtonText) {
+			vscode.window.showInformationMessage(loc.OptionsChangedMessage, { modal: true }, yesItem, noItem).then((result) => {
+				if (result.title === loc.YesButtonText) {
 					this.schemaComparison.startCompare();
 				}
 			});
@@ -98,7 +108,8 @@ export class SchemaCompareOptionsDialog {
 	private initializeSchemaCompareOptionsDialogTab(): void {
 		this.generalOptionsTab.registerContent(async view => {
 
-			this.descriptionHeading = view.modelBuilder.table().withProperties({
+			this.descriptionHeading = view.modelBuilder.table().withProps({
+				data: [],
 				columns: [
 					{
 						value: 'Option Description',
@@ -108,7 +119,7 @@ export class SchemaCompareOptionsDialog {
 				]
 			}).component();
 
-			this.descriptionText = view.modelBuilder.text().withProperties({
+			this.descriptionText = view.modelBuilder.text().withProps({
 				value: ' '
 			}).component();
 

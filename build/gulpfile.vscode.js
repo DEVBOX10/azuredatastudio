@@ -30,7 +30,7 @@ const { getProductionDependencies } = require('./lib/dependencies');
 const { config } = require('./lib/electron');
 const createAsar = require('./lib/asar').createAsar;
 const { compileBuildTask } = require('./gulpfile.compile');
-const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
+const { compileExtensionsBuildTask, compileLocalizationExtensionsBuildTask } = require('./gulpfile.extensions');  // {{SQL CARBON EDIT}} Must handle localization code.
 
 // Build
 const vscodeEntryPoints = _.flatten([
@@ -51,7 +51,6 @@ const vscodeResources = [
 	'out-build/bootstrap-amd.js',
 	'out-build/bootstrap-node.js',
 	'out-build/bootstrap-window.js',
-	'out-build/paths.js',
 	'out-build/vs/**/*.{svg,png,html,jpg}',
 	'!out-build/vs/code/browser/**/*.html',
 	'!out-build/vs/editor/standalone/**/*.svg',
@@ -60,6 +59,7 @@ const vscodeResources = [
 	'out-build/vs/base/node/{stdForkStart.js,terminateProcess.sh,cpuUsage.sh,ps.sh}',
 	'out-build/vs/base/browser/ui/codicons/codicon/**',
 	'out-build/vs/base/parts/sandbox/electron-browser/preload.js',
+	'out-build/vs/platform/environment/node/userDataPath.js',
 	'out-build/vs/workbench/browser/media/*-theme.css',
 	'out-build/vs/workbench/contrib/debug/**/*.json',
 	'out-build/vs/workbench/contrib/externalTerminal/**/*.scpt',
@@ -107,6 +107,49 @@ const optimizeVSCodeTask = task.define('optimize-vscode', task.series(
 	})
 ));
 gulp.task(optimizeVSCodeTask);
+
+// {{SQL CARBON EDIT}} Gulp task that imports any relevant ADS XLF found in vscode-translations-export to resources/xlf/en folder.
+
+// List of ADS extension XLF files that we want to put into the English resource folder.
+const extensionsFilter = filter([
+	'**/admin-tool-ext-win.xlf',
+	'**/agent.xlf',
+	'**/arc.xlf',
+	'**/asde-deployment.xlf',
+	'**/azurecore.xlf',
+	'**/azurehybridtoolkit.xlf',
+	'**/big-data-cluster.xlf',
+	'**/cms.xlf',
+	'**/dacpac.xlf',
+	'**/data-workspace.xlf',
+	'**/import.xlf',
+	'**/kusto.xlf',
+	'**/machine-learning.xlf',
+	'**/Microsoft.sqlservernotebook.xlf',
+	'**/mssql.xlf',
+	'**/notebook.xlf',
+	'**/profiler.xlf',
+	'**/query-history.xlf',
+	'**/resource-deployment.xlf',
+	'**/schema-compare.xlf',
+	'**/server-report.xlf',
+	'**/sql-assessment.xlf',
+	'**/sql-database-projects.xlf',
+	'**/sql-migration.xlf',
+	'**/xml-language-features.xlf'
+]);
+
+// Copy ADS extension XLFs into English resource folder.
+const importExtensionsTask = task.define('import-extensions-xlfs', function () {
+	return es.merge(
+		gulp.src(`./vscode-translations-export/vscode-extensions/*.xlf`)
+			.pipe(extensionsFilter),
+		gulp.src(`./vscode-translations-export/ads-core/*.xlf`)
+	)
+	.pipe(vfs.dest(`./resources/xlf/en`));
+});
+gulp.task(importExtensionsTask);
+// {{SQL CARBON EDIT}} end
 
 const sourceMappingURLBase = `https://sqlopsbuilds.blob.core.windows.net/sourcemaps/${commit}`;
 const minifyVSCodeTask = task.define('minify-vscode', task.series(
@@ -233,11 +276,20 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 		const productionDependencies = getProductionDependencies(root);
 		const dependenciesSrc = _.flatten(productionDependencies.map(d => path.relative(root, d.path)).map(d => [`${d}/**`, `!${d}/**/{test,tests}/**`]));
 
-		// {{SQL CARBON EDIT}} - fix runtime module load break
 		const deps = gulp.src(dependenciesSrc, { base: '.', dot: true })
-			.pipe(filter(['**', '!**/package-lock.json']))
+			.pipe(filter(['**', `!**/${config.version}/**`, '!**/bin/darwin-arm64-87/**', '!**/package-lock.json', '!**/yarn.lock', '!**/*.js.map']))
 			.pipe(util.cleanNodeModules(path.join(__dirname, '.moduleignore')))
-			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), ['**/*.node', '**/vscode-ripgrep/bin/*', '**/node-pty/build/Release/*', '**/*.wasm'], 'node_modules.asar'));
+			.pipe(jsFilter)
+			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
+			.pipe(jsFilter.restore)
+			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
+				'**/*.node',
+				'**/vscode-ripgrep/bin/*',
+				'**/node-pty/build/Release/*',
+				'**/node-pty/lib/worker/conoutSocketWorker.js',
+				'**/node-pty/lib/shared/conout.js',
+				'**/*.wasm'
+			], 'node_modules.asar'));
 
 		let all = es.merge(
 			packageJsonStream,
@@ -271,6 +323,7 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 			.pipe(fileLengthFilter.restore)
 			.pipe(util.skipDirectories())
 			.pipe(util.fixWin32DirectoryPermissions())
+			.pipe(filter(['**', '!**/.github/**'], { dot: true })) // https://github.com/microsoft/vscode/issues/116523
 			.pipe(electron(_.extend({}, config, { platform, arch: arch === 'armhf' ? 'arm' : arch, ffmpegChromium: true })))
 			.pipe(filter(['**', '!LICENSE', '!LICENSES.chromium.html', '!version'], { dot: true }));
 
@@ -392,8 +445,6 @@ BUILD_TARGETS.forEach(buildTarget => {
 	}
 });
 
-// Transifex Localizations
-
 const innoSetupConfig = {
 	'zh-cn': { codePage: 'CP936', defaultInfo: { name: 'Simplified Chinese', id: '$0804', } },
 	'zh-tw': { codePage: 'CP950', defaultInfo: { name: 'Traditional Chinese', id: '$0404' } },
@@ -408,6 +459,8 @@ const innoSetupConfig = {
 	'hu': { codePage: 'CP1250' },
 	'tr': { codePage: 'CP1254' }
 };
+
+// Transifex Localizations
 
 const apiHostname = process.env.TRANSIFEX_API_URL;
 const apiName = process.env.TRANSIFEX_API_NAME;
@@ -434,25 +487,38 @@ gulp.task(task.define(
 	)
 ));
 
-gulp.task(task.define(
+// {{SQL CARBON EDIT}} Allow for gulp task to be added to update-english-xlfs.
+const vscodeTranslationsExport = task.define(
 	'vscode-translations-export',
 	task.series(
 		compileBuildTask,
-		compileExtensionsBuildTask,
+		compileLocalizationExtensionsBuildTask, // {{SQL CARBON EDIT}} now include all extensions in ADS, not just a subset. (replaces 'compileExtensionsBuildTask' here).
 		optimizeVSCodeTask,
 		function () {
 			const pathToMetadata = './out-vscode/nls.metadata.json';
 			const pathToExtensions = '.build/extensions/*';
-			const pathToSetup = 'build/win32/**/{Default.isl,messages.en.isl}';
+			const pathToSetup = 'build/win32/i18n/messages.en.isl';
 
 			return es.merge(
 				gulp.src(pathToMetadata).pipe(i18n.createXlfFilesForCoreBundle()),
 				gulp.src(pathToSetup).pipe(i18n.createXlfFilesForIsl()),
 				gulp.src(pathToExtensions).pipe(i18n.createXlfFilesForExtensions())
-			).pipe(vfs.dest('../vscode-translations-export'));
+			).pipe(vfs.dest('./vscode-translations-export')); // {{SQL CARBON EDIT}} move vscode-translations-export into ADS (for safely deleting after use).
 		}
 	)
+);
+gulp.task(vscodeTranslationsExport);
+
+// {{SQL CARBON EDIT}} Localization gulp task, runs vscodeTranslationsExport and imports a subset of the generated XLFs into the folder.
+gulp.task(task.define(
+	'update-english-xlfs',
+	task.series(
+		vscodeTranslationsExport,
+		importExtensionsTask,
+		task.define('delete-vscode-translations-export', util.rimraf('./vscode-translations-export'))
+	)
 ));
+// {{SQL CARBON EDIT}} end
 
 gulp.task('vscode-translations-pull', function () {
 	return es.merge([...i18n.defaultLanguages, ...i18n.extraLanguages].map(language => {
@@ -535,7 +601,7 @@ gulp.task(task.define(
 
 			if (!shouldSetupSettingsSearch()) {
 				const branch = process.env.BUILD_SOURCEBRANCH;
-				console.log(`Only runs on master and release branches, not ${branch}`);
+				console.log(`Only runs on main and release branches, not ${branch}`);
 				return;
 			}
 
@@ -561,21 +627,21 @@ gulp.task(task.define(
 
 function shouldSetupSettingsSearch() {
 	const branch = process.env.BUILD_SOURCEBRANCH;
-	return branch && (/\/master$/.test(branch) || branch.indexOf('/release/') >= 0);
+	return branch && (/\/main$/.test(branch) || branch.indexOf('/release/') >= 0);
 }
 
 function getSettingsSearchBuildId(packageJson) {
 	try {
 		const branch = process.env.BUILD_SOURCEBRANCH;
 		const branchId = branch.indexOf('/release/') >= 0 ? 0 :
-			/\/master$/.test(branch) ? 1 :
+			/\/main$/.test(branch) ? 1 :
 				2; // Some unexpected branch
 
 		const out = cp.execSync(`git rev-list HEAD --count`);
 		const count = parseInt(out.toString());
 
 		// <version number><commit count><branchId (avoid unlikely conflicts)>
-		// 1.25.1, 1,234,567 commits, master = 1250112345671
+		// 1.25.1, 1,234,567 commits, main = 1250112345671
 		return util.versionStringToNumber(packageJson.version) * 1e8 + count * 10 + branchId;
 	} catch (e) {
 		throw new Error('Could not determine build number: ' + e.toString());

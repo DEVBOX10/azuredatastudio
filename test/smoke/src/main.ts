@@ -77,6 +77,7 @@ if (screenshotsPath) {
 	mkdirp.sync(screenshotsPath);
 }
 
+// {{SQL CARBON EDIT}} Add logs to smoke tests
 const logPath = opts.log ? path.resolve(opts.log) : null;
 if (logPath) {
 	mkdirp.sync(path.dirname(logPath));
@@ -220,6 +221,7 @@ async function setupRepository(): Promise<void> {
 			cp.spawnSync('git', ['clean', '-xdf'], { cwd: workspacePath });
 		}
 
+		// None of the test run the project
 		// console.log('*** Running yarn...');
 		// cp.execSync('yarn', { cwd: workspacePath, stdio: 'inherit' });
 	}
@@ -268,7 +270,7 @@ before(async function () {
 	this.timeout(2 * 60 * 1000); // allow two minutes for setup
 	await setup();
 	this.defaultOptions = createOptions();
-	await sqlSetup(this.defaultOptions);
+	await sqlSetup(this.defaultOptions); // {{SQL CARBON EDIT}}
 });
 
 after(async function () {
@@ -277,7 +279,19 @@ after(async function () {
 	if (opts.log) {
 		const logsDir = path.join(userDataDir, 'logs');
 		const destLogsDir = path.join(path.dirname(opts.log), 'logs');
-		await new Promise((c, e) => ncp(logsDir, destLogsDir, err => err ? e(err) : c(undefined)));
+
+		// {{ SQL CARBON EDIT }}
+		/**
+		 * The logs directory is not present during the ADS web build, but is during the Darwin build.
+		 * In situations where the directory is missing and a copy attempt is made, bash exits with code 255 and raises an error
+		 * explaining that there's no such file or directory. This prevents that error from occurring.
+		 */
+		try {
+			await new Promise((c, e) => ncp(logsDir, destLogsDir, err => err ? e(err) : c(undefined)));
+		}
+		catch (ex) {
+			console.warn(`Caught exception from ncp: ${ex}`);
+		}
 	}
 
 	await new Promise((c, e) => rimraf(testDataPath, { maxBusyTries: 10 }, err => err ? e(err) : c(undefined)));

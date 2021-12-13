@@ -6,7 +6,7 @@ import * as azdata from 'azdata';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as loc from '../../localizedConstants';
-
+import { promises as fs } from 'fs';
 export interface RadioOptionsInfo {
 	values?: string[],
 	defaultValue: string
@@ -18,17 +18,32 @@ export class FilePicker {
 	public readonly filePickerButton: azdata.ButtonComponent;
 	constructor(
 		modelBuilder: azdata.ModelBuilder,
-		initialPath: string, onNewDisposableCreated: (disposable: vscode.Disposable) => void
+		initialPath: string,
+		onNewDisposableCreated: (disposable: vscode.Disposable) => void,
+		ariaLabel: string,
+		validationErrorMessage: string,
+		required: boolean
 	) {
 		const buttonWidth = 80;
 		this.filePathInputBox = modelBuilder.inputBox()
-			.withProperties<azdata.InputBoxProperties>({
+			.withProps({
 				value: initialPath,
+				ariaLabel: ariaLabel,
+				validationErrorMessage: validationErrorMessage,
+				required: required,
 				width: 350
+			}).withValidation(async () => {
+				try {
+					await fs.stat(this.filePathInputBox.value || '');
+				} catch (err) {
+					console.log('Error checking config path ', err);
+					return false;
+				}
+				return true;
 			}).component();
 
 		this.filePickerButton = modelBuilder.button()
-			.withProperties<azdata.ButtonProperties>({
+			.withProps({
 				label: loc.browse,
 				width: buttonWidth,
 				secondary: true
@@ -74,5 +89,5 @@ function createFlexContainer(modelBuilder: azdata.ModelBuilder, items: azdata.Co
 	alignItems = alignItems || (rowLayout ? 'center' : undefined);
 	const itemsStyle = rowLayout ? { CSSStyles: { 'margin-right': '5px', } } : {};
 	const flexLayout: azdata.FlexLayout = { flexFlow: flexFlow, height: height, width: width, alignItems: alignItems };
-	return modelBuilder.flexContainer().withItems(items, itemsStyle).withLayout(flexLayout).withProperties<azdata.ComponentProperties>({ CSSStyles: cssStyles || {} }).component();
+	return modelBuilder.flexContainer().withItems(items, itemsStyle).withLayout(flexLayout).withProps({ CSSStyles: cssStyles || {} }).component();
 }

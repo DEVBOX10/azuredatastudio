@@ -12,7 +12,6 @@ import {
 import { GroupLayout, GroupContainerProperties, CssStyles } from 'azdata';
 
 import { ContainerBase } from 'sql/workbench/browser/modelComponents/componentBase';
-import { endsWith } from 'vs/base/common/strings';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import * as DOM from 'vs/base/browser/dom';
@@ -25,15 +24,18 @@ import { ILogService } from 'vs/platform/log/common/log';
 		<div *ngIf="hasHeader()" [class]="getHeaderClass()" (click)="changeState()" (keydown)="onKeyDown($event)" [tabindex]="isCollapsible()? 0 : -1" [attr.role]="isCollapsible() ? 'button' : null" [attr.aria-expanded]="isCollapsible() ? !collapsed : null">
 				{{_containerLayout.header}}
 		</div>
-		<div #container *ngIf="items" class="modelview-group-container" [ngStyle]="CSSStyles">
-			<ng-container *ngFor="let item of items">
-			<div class="modelview-group-row" >
-				<div  class="modelview-group-cell">
-				<model-component-wrapper  [descriptor]="item.descriptor" [modelStore]="modelStore" >
-				</model-component-wrapper>
+		<!-- This extra div is needed so that the expanded state of the header is updated correctly. See https://github.com/microsoft/azuredatastudio/pull/16499 for more details -->
+		<div>
+			<div #container *ngIf="items" class="modelview-group-container" [ngStyle]="CSSStyles">
+				<ng-container *ngFor="let item of items">
+				<div class="modelview-group-row" >
+					<div  class="modelview-group-cell">
+					<model-component-wrapper  [descriptor]="item.descriptor" [modelStore]="modelStore" >
+					</model-component-wrapper>
+					</div>
 				</div>
+				</ng-container>
 			</div>
-			</ng-container>
 		</div>
 	`
 })
@@ -54,7 +56,7 @@ export default class GroupContainer extends ContainerBase<GroupLayout, GroupCont
 		this.baseInit();
 	}
 
-	ngOnDestroy(): void {
+	override ngOnDestroy(): void {
 		this.baseDestroy();
 	}
 
@@ -104,7 +106,7 @@ export default class GroupContainer extends ContainerBase<GroupLayout, GroupCont
 	public getContainerWidth(): string {
 		if (this._containerLayout && this._containerLayout.width) {
 			let width: string = this._containerLayout.width.toString();
-			if (!endsWith(width, '%') && !endsWith(width.toLowerCase(), 'px')) {
+			if (!width.endsWith('%') && !width.toLowerCase().endsWith('px')) {
 				width = width + 'px';
 			}
 			return width;
@@ -133,7 +135,7 @@ export default class GroupContainer extends ContainerBase<GroupLayout, GroupCont
 		}
 	}
 
-	public get CSSStyles(): CssStyles {
+	public override get CSSStyles(): CssStyles {
 		return this.mergeCss(super.CSSStyles, {
 			'display': this.getContainerDisplayStyle(),
 			'width': this.getContainerWidth(),

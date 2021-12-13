@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as azdata from 'azdata';
 import * as vscode from 'vscode';
-import { getErrorMessage } from '../../common/utils';
+import * as loc from '../../localizedConstants';
 
 export interface RadioOptionsInfo {
 	values?: string[],
@@ -20,8 +20,13 @@ export class RadioOptionsGroup {
 	private _onRadioOptionChanged: vscode.EventEmitter<string | undefined> = new vscode.EventEmitter<string | undefined>();
 	public onRadioOptionChanged: vscode.Event<string | undefined> = this._onRadioOptionChanged.event;
 
-	constructor(private _modelBuilder: azdata.ModelBuilder, private _onNewDisposableCreated: (disposable: vscode.Disposable) => void, private _groupName: string = `RadioOptionsGroup${RadioOptionsGroup.id++}`) {
-		this._divContainer = this._modelBuilder.divContainer().withProperties<azdata.DivContainerProperties>({ clickable: false }).component();
+	constructor(private _modelBuilder: azdata.ModelBuilder,
+		private _onNewDisposableCreated: (disposable: vscode.Disposable) => void,
+		private _groupName: string = `RadioOptionsGroup${RadioOptionsGroup.id++}`,
+		private _loadingCompleteMessage: string,
+		private _loadingCompleteErrorMessage: (error: any) => string
+	) {
+		this._divContainer = this._modelBuilder.divContainer().withProps({ clickable: false }).component();
 		this._loadingBuilder = this._modelBuilder.loadingComponent().withItem(this._divContainer);
 	}
 
@@ -37,7 +42,7 @@ export class RadioOptionsGroup {
 			const options = optionsInfo.values!;
 			let defaultValue: string = optionsInfo.defaultValue!;
 			options.forEach((option: string) => {
-				const radioOption = this._modelBuilder.radioButton().withProperties<azdata.RadioButtonProperties>({
+				const radioOption = this._modelBuilder.radioButton().withProps({
 					label: option,
 					checked: option === defaultValue,
 					name: this._groupName,
@@ -59,10 +64,12 @@ export class RadioOptionsGroup {
 				}));
 				this._divContainer.addItem(radioOption);
 			});
+			this.component().loadingCompletedText = this._loadingCompleteMessage;
 		}
 		catch (e) {
-			const errorLabel = this._modelBuilder.text().withProperties({ value: getErrorMessage(e), CSSStyles: { 'color': 'Red' } }).component();
+			const errorLabel = this._modelBuilder.text().withProps({ value: loc.loadingClusterContextsError(e), CSSStyles: { 'color': 'Red' } }).component();
 			this._divContainer.addItem(errorLabel);
+			this.component().loadingCompletedText = this._loadingCompleteErrorMessage(e);
 		}
 		this.component().loading = false;
 	}

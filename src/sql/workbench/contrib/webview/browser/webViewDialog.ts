@@ -33,8 +33,6 @@ export class WebViewDialog extends Modal {
 
 	private _onOk = new Emitter<void>();
 	public onOk: Event<void> = this._onOk.event;
-	private _onClosed = new Emitter<void>();
-	public onClosed: Event<void> = this._onClosed.event;
 	private _onMessage = new Emitter<any>();
 
 	private readonly id = generateUuid();
@@ -106,7 +104,7 @@ export class WebViewDialog extends Modal {
 		return this._onMessage.event;
 	}
 
-	public render() {
+	public override render() {
 		super.render();
 		this._register(attachModalDialogStyler(this, this._themeService));
 
@@ -125,12 +123,12 @@ export class WebViewDialog extends Modal {
 	}
 
 	/* espace key */
-	protected onClose() {
+	protected override onClose() {
 		this.ok();
 	}
 
 	/* enter key */
-	protected onAccept() {
+	protected override onAccept() {
 		this.ok();
 	}
 
@@ -141,7 +139,6 @@ export class WebViewDialog extends Modal {
 
 	public close(hideReason: HideReason = 'close') {
 		this.hide(hideReason);
-		this._onClosed.fire();
 	}
 
 	public sendMessage(message: any): void {

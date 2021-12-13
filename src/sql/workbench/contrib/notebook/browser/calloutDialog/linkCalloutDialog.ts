@@ -21,7 +21,7 @@ import { Deferred } from 'sql/base/common/promise';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { attachCalloutDialogStyler } from 'sql/workbench/common/styler';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { escapeLabel, escapeUrl } from 'sql/workbench/contrib/notebook/browser/calloutDialog/common/utils';
+import { escapeLabel, escapeUrl, unquoteText } from 'sql/workbench/contrib/notebook/browser/calloutDialog/common/utils';
 
 export interface ILinkCalloutDialogOptions {
 	insertTitle?: string,
@@ -90,7 +90,7 @@ export class LinkCalloutDialog extends Modal {
 		return this._selectionComplete.promise;
 	}
 
-	public render(): void {
+	public override render(): void {
 		super.render();
 		attachCalloutDialogStyler(this, this._themeService);
 
@@ -144,13 +144,13 @@ export class LinkCalloutDialog extends Modal {
 		this._register(styler.attachInputBoxStyler(this._linkUrlInputBox, this._themeService));
 	}
 
-	protected onAccept(e?: StandardKeyboardEvent) {
+	protected override onAccept(e?: StandardKeyboardEvent) {
 		// EventHelper.stop() will call preventDefault. Without it, text cell will insert an extra newline when pressing enter on dialog
 		DOM.EventHelper.stop(e, true);
 		this.insert();
 	}
 
-	protected onClose(e?: StandardKeyboardEvent) {
+	protected override onClose(e?: StandardKeyboardEvent) {
 		DOM.EventHelper.stop(e, true);
 		this.cancel();
 	}
@@ -158,7 +158,8 @@ export class LinkCalloutDialog extends Modal {
 	public insert(): void {
 		this.hide('ok');
 		let escapedLabel = escapeLabel(this._linkTextInputBox.value);
-		let escapedUrl = escapeUrl(this._linkUrlInputBox.value);
+		let unquotedUrl = unquoteText(this._linkUrlInputBox.value);
+		let escapedUrl = escapeUrl(unquotedUrl);
 
 		if (this._previouslySelectedRange) {
 			// Reset selection to previous state before callout was open
@@ -169,7 +170,7 @@ export class LinkCalloutDialog extends Modal {
 			this._selectionComplete.resolve({
 				insertEscapedMarkdown: `[${escapedLabel}](${escapedUrl})`,
 				insertUnescapedLinkLabel: this._linkTextInputBox.value,
-				insertUnescapedLinkUrl: this._linkUrlInputBox.value
+				insertUnescapedLinkUrl: unquotedUrl
 			});
 		}
 	}

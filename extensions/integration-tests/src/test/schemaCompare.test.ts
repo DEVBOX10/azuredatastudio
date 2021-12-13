@@ -54,6 +54,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			serverName: '',
 			databaseName: '',
 			ownerUri: '',
+			projectFilePath: '',
+			folderStructure: '',
+			targetScripts: [],
+			dataSchemaProvider: '',
 			connectionDetails: undefined
 		};
 		let target: mssql.SchemaCompareEndpointInfo = {
@@ -63,6 +67,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			serverName: '',
 			databaseName: '',
 			ownerUri: '',
+			projectFilePath: '',
+			folderStructure: '',
+			targetScripts: [],
+			dataSchemaProvider: '',
 			connectionDetails: undefined
 		};
 
@@ -100,8 +108,8 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			let result1 = await dacfxService.deployDacpac(dacpac1, sourceDB, true, ownerUri, azdata.TaskExecutionMode.execute);
 			let result2 = await dacfxService.deployDacpac(dacpac2, targetDB, true, ownerUri, azdata.TaskExecutionMode.execute);
 
-			assert(result1.success === true, 'Deploy source database should succeed');
-			assert(result2.success === true, 'Deploy target database should succeed');
+			assert(result1.success === true, `Deploy source database should succeed. Failed with error ${result1.errorMessage}`);
+			assert(result2.success === true, `Deploy target database should succeed. Failed with error ${result2.errorMessage}`);
 			await utils.assertDatabaseCreationResult(sourceDB, ownerUri, retryCount);
 			await utils.assertDatabaseCreationResult(targetDB, ownerUri, retryCount);
 
@@ -114,6 +122,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: server.serverName,
 				databaseName: sourceDB,
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 			let target: mssql.SchemaCompareEndpointInfo = {
@@ -123,6 +135,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: server.serverName,
 				databaseName: targetDB,
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 
@@ -170,7 +186,7 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			assert(dacfxService, 'DacFx Service Provider is not available');
 			let result = await dacfxService.deployDacpac(dacpac2, targetDB, true, ownerUri, azdata.TaskExecutionMode.execute);
 
-			assert(result.success === true, 'Deploy database 2 (target) should succeed');
+			assert(result.success === true, `Deploy database 2 (target) should succeed. Failed with error : ${result.errorMessage}`);
 
 			let source: mssql.SchemaCompareEndpointInfo = {
 				endpointType: mssql.SchemaCompareEndpointType.Dacpac,
@@ -179,6 +195,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: '',
 				databaseName: '',
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 			let target: mssql.SchemaCompareEndpointInfo = {
@@ -188,6 +208,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: server.serverName,
 				databaseName: targetDB,
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 
@@ -231,6 +255,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			serverName: '',
 			databaseName: '',
 			ownerUri: '',
+			projectFilePath: '',
+			folderStructure: '',
+			targetScripts: [],
+			dataSchemaProvider: '',
 			connectionDetails: undefined
 		};
 		let target: mssql.SchemaCompareEndpointInfo = {
@@ -240,6 +268,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			serverName: '',
 			databaseName: '',
 			ownerUri: '',
+			projectFilePath: '',
+			folderStructure: '',
+			targetScripts: [],
+			dataSchemaProvider: '',
 			connectionDetails: undefined
 		};
 
@@ -276,7 +308,7 @@ suite('Schema compare integration test suite @DacFx@', () => {
 		assertIncludeExcludeResult(excludeResult3, true, 0, 0);
 	});
 
-	test('Schema compare dacpac to database comparison with publishing some changes and then compare again', async function () {
+	test('Schema compare dacpac to database comparison with publishing some changes and then compare again @UNSTABLE@', async function () {
 		this.timeout(testTimeout);
 		const server = await getStandaloneServer();
 		const ownerUri = await getConnectionUri(server);
@@ -288,7 +320,7 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			assert(dacfxService, 'DacFx Service Provider is not available');
 			let result = await dacfxService.deployDacpac(dacpac1, targetDB, true, ownerUri, azdata.TaskExecutionMode.execute);
 
-			assert(result.success === true, 'Deploy database 2 (target) should succeed');
+			assert(result.success === true, `Deploy database 2 (target) should succeed. Failed with error : ${result.errorMessage}`);
 
 			const source: mssql.SchemaCompareEndpointInfo = {
 				endpointType: mssql.SchemaCompareEndpointType.Dacpac,
@@ -297,6 +329,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: '',
 				databaseName: '',
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 			const target: mssql.SchemaCompareEndpointInfo = {
@@ -306,6 +342,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: server.serverName,
 				databaseName: targetDB,
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 
@@ -323,8 +363,8 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			assertIncludeExcludeResult(includeResult, true, 0, 0);
 
 			//publish the updated changes. Function1 should not be added to the target database
-			const publishChangesResult = await schemaCompareService.schemaComparePublishChanges(schemaCompareResult.operationId, server.serverName, targetDB, azdata.TaskExecutionMode.execute);
-			assert(publishChangesResult.success === true, 'Publish changes should complete successfully. But it failed.');
+			const publishChangesResult = await schemaCompareService.schemaComparePublishDatabaseChanges(schemaCompareResult.operationId, server.serverName, targetDB, azdata.TaskExecutionMode.execute);
+			assert(publishChangesResult.success === true, `Publish changes should complete successfully. But it failed with error : ${publishChangesResult.errorMessage}`);
 
 			//verify table Table3 is added
 			const dbConnectionId = await utils.connectToServer({
@@ -351,7 +391,7 @@ suite('Schema compare integration test suite @DacFx@', () => {
 		}
 	});
 
-	test('Schema compare dacpac to database comparison with publishing all changes and then compare again', async function () {
+	test('Schema compare dacpac to database comparison with publishing all changes and then compare again @UNSTABLE@', async function () {
 		this.timeout(testTimeout);
 		const server = await getStandaloneServer();
 		const ownerUri = await getConnectionUri(server);
@@ -363,7 +403,7 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			assert(dacfxService, 'DacFx Service Provider is not available');
 			let result = await dacfxService.deployDacpac(dacpac1, targetDB, true, ownerUri, azdata.TaskExecutionMode.execute);
 
-			assert(result.success === true, 'Deploy database 2 (target) should succeed');
+			assert(result.success === true, `Deploy database 2 (target) should succeed. Failed with error : ${result.errorMessage}`);
 
 			const source: mssql.SchemaCompareEndpointInfo = {
 				endpointType: mssql.SchemaCompareEndpointType.Dacpac,
@@ -372,6 +412,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: '',
 				databaseName: '',
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 			const target: mssql.SchemaCompareEndpointInfo = {
@@ -381,6 +425,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: server.serverName,
 				databaseName: targetDB,
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 
@@ -390,8 +438,8 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			assertSchemaCompareResult(schemaCompareResult, operationId, 4);
 
 			//publish all the changes
-			const publishChangesResult = await schemaCompareService.schemaComparePublishChanges(schemaCompareResult.operationId, server.serverName, targetDB, azdata.TaskExecutionMode.execute);
-			assert(publishChangesResult.success === true, 'Publish changes should complete successfully. But it failed.');
+			const publishChangesResult = await schemaCompareService.schemaComparePublishDatabaseChanges(schemaCompareResult.operationId, server.serverName, targetDB, azdata.TaskExecutionMode.execute);
+			assert(publishChangesResult.success === true, `Publish changes should complete successfully. But it failed with error : ${publishChangesResult.errorMessage}`);
 
 			//verify table Table3 is added
 			const dbConnectionId = await utils.connectToServer({
@@ -426,7 +474,7 @@ suite('Schema compare integration test suite @DacFx@', () => {
 			assert(dacfxService, 'DacFx Service Provider is not available');
 			let result = await dacfxService.deployDacpac(dacpac1, targetDB, true, ownerUri, azdata.TaskExecutionMode.execute);
 
-			assert(result.success === true, 'Deploy database 2 (target) should succeed');
+			assert(result.success === true, `Deploy database 2 (target) should succeed. Failed with error : ${result.errorMessage}`);
 
 			const source: mssql.SchemaCompareEndpointInfo = {
 				endpointType: mssql.SchemaCompareEndpointType.Dacpac,
@@ -435,6 +483,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: '',
 				databaseName: '',
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 			const target: mssql.SchemaCompareEndpointInfo = {
@@ -444,6 +496,10 @@ suite('Schema compare integration test suite @DacFx@', () => {
 				serverName: server.serverName,
 				databaseName: targetDB,
 				ownerUri: ownerUri,
+				projectFilePath: '',
+				folderStructure: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
 				connectionDetails: undefined
 			};
 
@@ -492,7 +548,7 @@ function assertIncludeExcludeResult(result: mssql.SchemaCompareIncludeExcludeRes
 
 function assertSchemaCompareResult(schemaCompareResult: mssql.SchemaCompareResult, operationId: string, expectedDifferenceCount: number, expectedIfEqual: boolean = false): void {
 	assert(schemaCompareResult.areEqual === expectedIfEqual, `Expected: the schemas equivalency to be ${expectedIfEqual} Actual: ${schemaCompareResult.areEqual}`);
-	assert(schemaCompareResult.success === true, `Expected: success in schema compare. Actual: Failure`);
+	assert(schemaCompareResult.success === true, `Expected: success in schema compare. Actual: Failure. failed with error : ${schemaCompareResult.errorMessage}`);
 	assert(schemaCompareResult.errorMessage === null, `Expected: there should be no error for comparison. Actual Error message: "${schemaCompareResult.errorMessage}"`);
 	assert(schemaCompareResult.differences.length === expectedDifferenceCount, `Expected: ${expectedDifferenceCount} differences. Actual differences: "${schemaCompareResult.differences.length}"`);
 	assert(schemaCompareResult.operationId === operationId, `Operation Id Expected to be same as passed. Expected : ${operationId}, Actual ${schemaCompareResult.operationId}`);

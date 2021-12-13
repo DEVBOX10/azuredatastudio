@@ -2,14 +2,15 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
+import { localize } from 'vs/nls';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane';
-import { EditorOptions, IEditorOpenContext } from 'vs/workbench/common/editor';
+import { IEditorOpenContext } from 'vs/workbench/common/editor';
 import * as DOM from 'vs/base/browser/dom';
 import { bootstrapAngular } from 'sql/workbench/services/bootstrap/browser/bootstrapService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-
 import { CancellationToken } from 'vs/base/common/cancellation';
 import { NotebookInput } from 'sql/workbench/contrib/notebook/browser/models/notebookInput';
 import { NotebookModule } from 'sql/workbench/contrib/notebook/browser/notebook.module';
@@ -26,7 +27,7 @@ import { NotebookFindNextAction, NotebookFindPreviousAction } from 'sql/workbenc
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
-import { INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { CellEditModes, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { INotebookFindModel } from 'sql/workbench/contrib/notebook/browser/models/notebookFindModel';
 import { IDisposable, DisposableStore } from 'vs/base/common/lifecycle';
 import { IModelDecorationsChangeAccessor, IModelDeltaDecoration } from 'vs/editor/common/model';
@@ -34,10 +35,13 @@ import { NotebookFindDecorations } from 'sql/workbench/contrib/notebook/browser/
 import { TimeoutTimer } from 'vs/base/common/async';
 import { BaseTextEditor } from 'vs/workbench/browser/parts/editor/textEditor';
 import { onUnexpectedError } from 'vs/base/common/errors';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
 
 export class NotebookEditor extends EditorPane implements IFindNotebookController {
 
 	public static ID: string = 'workbench.editor.notebookEditor';
+	public static LABEL: string = localize('notebookEditor.name', "Notebook Editor");
+
 	private _notebookContainer: HTMLElement;
 	private _currentDimensions: DOM.Dimension;
 	private _overlay: HTMLElement;
@@ -71,7 +75,7 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 		this._actionMap[ACTION_IDS.FIND_PREVIOUS] = this._instantiationService.createInstance(NotebookFindPreviousAction, this);
 	}
 
-	public dispose(): void {
+	public override dispose(): void {
 		this._toDispose.dispose();
 	}
 
@@ -172,7 +176,7 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 	 * Sets focus on this editor. Specifically, it sets the focus on the hosted text editor.
 	 * An implementation provided here for IFindNotebookController interface.
 	 */
-	public focus(): void {
+	public override focus(): void {
 		//no-op
 	}
 
@@ -187,7 +191,7 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 		}
 	}
 
-	public async setInput(input: NotebookInput, options: EditorOptions, context: IEditorOpenContext): Promise<void> {
+	public override async setInput(input: NotebookInput, options: IEditorOptions, context: IEditorOpenContext): Promise<void> {
 		if (this.input && this.input.matches(input)) {
 			return Promise.resolve(undefined);
 		}
@@ -376,8 +380,8 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 					this._onFindStateChange(changeEvent).catch(onUnexpectedError);
 				}
 			}));
-			this._register(cell.onCellMarkdownModeChanged(e => {
-				if (e) {
+			this._register(cell.onCurrentEditModeChanged(editMode => {
+				if (editMode !== CellEditModes.WYSIWYG) {
 					this._onFindStateChange(changeEvent).catch(onUnexpectedError);
 				}
 			}));

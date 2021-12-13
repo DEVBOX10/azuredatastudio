@@ -51,7 +51,7 @@ export class TargetClusterContextPage extends ResourceTypePage {
 		});
 	}
 
-	public async onEnter(): Promise<void> {
+	public override async onEnter(): Promise<void> {
 		if (this.loadDefaultKubeConfigFile) {
 			let defaultKubeConfigPath = this._model.kubeService.getDefaultConfigPath();
 			this.loadClusterContexts(defaultKubeConfigPath);
@@ -74,7 +74,7 @@ export class TargetClusterContextPage extends ResourceTypePage {
 		});
 	}
 
-	public async onLeave(): Promise<void> {
+	public override async onLeave(): Promise<void> {
 		this.wizard.wizardObject.registerNavigationValidator((e) => {
 			return true;
 		});
@@ -83,20 +83,20 @@ export class TargetClusterContextPage extends ResourceTypePage {
 	private initExistingClusterControl(): void {
 		let self = this;
 		const labelWidth = '150px';
-		let configFileLabel = this.view!.modelBuilder.text().withProperties({ value: localize('deployCluster.kubeConfigFileLabelText', "Kube config file path") }).component();
+		let configFileLabel = this.view!.modelBuilder.text().withProps({ value: localize('deployCluster.kubeConfigFileLabelText', "Kube config file path") }).component();
 		configFileLabel.width = labelWidth;
-		this.configFileInput = this.view!.modelBuilder.inputBox().withProperties({ width: '300px' }).component();
+		this.configFileInput = this.view!.modelBuilder.inputBox().withProps({ width: '300px' }).component();
 		this.configFileInput.enabled = false;
-		this.browseFileButton = this.view!.modelBuilder.button().withProperties({ label: localize('deployCluster.browseText', "Browse"), width: '100px', secondary: true }).component();
+		this.browseFileButton = this.view!.modelBuilder.button().withProps({ label: localize('deployCluster.browseText', "Browse"), width: '100px', secondary: true }).component();
 		let configFileContainer = this.view!.modelBuilder.flexContainer()
 			.withLayout({ flexFlow: 'row', alignItems: 'baseline' })
 			.withItems([configFileLabel, this.configFileInput, this.browseFileButton], { CSSStyles: { 'margin-right': '10px' } }).component();
-		this.clusterContextsLabel = this.view!.modelBuilder.text().withProperties({ value: localize('deployCluster.clusterContextsLabelText', "Cluster Contexts") }).component();
+		this.clusterContextsLabel = this.view!.modelBuilder.text().withProps({ value: localize('deployCluster.clusterContextsLabelText', "Cluster Contexts") }).component();
 		this.clusterContextsLabel.width = labelWidth;
-		this.errorLoadingClustersLabel = this.view!.modelBuilder.text().withProperties({ value: localize('deployCluster.errorLoadingClustersText', "No cluster information is found in the config file or an error ocurred while loading the config file") }).component();
+		this.errorLoadingClustersLabel = this.view!.modelBuilder.text().withProps({ value: localize('deployCluster.errorLoadingClustersText', "No cluster information is found in the config file or an error ocurred while loading the config file") }).component();
 		this.clusterContextList = this.view!.modelBuilder.divContainer().component();
 		this.clusterContextLoadingComponent = this.view!.modelBuilder.loadingComponent().withItem(this.clusterContextList).component();
-		this.existingClusterControl = this.view!.modelBuilder.divContainer().withProperties<azdata.DivContainerProperties>({ clickable: false }).component();
+		this.existingClusterControl = this.view!.modelBuilder.divContainer().withProps({ clickable: false }).component();
 		let clusterContextContainer = this.view!.modelBuilder.flexContainer().withLayout({ flexFlow: 'row', alignItems: 'start' }).component();
 		clusterContextContainer.addItem(this.clusterContextsLabel, { flex: '0 0 auto' });
 		clusterContextContainer.addItem(this.clusterContextLoadingComponent, { flex: '0 0 auto', CSSStyles: { 'width': '400px', 'margin-left': '10px', 'margin-top': '10px' } });
@@ -150,7 +150,7 @@ export class TargetClusterContextPage extends ResourceTypePage {
 		if (clusterContexts.length !== 0) {
 			self.wizard.model.setPropertyValue(KubeConfigPath_VariableName, configPath);
 			let options = clusterContexts.map(clusterContext => {
-				let option = this.view!.modelBuilder.radioButton().withProperties<azdata.RadioButtonProperties>({
+				let option = this.view!.modelBuilder.radioButton().withProps({
 					label: clusterContext.name,
 					checked: clusterContext.isCurrentContext,
 					name: ClusterRadioButtonGroupName

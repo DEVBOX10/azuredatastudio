@@ -11,6 +11,7 @@ import * as loc from '../../../localizedConstants';
 import { MiaaConnectionStringsPage } from './miaaConnectionStringsPage';
 import { MiaaModel } from '../../../models/miaaModel';
 import { MiaaComputeAndStoragePage } from './miaaComputeAndStoragePage';
+import { MiaaBackupsPage } from './miaaBackupsPage';
 
 export class MiaaDashboard extends Dashboard {
 
@@ -18,10 +19,10 @@ export class MiaaDashboard extends Dashboard {
 		super(loc.miaaDashboard(_miaaModel.info.name), 'ArcMiaaDashboard');
 	}
 
-	public async showDashboard(): Promise<void> {
+	public override async showDashboard(): Promise<void> {
 		await super.showDashboard();
 		// Kick off the model refreshes but don't wait on it since that's all handled with callbacks anyways
-		this._controllerModel.refresh().catch(err => console.log(`Error refreshing controller model for MIAA dashboard ${err}`));
+		this._controllerModel.refresh(false, this._controllerModel.info.namespace).catch(err => console.log(`Error refreshing controller model for MIAA dashboard ${err}`));
 		this._miaaModel.refresh().catch(err => console.log(`Error refreshing MIAA model for MIAA dashboard ${err}`));
 	}
 
@@ -29,13 +30,15 @@ export class MiaaDashboard extends Dashboard {
 		const overviewPage = new MiaaDashboardOverviewPage(modelView, this.dashboard, this._controllerModel, this._miaaModel);
 		const connectionStringsPage = new MiaaConnectionStringsPage(modelView, this.dashboard, this._miaaModel);
 		const computeAndStoragePage = new MiaaComputeAndStoragePage(modelView, this.dashboard, this._miaaModel);
+		const miaaBackupsPage = new MiaaBackupsPage(modelView, this.dashboard, this._controllerModel, this._miaaModel);
 		return [
 			overviewPage.tab,
 			{
 				title: loc.settings,
 				tabs: [
 					connectionStringsPage.tab,
-					computeAndStoragePage.tab
+					computeAndStoragePage.tab,
+					miaaBackupsPage.tab
 				]
 			},
 		];

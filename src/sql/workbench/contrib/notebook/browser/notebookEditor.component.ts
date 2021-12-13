@@ -7,23 +7,28 @@ import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/no
 import * as notebookUtils from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 import { AngularDisposable } from 'sql/base/browser/lifecycle';
 import { IBootstrapParams } from 'sql/workbench/services/bootstrap/common/bootstrapParams';
-import { INotebookParams, INotebookService, INotebookManager, DEFAULT_NOTEBOOK_PROVIDER, SQL_NOTEBOOK_PROVIDER } from 'sql/workbench/services/notebook/browser/notebookService';
+import { INotebookParams, INotebookService, IExecuteManager, DEFAULT_NOTEBOOK_PROVIDER, SQL_NOTEBOOK_PROVIDER, ISerializationManager } from 'sql/workbench/services/notebook/browser/notebookService';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { CellMagicMapper } from 'sql/workbench/contrib/notebook/browser/models/cellMagicMapper';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilitiesService';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { ILogService } from 'vs/platform/log/common/log';
-import { IModelFactory, ViewMode, NotebookContentChange } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { IModelFactory, ViewMode, NotebookContentChange, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ModelFactory } from 'sql/workbench/services/notebook/browser/models/modelFactory';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { IAction } from 'vs/base/common/actions';
+import { IAction, SubmenuAction } from 'vs/base/common/actions';
 import { IMenuService, MenuId } from 'vs/platform/actions/common/actions';
 import { fillInActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { NotebookViewsExtension } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViewsExtension';
+import { INotebookView } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViews';
+import { Deferred } from 'sql/base/common/promise';
+import { NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
 
 export const NOTEBOOKEDITOR_SELECTOR: string = 'notebookeditor-component';
 
@@ -32,9 +37,17 @@ export const NOTEBOOKEDITOR_SELECTOR: string = 'notebookeditor-component';
 	templateUrl: decodeURI(require.toUrl('./notebookEditor.component.html'))
 })
 export class NotebookEditorComponent extends AngularDisposable {
+	private readonly defaultViewMode = ViewMode.Notebook;
 	private profile: IConnectionProfile;
-	private notebookManagers: INotebookManager[] = [];
-	private _model: NotebookModel;
+	private serializationManagers: ISerializationManager[] = [];
+	private executeManagers: IExecuteManager[] = [];
+	private _modelReadyDeferred = new Deferred<NotebookModel>();
+
+	public model: NotebookModel;
+	public views: NotebookViewsExtension;
+	public activeView: INotebookView;
+	public viewMode: ViewMode;
+	public ViewMode = ViewMode; //For use of the enum in the template
 
 	constructor(
 		@Inject(ILogService) private readonly logService: ILogService,
@@ -49,6 +62,7 @@ export class NotebookEditorComponent extends AngularDisposable {
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
 		@Inject(IConfigurationService) private _configurationService: IConfigurationService,
 		@Inject(IConnectionManagementService) private connectionManagementService: IConnectionManagementService,
+		@Inject(IUndoRedoService) private _undoService: IUndoRedoService,
 	) {
 		super();
 		this.updateProfile();
@@ -69,8 +83,12 @@ export class NotebookEditorComponent extends AngularDisposable {
 
 	private async doLoad(): Promise<void> {
 		await this.createModelAndLoadContents();
-		await this.setNotebookManager();
+		await this.setSerializationManager();
+		await this.setExecuteManager();
 		await this.loadModel();
+
+		this.setActiveView();
+		this._modelReadyDeferred.resolve(this.model);
 	}
 
 	private async loadModel(): Promise<void> {
@@ -79,44 +97,60 @@ export class NotebookEditorComponent extends AngularDisposable {
 		await this.model.requestModelLoad();
 		this.detectChanges();
 		this.setContextKeyServiceWithProviderId(this.model.providerId);
-		await this.model.startSession(this.model.notebookManager, undefined, true);
+		await this.model.startSession(this.model.executeManager, undefined, true);
 		this.fillInActionsForCurrentContext();
 		this.detectChanges();
 	}
 
 	private async createModelAndLoadContents(): Promise<void> {
+		let providerInfo = await this._notebookParams.providerInfo;
 		let model = new NotebookModel({
 			factory: this.modelFactory,
 			notebookUri: this._notebookParams.notebookUri,
 			connectionService: this.connectionManagementService,
 			notificationService: this.notificationService,
-			notebookManagers: this.notebookManagers,
-			contentManager: this._notebookParams.input.contentManager,
+			serializationManagers: this.serializationManagers,
+			executeManagers: this.executeManagers,
+			contentLoader: this._notebookParams.input.contentLoader,
 			cellMagicMapper: new CellMagicMapper(this.notebookService.languageMagics),
-			providerId: 'sql',
+			providerId: providerInfo.providerId,
 			defaultKernel: this._notebookParams.input.defaultKernel,
 			layoutChanged: this._notebookParams.input.layoutChanged,
 			capabilitiesService: this.capabilitiesService,
 			editorLoadedTimestamp: this._notebookParams.input.editorOpenedTimestamp
-		}, this.profile, this.logService, this.notificationService, this.adstelemetryService, this.connectionManagementService, this._configurationService, this.capabilitiesService);
+		}, this.profile, this.logService, this.notificationService, this.adstelemetryService, this.connectionManagementService, this._configurationService, this._undoService, this.capabilitiesService);
 
 		let trusted = await this.notebookService.isNotebookTrustCached(this._notebookParams.notebookUri, this.isDirty());
-		this._model = this._register(model);
+		this.model = this._register(model);
 		await this.model.loadContents(trusted);
+
+		this.views = new NotebookViewsExtension(this.model);
+		this.viewMode = this.viewMode ?? this.defaultViewMode;
 
 		this._register(model.viewModeChanged((mode) => this.onViewModeChanged()));
 		this._register(model.contentChanged((change) => this.handleContentChanged(change)));
 		this._register(model.onCellTypeChanged(() => this.detectChanges()));
 		this._register(model.layoutChanged(() => this.detectChanges()));
 
+		this.views.onViewDeleted(() => this.handleViewDeleted());
+		this.views.onActiveViewChanged(() => this.handleActiveViewChanged());
+
 		this.detectChanges();
 	}
 
-	private async setNotebookManager(): Promise<void> {
+	private async setSerializationManager(): Promise<void> {
 		let providerInfo = await this._notebookParams.providerInfo;
 		for (let providerId of providerInfo.providers) {
-			let notebookManager = await this.notebookService.getOrCreateNotebookManager(providerId, this._notebookParams.notebookUri);
-			this.notebookManagers.push(notebookManager);
+			let manager = await this.notebookService.getOrCreateSerializationManager(providerId, this._notebookParams.notebookUri);
+			this.serializationManagers.push(manager);
+		}
+	}
+
+	private async setExecuteManager(): Promise<void> {
+		let providerInfo = await this._notebookParams.providerInfo;
+		for (let providerId of providerInfo.providers) {
+			let manager = await this.notebookService.getOrCreateExecuteManager(providerId, this._notebookParams.notebookUri);
+			this.executeManagers.push(manager);
 		}
 	}
 
@@ -151,8 +185,7 @@ export class NotebookEditorComponent extends AngularDisposable {
 		let secondary: IAction[] = [];
 		let notebookBarMenu = this.menuService.createMenu(MenuId.NotebookToolbar, this.contextKeyService);
 		let groups = notebookBarMenu.getActions({ arg: null, shouldForwardArgs: true });
-		fillInActions(groups, { primary, secondary }, false, (group: string) => group === undefined || group === '');
-		//this.addPrimaryContributedActions(primary);
+		fillInActions(groups, { primary, secondary }, false, g => g === '', Number.MAX_SAFE_INTEGER, (action: SubmenuAction, group: string, groupSize: number) => group === undefined || group === '');
 	}
 
 	private get modelFactory(): IModelFactory {
@@ -162,24 +195,43 @@ export class NotebookEditorComponent extends AngularDisposable {
 		return this._notebookParams.modelFactory;
 	}
 
-	public get model(): NotebookModel | null {
-		return this._model;
-	}
-
-	public get viewMode(): ViewMode {
-		return this.model?.viewMode;
-	}
-
 	private isDirty(): boolean {
 		return this._notebookParams.input.isDirty();
 	}
 
+	public get modelReady(): Promise<INotebookModel> {
+		return this._modelReadyDeferred.promise;
+	}
+
 	private handleContentChanged(change: NotebookContentChange) {
 		// Note: for now we just need to set dirty state and refresh the UI.
+		if (change.changeType === NotebookChangeType.MetadataChanged) {
+			this.handleActiveViewChanged();
+		}
+
+		this.detectChanges();
+	}
+
+	private handleViewDeleted() {
+		this.viewMode = this.model?.viewMode;
+		this.detectChanges();
+	}
+
+	private handleActiveViewChanged() {
+		this.setActiveView();
 		this.detectChanges();
 	}
 
 	public onViewModeChanged(): void {
+		this.viewMode = this.model?.viewMode;
+		this.setActiveView();
 		this.detectChanges();
+	}
+
+	public setActiveView() {
+		const views = this.views.getViews();
+		let activeView = this.views.getActiveView() ?? views[0];
+
+		this.activeView = activeView;
 	}
 }

@@ -11,7 +11,7 @@ import * as mssql from '../../mssql';
 import * as loc from './localizedConstants';
 import { SchemaCompareOptionsDialog } from './dialogs/schemaCompareOptionsDialog';
 import { TelemetryReporter, TelemetryViews } from './telemetry';
-import { getTelemetryErrorType, getEndpointName, verifyConnectionAndGetOwnerUri, getRootPath } from './utils';
+import { getTelemetryErrorType, getEndpointName, verifyConnectionAndGetOwnerUri, getRootPath, getSchemaCompareEndpointString } from './utils';
 import { SchemaCompareDialog } from './dialogs/schemaCompareDialog';
 import { isNullOrUndefined } from 'util';
 
@@ -81,14 +81,33 @@ export class SchemaCompareMainWindow {
 		this.editor = azdata.workspace.createModelViewEditor(loc.SchemaCompareLabel, { retainContextWhenHidden: true, supportsSave: true, resourceName: schemaCompareResourceName }, 'SchemaCompareEditor');
 	}
 
-	// schema compare can get started with three contexts for the source:
+	// schema compare can get started with four contexts for the source:
 	// 1. undefined
 	// 2. connection profile
 	// 3. dacpac
-	public async start(context: any): Promise<void> {
-		// if schema compare was launched from a db, set that as the source
-		let profile = context ? <azdata.IConnectionProfile>context.connectionProfile : undefined;
-		let sourceDacpac = context as string;
+	// 4. project
+	public async start(sourceContext: any, targetContext: mssql.SchemaCompareEndpointInfo = undefined, comparisonResult: mssql.SchemaCompareResult = undefined): Promise<void> {
+		const targetIsSetAsProject: boolean = targetContext && targetContext.endpointType === mssql.SchemaCompareEndpointType.Project;
+
+		// if schema compare was launched from a db or a connection profile, set that as the source
+		let profile: azdata.IConnectionProfile;
+
+		if (targetIsSetAsProject) {
+			profile = sourceContext;
+			this.targetEndpointInfo = targetContext;
+		} else {
+			profile = sourceContext ? <azdata.IConnectionProfile>sourceContext.connectionProfile : undefined;
+		}
+
+		let sourceDacpac = undefined;
+		let sourceProject = undefined;
+
+		if (!profile && sourceContext as string && (sourceContext as string).endsWith('.dacpac')) {
+			sourceDacpac = sourceContext as string;
+		} else if (!profile) {
+			sourceProject = sourceContext as string;
+		}
+
 		if (profile) {
 			let ownerUri = await azdata.connection.getUriForConnection((profile.id));
 			let usr = profile.userName;
@@ -104,7 +123,11 @@ export class SchemaCompareMainWindow {
 				ownerUri: ownerUri,
 				packageFilePath: '',
 				connectionDetails: undefined,
-				connectionName: profile.connectionName
+				connectionName: profile.connectionName,
+				projectFilePath: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
+				folderStructure: ''
 			};
 		} else if (sourceDacpac) {
 			this.sourceEndpointInfo = {
@@ -114,7 +137,25 @@ export class SchemaCompareMainWindow {
 				databaseName: '',
 				ownerUri: '',
 				packageFilePath: sourceDacpac,
-				connectionDetails: undefined
+				connectionDetails: undefined,
+				projectFilePath: '',
+				targetScripts: [],
+				dataSchemaProvider: '',
+				folderStructure: ''
+			};
+		} else if (sourceProject) {
+			this.sourceEndpointInfo = {
+				endpointType: mssql.SchemaCompareEndpointType.Project,
+				packageFilePath: '',
+				serverDisplayName: '',
+				serverName: '',
+				databaseName: '',
+				ownerUri: '',
+				connectionDetails: undefined,
+				projectFilePath: sourceProject,
+				targetScripts: [],
+				dataSchemaProvider: undefined,
+				folderStructure: ''
 			};
 		}
 
@@ -123,6 +164,10 @@ export class SchemaCompareMainWindow {
 			this.registerContent(),
 			this.editor.openEditor()
 		]);
+
+		if (targetIsSetAsProject) {
+			await this.execute(comparisonResult);
+		}
 	}
 
 	private async registerContent(): Promise<void> {
@@ -132,9 +177,10 @@ export class SchemaCompareMainWindow {
 					this.view = view;
 				}
 
-				this.differencesTable = this.view.modelBuilder.table().withProperties({
+				this.differencesTable = this.view.modelBuilder.table().withProps({
 					data: [],
-					title: loc.differencesTableTitle
+					title: loc.differencesTableTitle,
+					columns: []
 				}).component();
 
 				this.diffEditor = this.view.modelBuilder.diffeditor().withProperties({
@@ -146,17 +192,9 @@ export class SchemaCompareMainWindow {
 
 				this.splitView = this.view.modelBuilder.splitViewContainer().component();
 
-				let sourceTargetLabels = this.view.modelBuilder.flexContainer()
-					.withProperties({
-						alignItems: 'stretch',
-						horizontal: true
-					}).component();
+				let sourceTargetLabels = this.view.modelBuilder.flexContainer().component();
 
-				this.sourceTargetFlexLayout = this.view.modelBuilder.flexContainer()
-					.withProperties({
-						alignItems: 'stretch',
-						horizontal: true
-					}).component();
+				this.sourceTargetFlexLayout = this.view.modelBuilder.flexContainer().component();
 
 				this.createSwitchButton();
 				this.createCompareButton();
@@ -169,14 +207,15 @@ export class SchemaCompareMainWindow {
 				this.createSourceAndTargetButtons();
 
 				this.sourceName = getEndpointName(this.sourceEndpointInfo);
-				this.targetName = ' ';
-				this.sourceNameComponent = this.view.modelBuilder.inputBox().withProperties<azdata.InputBoxProperties>({
+				this.targetName = getEndpointName(this.targetEndpointInfo);
+
+				this.sourceNameComponent = this.view.modelBuilder.inputBox().withProps({
 					value: this.sourceName,
 					title: this.sourceName,
 					enabled: false
 				}).component();
 
-				this.targetNameComponent = this.view.modelBuilder.inputBox().withProperties<azdata.InputBoxProperties>({
+				this.targetNameComponent = this.view.modelBuilder.inputBox().withProps({
 					value: this.targetName,
 					title: this.targetName,
 					enabled: false
@@ -205,17 +244,17 @@ export class SchemaCompareMainWindow {
 					component: this.saveScmpButton
 				}]);
 
-				let sourceLabel = this.view.modelBuilder.text().withProperties({
+				let sourceLabel = this.view.modelBuilder.text().withProps({
 					value: loc.sourceTitle,
 					CSSStyles: { 'margin-bottom': '0px' }
 				}).component();
 
-				let targetLabel = this.view.modelBuilder.text().withProperties({
+				let targetLabel = this.view.modelBuilder.text().withProps({
 					value: loc.targetTitle,
 					CSSStyles: { 'margin-bottom': '0px' }
 				}).component();
 
-				let arrowLabel = this.view.modelBuilder.text().withProperties({
+				let arrowLabel = this.view.modelBuilder.text().withProps({
 					value: '➔'
 				}).component();
 
@@ -228,15 +267,15 @@ export class SchemaCompareMainWindow {
 				this.sourceTargetFlexLayout.addItem(this.selectTargetButton, { CSSStyles: { 'margin-top': '10px' } });
 
 				this.loader = this.view.modelBuilder.loadingComponent().component();
-				this.waitText = this.view.modelBuilder.text().withProperties({
+				this.waitText = this.view.modelBuilder.text().withProps({
 					value: loc.waitText
 				}).component();
 
-				this.startText = this.view.modelBuilder.text().withProperties({
+				this.startText = this.view.modelBuilder.text().withProps({
 					value: loc.startText
 				}).component();
 
-				this.noDifferencesLabel = this.view.modelBuilder.text().withProperties({
+				this.noDifferencesLabel = this.view.modelBuilder.text().withProps({
 					value: loc.noDifferencesText
 				}).component();
 
@@ -282,29 +321,43 @@ export class SchemaCompareMainWindow {
 		this.deploymentOptions = deploymentOptions;
 	}
 
-	public async execute() {
-		TelemetryReporter.sendActionEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaComparisonStarted');
+	public async execute(comparisonResult: mssql.SchemaCompareCompletionResult = undefined) {
 		const service = await this.getService();
 
-		if (!this.operationId) {
-			// create once per page
-			this.operationId = generateGuid();
-		}
+		if (comparisonResult) {
+			this.operationId = comparisonResult.operationId;
+			this.comparisonResult = comparisonResult;
+			this.flexModel.removeItem(this.startText);
+		} else {
+			TelemetryReporter.sendActionEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaComparisonStarted');
 
-		this.comparisonResult = await service.schemaCompare(this.operationId, this.sourceEndpointInfo, this.targetEndpointInfo, azdata.TaskExecutionMode.execute, this.deploymentOptions);
-		if (!this.comparisonResult || !this.comparisonResult.success) {
-			TelemetryReporter.createErrorEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaComparisonFailed', undefined, getTelemetryErrorType(this.comparisonResult?.errorMessage))
+			if (!this.operationId) {
+				// create once per page
+				this.operationId = generateGuid();
+			}
+
+			this.comparisonResult = await service.schemaCompare(this.operationId, this.sourceEndpointInfo, this.targetEndpointInfo, azdata.TaskExecutionMode.execute, this.deploymentOptions);
+
+			if (!this.comparisonResult || !this.comparisonResult.success) {
+				TelemetryReporter.createErrorEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaComparisonFailed', undefined, getTelemetryErrorType(this.comparisonResult?.errorMessage))
+					.withAdditionalProperties({
+						operationId: this.comparisonResult.operationId
+					}).send();
+
+				vscode.window.showErrorMessage(loc.compareErrorMessage(this.comparisonResult?.errorMessage));
+
+				// reset state so a new comparison can be made
+				this.resetWindow();
+
+				return;
+			}
+
+			TelemetryReporter.createActionEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaComparisonFinished')
 				.withAdditionalProperties({
-					operationId: this.comparisonResult.operationId
+					'endTime': Date.now().toString(),
+					'operationId': this.comparisonResult.operationId
 				}).send();
-			vscode.window.showErrorMessage(loc.compareErrorMessage(this.comparisonResult?.errorMessage));
-			return;
 		}
-		TelemetryReporter.createActionEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaComparisonFinished')
-			.withAdditionalProperties({
-				'endTime': Date.now().toString(),
-				'operationId': this.comparisonResult.operationId
-			}).send();
 
 		let data = this.getAllDifferences(this.comparisonResult.differences);
 
@@ -344,19 +397,19 @@ export class SchemaCompareMainWindow {
 			width: '98%'
 		});
 
-		this.splitView.addItem(this.differencesTable);
-		this.splitView.addItem(this.diffEditor);
-		this.splitView.setLayout({
-			orientation: 'vertical',
-			splitViewHeight: 800
-		});
-
 		this.flexModel.removeItem(this.loader);
 		this.flexModel.removeItem(this.waitText);
 		this.resetButtons(ResetButtonState.afterCompareComplete);
 
 		if (this.comparisonResult.differences.length > 0) {
 			this.flexModel.addItem(this.splitView);
+
+			this.splitView.addItem(this.differencesTable);
+			this.splitView.addItem(this.diffEditor);
+			this.splitView.setLayout({
+				orientation: 'vertical',
+				splitViewHeight: 800
+			});
 
 			// create a map of the differences to row numbers
 			for (let i = 0; i < data.length; ++i) {
@@ -366,9 +419,15 @@ export class SchemaCompareMainWindow {
 			// only enable generate script button if the target is a db
 			if (this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Database) {
 				this.generateScriptButton.enabled = true;
-				this.applyButton.enabled = true;
 			} else {
 				this.generateScriptButton.title = loc.generateScriptDisabled;
+			}
+
+			// only enable apply button if the target is a db or a project
+			if (this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Database ||
+				this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Project) {
+				this.applyButton.enabled = true;
+			} else {
 				this.applyButton.title = loc.applyDisabled;
 			}
 		} else {
@@ -625,7 +684,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createCompareButton(): void {
-		this.compareButton = this.view.modelBuilder.button().withProperties({
+		this.compareButton = this.view.modelBuilder.button().withProps({
 			label: loc.compare,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'compare.svg'),
@@ -640,7 +699,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createCancelButton(): void {
-		this.cancelCompareButton = this.view.modelBuilder.button().withProperties({
+		this.cancelCompareButton = this.view.modelBuilder.button().withProps({
 			label: loc.stop,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'stop.svg'),
@@ -654,7 +713,18 @@ export class SchemaCompareMainWindow {
 		});
 	}
 
-	public async cancelCompare() {
+	/**
+	 * Resets state of buttons and text to initial state before a comparison is started/completed
+	 */
+	public resetWindow(): void {
+		// clean the pane
+		this.flexModel.removeItem(this.loader);
+		this.flexModel.removeItem(this.waitText);
+		this.flexModel.addItem(this.startText, { CSSStyles: { 'margin': 'auto' } });
+		this.resetButtons(ResetButtonState.beforeCompareStart);
+	}
+
+	public async cancelCompare(): Promise<void> {
 
 		TelemetryReporter.createActionEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaCompareCancelStarted')
 			.withAdditionalProperties({
@@ -662,11 +732,7 @@ export class SchemaCompareMainWindow {
 				'operationId': this.operationId
 			}).send();
 
-		// clean the pane
-		this.flexModel.removeItem(this.loader);
-		this.flexModel.removeItem(this.waitText);
-		this.flexModel.addItem(this.startText, { CSSStyles: { 'margin': 'auto' } });
-		this.resetButtons(ResetButtonState.beforeCompareStart);
+		this.resetWindow();
 
 		// cancel compare
 		if (this.operationId) {
@@ -689,7 +755,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createGenerateScriptButton(): void {
-		this.generateScriptButton = this.view.modelBuilder.button().withProperties({
+		this.generateScriptButton = this.view.modelBuilder.button().withProps({
 			label: loc.generateScript,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'generate-script.svg'),
@@ -725,7 +791,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createOptionsButton() {
-		this.optionsButton = this.view.modelBuilder.button().withProperties({
+		this.optionsButton = this.view.modelBuilder.button().withProps({
 			label: loc.options,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'options.svg'),
@@ -744,7 +810,7 @@ export class SchemaCompareMainWindow {
 
 	private createApplyButton() {
 
-		this.applyButton = this.view.modelBuilder.button().withProperties({
+		this.applyButton = this.view.modelBuilder.button().withProps({
 			label: loc.apply,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'start.svg'),
@@ -758,7 +824,6 @@ export class SchemaCompareMainWindow {
 	}
 
 	public async publishChanges(): Promise<void> {
-
 		// need only yes button - since the modal dialog has a default cancel
 		const yesString = loc.YesButtonText;
 		await vscode.window.showWarningMessage(loc.applyConfirmation, { modal: true }, yesString).then(async (result) => {
@@ -772,14 +837,26 @@ export class SchemaCompareMainWindow {
 				// disable apply and generate script buttons because the results are no longer valid after applying the changes
 				this.setButtonsForRecompare();
 
-				const service = await this.getService();
-				const result = await service.schemaComparePublishChanges(this.comparisonResult.operationId, this.targetEndpointInfo.serverName, this.targetEndpointInfo.databaseName, azdata.TaskExecutionMode.execute);
+				const service: mssql.ISchemaCompareService = await this.getService();
+				let result: azdata.ResultStatus | undefined = undefined;
+
+				switch (this.targetEndpointInfo.endpointType) {
+					case mssql.SchemaCompareEndpointType.Database:
+						result = await service.schemaComparePublishDatabaseChanges(this.comparisonResult.operationId, this.targetEndpointInfo.serverName, this.targetEndpointInfo.databaseName, azdata.TaskExecutionMode.execute);
+						break;
+					case mssql.SchemaCompareEndpointType.Project: // Project apply needs sql-database-projects updates in (circular dependency; coming next) // TODO: re-add this and show project logic below
+					case mssql.SchemaCompareEndpointType.Dacpac: // Dacpac is an invalid publish target
+					default:
+						throw new Error(`Unsupported SchemaCompareEndpointType: ${getSchemaCompareEndpointString(this.targetEndpointInfo.endpointType)}`);
+				}
+
 				if (!result || !result.success) {
-					TelemetryReporter.createErrorEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaCompareApplyFailed', undefined, getTelemetryErrorType(result.errorMessage))
+
+					TelemetryReporter.createErrorEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaCompareApplyFailed', undefined, getTelemetryErrorType(result?.errorMessage))
 						.withAdditionalProperties({
 							'operationId': this.comparisonResult.operationId
 						}).send();
-					vscode.window.showErrorMessage(loc.applyErrorMessage(result.errorMessage));
+					vscode.window.showErrorMessage(loc.applyErrorMessage(result?.errorMessage));
 
 					// reenable generate script and apply buttons if apply failed
 					this.generateScriptButton.enabled = true;
@@ -787,6 +864,7 @@ export class SchemaCompareMainWindow {
 					this.applyButton.enabled = true;
 					this.applyButton.title = loc.applyEnabledMessage;
 				}
+
 				TelemetryReporter.createActionEvent(TelemetryViews.SchemaCompareMainWindow, 'SchemaCompareApplyEnded')
 					.withAdditionalProperties({
 						'endTime': Date.now().toString(),
@@ -855,7 +933,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createSwitchButton(): void {
-		this.switchButton = this.view.modelBuilder.button().withProperties({
+		this.switchButton = this.view.modelBuilder.button().withProps({
 			label: loc.switchDirection,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'switch-directions.svg'),
@@ -891,7 +969,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createSourceAndTargetButtons(): void {
-		this.selectSourceButton = this.view.modelBuilder.button().withProperties({
+		this.selectSourceButton = this.view.modelBuilder.button().withProps({
 			label: '•••',
 			title: loc.selectSource,
 			ariaLabel: loc.selectSource,
@@ -905,7 +983,7 @@ export class SchemaCompareMainWindow {
 			await this.promise;
 		});
 
-		this.selectTargetButton = this.view.modelBuilder.button().withProperties({
+		this.selectTargetButton = this.view.modelBuilder.button().withProps({
 			label: '•••',
 			title: loc.selectTarget,
 			ariaLabel: loc.selectTarget,
@@ -921,7 +999,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createOpenScmpButton() {
-		this.openScmpButton = this.view.modelBuilder.button().withProperties({
+		this.openScmpButton = this.view.modelBuilder.button().withProps({
 			label: loc.openScmp,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'open-scmp.svg'),
@@ -1009,7 +1087,7 @@ export class SchemaCompareMainWindow {
 	}
 
 	private createSaveScmpButton(): void {
-		this.saveScmpButton = this.view.modelBuilder.button().withProperties({
+		this.saveScmpButton = this.view.modelBuilder.button().withProps({
 			label: loc.saveScmp,
 			iconPath: {
 				light: path.join(this.extensionContext.extensionPath, 'media', 'save-scmp.svg'),
@@ -1078,11 +1156,15 @@ export class SchemaCompareMainWindow {
 	}
 
 	private setButtonStatesForNoChanges(enableButtons: boolean): void {
-		// generate script and apply can only be enabled if the target is a database
-		if (this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Database) {
+		// generate script and apply can only be enabled if the target is a database or project
+		if (this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Database ||
+			this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Project) {
 			this.applyButton.enabled = enableButtons;
-			this.generateScriptButton.enabled = enableButtons;
 			this.applyButton.title = enableButtons ? loc.applyEnabledMessage : loc.applyNoChangesMessage;
+		}
+
+		if (this.targetEndpointInfo.endpointType === mssql.SchemaCompareEndpointType.Database) {
+			this.generateScriptButton.enabled = enableButtons;
 			this.generateScriptButton.title = enableButtons ? loc.generateScriptEnabledMessage : loc.generateScriptNoChangesMessage;
 		}
 	}

@@ -30,7 +30,7 @@ import { KeyCode } from 'vs/base/common/keyCodes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { EditUpdateCellResult } from 'azdata';
 import { ILogService } from 'vs/platform/log/common/log';
-import { deepClone, assign } from 'vs/base/common/objects';
+import { deepClone } from 'vs/base/common/objects';
 import { Event } from 'vs/base/common/event';
 import { equals } from 'vs/base/common/arrays';
 import * as DOM from 'vs/base/browser/dom';
@@ -93,13 +93,13 @@ export class EditDataGridPanel extends GridParentComponent {
 		onRestoreViewState: Event<void>,
 		@IInstantiationService protected instantiationService: IInstantiationService,
 		@INotificationService protected notificationService: INotificationService,
-		@IContextMenuService protected contextMenuService: IContextMenuService,
-		@IKeybindingService protected keybindingService: IKeybindingService,
-		@IContextKeyService protected contextKeyService: IContextKeyService,
-		@IConfigurationService protected configurationService: IConfigurationService,
-		@IClipboardService protected clipboardService: IClipboardService,
-		@IQueryEditorService protected queryEditorService: IQueryEditorService,
-		@ILogService protected logService: ILogService
+		@IContextMenuService contextMenuService: IContextMenuService,
+		@IKeybindingService keybindingService: IKeybindingService,
+		@IContextKeyService contextKeyService: IContextKeyService,
+		@IConfigurationService configurationService: IConfigurationService,
+		@IClipboardService clipboardService: IClipboardService,
+		@IQueryEditorService queryEditorService: IQueryEditorService,
+		@ILogService logService: ILogService
 	) {
 		super(contextMenuService, keybindingService, contextKeyService, configurationService, clipboardService, queryEditorService, logService);
 		this.nativeElement = document.createElement('div');
@@ -147,7 +147,7 @@ export class EditDataGridPanel extends GridParentComponent {
 		this.dataService.onLoaded();
 	}
 
-	public render(container: HTMLElement): void {
+	public override render(container: HTMLElement): void {
 		container.appendChild(this.nativeElement);
 	}
 
@@ -188,9 +188,12 @@ export class EditDataGridPanel extends GridParentComponent {
 			// render line breaks and strips them, updating the value.
 			/* tslint:disable:no-null-keyword */
 			let valueMissing = value === undefined || value === null || (Services.DBCellValue.isDBCellValue(value) && value.isNull);
+			let isStringNull = (Services.DBCellValue.isDBCellValue(value) && !value.isNull && value.displayValue === 'NULL');
 			if (valueMissing) {
-				/* tslint:disable:no-null-keyword */
-				returnVal = null;
+				returnVal = 'NULL';
+			}
+			else if (isStringNull) {
+				returnVal = '\'NULL\'';
 			}
 			else if (Services.DBCellValue.isDBCellValue(value)) {
 				returnVal = this.replaceLinebreaks(value.displayValue);
@@ -362,7 +365,7 @@ export class EditDataGridPanel extends GridParentComponent {
 
 	async handleResultSet(self: EditDataGridPanel, event: any): Promise<void> {
 		// Clone the data before altering it to avoid impacting other subscribers
-		let resultSet = assign({}, event.data);
+		let resultSet = Object.assign({}, event.data);
 		if (!resultSet.complete) {
 			return;
 		}
@@ -509,6 +512,14 @@ export class EditDataGridPanel extends GridParentComponent {
 			this.revertCurrentRow().catch(onUnexpectedError);
 			handled = true;
 		}
+		if (e.ctrlKey && e.keyCode === KeyCode.KEY_0) {
+			//Replace contents with NULL in cell contents.
+			document.execCommand('selectAll');
+			document.execCommand('delete');
+			document.execCommand('insertText', false, 'NULL');
+			handled = true;
+		}
+
 		return handled;
 	}
 
@@ -516,7 +527,7 @@ export class EditDataGridPanel extends GridParentComponent {
 	 * Force re-rendering of the results grids. Calling this upon unhide (upon focus) fixes UI
 	 * glitches that occur when a QueryResultsEditor is hidden then unhidden while it is running a query.
 	 */
-	refreshDatasets(): void {
+	override refreshDatasets(): void {
 		let tempRenderedDataSets = this.renderedDataSets;
 		this.renderedDataSets = [];
 		this.handleChanges({
@@ -1083,10 +1094,14 @@ export class EditDataGridPanel extends GridParentComponent {
 		let valueToDisplay = '';
 		let cellClasses = 'grid-cell-value-container';
 		/* tslint:disable:no-null-keyword */
-		let valueMissing = value === undefined || value === null || (Services.DBCellValue.isDBCellValue(value) && value.isNull);
+		let valueMissing = value === undefined || value === null || (Services.DBCellValue.isDBCellValue(value) && value.isNull) || value === 'NULL';
+		let isStringNull = (Services.DBCellValue.isDBCellValue(value) && !value.isNull && value.displayValue === 'NULL');
 		if (valueMissing) {
 			valueToDisplay = 'NULL';
 			cellClasses += ' missing-value';
+		}
+		else if (isStringNull) {
+			valueToDisplay = '\'NULL\'';
 		}
 		else if (Services.DBCellValue.isDBCellValue(value)) {
 			valueToDisplay = (value.displayValue + '');

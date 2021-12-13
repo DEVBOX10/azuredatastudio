@@ -121,6 +121,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 	private _oldPythonExecutable: string | undefined;
 	private _oldPythonInstallationPath: string | undefined;
 	private _oldUserInstalledPipPackages: PythonPkgDetails[] = [];
+	private _upgradePrompted: boolean = false;
 
 	private _installInProgress: boolean;
 	private _installCompletion: Deferred<void>;
@@ -138,7 +139,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		this.outputChannel = outputChannel;
 
 		this._runningOnSAW = vscode.env.appName.toLowerCase().indexOf('saw') > 0;
-		vscode.commands.executeCommand(constants.BuiltInCommands.SetContext, 'notebook:runningOnSAW', this._runningOnSAW);
+		void vscode.commands.executeCommand(constants.BuiltInCommands.SetContext, 'notebook:runningOnSAW', this._runningOnSAW);
 
 		if (this._runningOnSAW) {
 			this._pythonInstallationPath = `${vscode.env.appRoot}\\ads-python`;
@@ -153,6 +154,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		this._kernelSetupCache = new Map<string, boolean>();
 		this._requiredKernelPackages = new Map<string, PythonPkgDetails[]>();
 
+		this._requiredKernelPackages.set(constants.ipykernelDisplayName, [requiredJupyterPkg]);
 		this._requiredKernelPackages.set(constants.python3DisplayName, [requiredJupyterPkg]);
 		this._requiredKernelPackages.set(constants.powershellDisplayName, [requiredJupyterPkg, requiredPowershellPkg]);
 		this._requiredKernelPackages.set(constants.pysparkDisplayName, requiredSparkPackages);
@@ -169,7 +171,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 	}
 
 	private async installDependencies(backgroundOperation: azdata.BackgroundOperation, forceInstall: boolean, packages: PythonPkgDetails[]): Promise<void> {
-		vscode.window.showInformationMessage(msgInstallPkgStart);
+		void vscode.window.showInformationMessage(msgInstallPkgStart);
 
 		this.outputChannel.show(true);
 		this.outputChannel.appendLine(msgInstallPkgProgress);
@@ -202,9 +204,6 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 						// Remove '0.0.1' from python executable path since the bundle version is removed from the path for ADS-Python 3.8.10+.
 						this._pythonExecutable = path.join(this._pythonInstallationPath, process.platform === constants.winPlatform ? 'python.exe' : 'bin/python3');
 					}
-					await fs.remove(this._oldPythonInstallationPath).catch(err => {
-						throw (err);
-					});
 				}
 			}
 
@@ -226,7 +225,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 
 		this.outputChannel.appendLine(msgInstallPkgFinish);
 		backgroundOperation.updateStatus(azdata.TaskStatus.Succeeded, msgInstallPkgFinish);
-		vscode.window.showInformationMessage(msgInstallPkgFinish);
+		void vscode.window.showInformationMessage(msgInstallPkgFinish);
 	}
 
 	private installPythonPackage(backgroundOperation: azdata.BackgroundOperation, usingExistingPython: boolean, pythonInstallationPath: string, outputChannel: vscode.OutputChannel): Promise<void> {
@@ -440,7 +439,7 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 		}
 
 		if (this._installInProgress) {
-			vscode.window.showInformationMessage(msgWaitingForInstall);
+			void vscode.window.showInformationMessage(msgWaitingForInstall);
 			return this._installCompletion.promise;
 		}
 
@@ -476,8 +475,10 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 							if (this._oldUserInstalledPipPackages.length !== 0) {
 								await this.createInstallPipPackagesHelpNotebook(this._oldUserInstalledPipPackages);
 							}
+
+							await fs.remove(this._oldPythonInstallationPath);
 							this._upgradeInProcess = false;
-						} else {
+						} else if (!installSettings.packageUpgradeOnly) {
 							await vscode.commands.executeCommand('notebook.action.restartJupyterNotebookSessions');
 						}
 					})
@@ -500,15 +501,16 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 			return Promise.resolve();
 		}
 		if (this._installInProgress) {
-			vscode.window.showInformationMessage(msgWaitingForInstall);
+			void vscode.window.showInformationMessage(msgWaitingForInstall);
 			return this._installCompletion.promise;
 		}
 
 		let isPythonInstalled = JupyterServerInstallation.isPythonInstalled();
 
 		// If the latest version of ADS-Python is not installed, then prompt the user to upgrade
-		if (isPythonInstalled && !this._usingExistingPython && utils.compareVersions(await this.getInstalledPythonVersion(this._pythonExecutable), constants.pythonVersion) < 0) {
-			this.promptUserForPythonUpgrade();
+		if (!this._upgradePrompted && isPythonInstalled && !this._usingExistingPython && utils.compareVersions(await this.getInstalledPythonVersion(this._pythonExecutable), constants.pythonVersion) < 0) {
+			this._upgradePrompted = true;
+			await this.promptUserForPythonUpgrade();
 		}
 
 		let areRequiredPackagesInstalled = await this.areRequiredPackagesInstalled(kernelDisplayName);
@@ -529,9 +531,9 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 
 		let response = await vscode.window.showInformationMessage(msgPythonVersionUpdatePrompt(constants.pythonVersion), yes, no, dontAskAgain);
 		if (response === yes) {
-			this._oldPythonInstallationPath = path.join(this._pythonInstallationPath);
+			this._oldPythonInstallationPath = path.join(this._pythonInstallationPath, '0.0.1');
 			this._oldPythonExecutable = this._pythonExecutable;
-			vscode.commands.executeCommand(constants.jupyterConfigurePython);
+			void vscode.commands.executeCommand(constants.jupyterConfigurePython);
 		} else if (response === dontAskAgain) {
 			await notebookConfig.update(constants.dontPromptPythonUpdate, true, vscode.ConfigurationTarget.Global);
 		}
@@ -862,6 +864,8 @@ export class JupyterServerInstallation implements IJupyterServerInstallation {
 
 	private async createInstallPipPackagesHelpNotebook(userInstalledPipPackages: PythonPkgDetails[]): Promise<void> {
 		let packagesList: string[] = userInstalledPipPackages.map(pkg => { return pkg.name; });
+		// Filter out prose-codeaccelerator since we no longer ship it and it is not on Pypi.
+		packagesList = packagesList.filter(pkg => pkg !== 'prose-codeaccelerator');
 		let installPackagesCode = `import sys\n!{sys.executable} -m pip install --user ${packagesList.join(' ')}`;
 		let initialContent: azdata.nb.INotebookContents = {
 			cells: [{

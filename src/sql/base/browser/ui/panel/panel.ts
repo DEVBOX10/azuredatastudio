@@ -33,7 +33,6 @@ export interface IPanelOptions {
 export interface IPanelView {
 	render(container: HTMLElement): void;
 	layout(dimension: DOM.Dimension): void;
-	focus(): void;
 	remove?(): void;
 	onShow?(): void;
 	onHide?(): void;
@@ -109,7 +108,11 @@ export class TabbedPanel extends Disposable {
 		return this.parent;
 	}
 
-	public dispose() {
+	public get activeTabId(): string | undefined {
+		return this._shownTabId;
+	}
+
+	public override dispose() {
 		this.header.remove();
 		this.tabList.remove();
 		this.body.remove();
@@ -184,15 +187,6 @@ export class TabbedPanel extends Disposable {
 				let currentIndex = this._tabOrder.findIndex(x => x === tab.tab.identifier);
 				this.focusNextTab(currentIndex - 1);
 			}
-			if (event.equals(KeyCode.Tab)) {
-				e.preventDefault();
-				if (this._shownTabId) {
-					const shownTab = this._tabMap.get(this._shownTabId);
-					if (shownTab) {
-						shownTab.tab.view.focus();
-					}
-				}
-			}
 		}));
 
 		const insertBefore = !isUndefinedOrNull(index) ? this.tabList.children.item(index) : undefined;
@@ -256,6 +250,12 @@ export class TabbedPanel extends Disposable {
 			const tabHeight = this._currentDimensions.height - (this._headerVisible ? this.headersize : 0);
 			this._layoutCurrentTab(new DOM.Dimension(this._currentDimensions.width, tabHeight));
 		}
+	}
+
+	public clearTabs(): void {
+		this._tabMap.forEach((value, key, map) => {
+			this.removeTab(key);
+		});
 	}
 
 	public removeTab(tab: PanelTabIdentifier) {
@@ -397,15 +397,6 @@ export class TabbedPanel extends Disposable {
 				tab.body.style.width = dimension.width + 'px';
 				tab.body.style.height = dimension.height + 'px';
 				tab.tab.view.layout(dimension);
-			}
-		}
-	}
-
-	public focus(): void {
-		if (this._shownTabId) {
-			const tab = this._tabMap.get(this._shownTabId);
-			if (tab) {
-				tab.tab.view.focus();
 			}
 		}
 	}

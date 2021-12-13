@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
-import { MigrationStateModel, MigrationTargetType } from '../../models/stateMachine';
+import * as vscode from 'vscode';
+import { MigrationStateModel, MigrationTargetType, Page } from '../../models/stateMachine';
 import { SqlDatabaseTree } from './sqlDatabasesTree';
 import { SqlMigrationImpactedObjectInfo } from '../../../../mssql/src/mssql';
 import { SKURecommendationPage } from '../../wizard/skuRecommendationPage';
@@ -17,7 +18,7 @@ export type Issues = {
 };
 export class AssessmentResultsDialog {
 
-	private static readonly OkButtonText: string = 'OK';
+	private static readonly SelectButtonText: string = 'Select';
 	private static readonly CancelButtonText: string = 'Cancel';
 
 	private _isOpen: boolean = false;
@@ -26,12 +27,14 @@ export class AssessmentResultsDialog {
 
 	// Dialog Name for Telemetry
 	public dialogName: string | undefined;
-
 	private _tree: SqlDatabaseTree;
-
+	private _disposables: vscode.Disposable[] = [];
 
 	constructor(public ownerUri: string, public model: MigrationStateModel, public title: string, private _skuRecommendationPage: SKURecommendationPage, private _targetType: MigrationTargetType) {
 		this._model = model;
+		if (this._model.resumeAssessment && this._model.savedInfo.closedPage >= Page.DatabaseBackup) {
+			this._model._databaseAssessment = <string[]>this._model.savedInfo.databaseAssessment;
+		}
 		this._tree = new SqlDatabaseTree(this._model, this._targetType);
 	}
 
@@ -44,9 +47,14 @@ export class AssessmentResultsDialog {
 						height: '100%',
 						width: '100%'
 					}).component();
-					flex.addItem(await this._tree.createRootContainer(view), { flex: '1 1 auto' });
+					flex.addItem(await this._tree.createRootContainer(dialog, view), { flex: '1 1 auto' });
 
-					view.initializeModel(flex);
+					this._disposables.push(view.onClosed(e => {
+						this._disposables.forEach(
+							d => { try { d.dispose(); } catch { } });
+					}));
+
+					await view.initializeModel(flex);
 					resolve();
 				} catch (ex) {
 					reject(ex);
@@ -58,13 +66,13 @@ export class AssessmentResultsDialog {
 	public async openDialog(dialogName?: string) {
 		if (!this._isOpen) {
 			this._isOpen = true;
-			this.dialog = azdata.window.createModelViewDialog(this.title, this.title, '90%');
+			this.dialog = azdata.window.createModelViewDialog(this.title, 'AssessmentResults', 'wide');
 
-			this.dialog.okButton.label = AssessmentResultsDialog.OkButtonText;
-			this.dialog.okButton.onClick(async () => await this.execute());
+			this.dialog.okButton.label = AssessmentResultsDialog.SelectButtonText;
+			this._disposables.push(this.dialog.okButton.onClick(async () => await this.execute()));
 
 			this.dialog.cancelButton.label = AssessmentResultsDialog.CancelButtonText;
-			this.dialog.cancelButton.onClick(async () => await this.cancel());
+			this._disposables.push(this.dialog.cancelButton.onClick(async () => await this.cancel()));
 
 			const dialogSetupPromises: Thenable<void>[] = [];
 
@@ -84,7 +92,7 @@ export class AssessmentResultsDialog {
 		} else {
 			this._model._miDbs = this._tree.selectedDbs();
 		}
-		this._skuRecommendationPage.refreshCardText();
+		await this._skuRecommendationPage.refreshCardText();
 		this.model.refreshDatabaseBackupPage = true;
 		this._isOpen = false;
 	}

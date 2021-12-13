@@ -6,7 +6,6 @@
 import 'vs/css!./welcomePage';
 import 'sql/workbench/contrib/welcome/page/browser/az_data_welcome_page';
 import { URI } from 'vs/base/common/uri';
-import * as strings from 'vs/base/common/strings';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import * as arrays from 'vs/base/common/arrays';
 import { WalkThroughInput } from 'vs/workbench/contrib/welcome/walkThrough/browser/walkThroughInput';
@@ -21,7 +20,6 @@ import { localize } from 'vs/nls';
 import { Action, WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification } from 'vs/base/common/actions';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { Schemas } from 'vs/base/common/network';
-import { IBackupFileService } from 'vs/workbench/services/backup/common/backup';
 import { getInstalledExtensions, IExtensionStatus, onExtensionChanged, isKeymapExtension } from 'vs/workbench/contrib/extensions/common/extensionsUtils';
 import { IExtensionManagementService, IExtensionGalleryService, ILocalExtension } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { IWorkbenchExtensionEnablementService, EnablementState } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
@@ -32,7 +30,8 @@ import { IThemeService, registerThemingParticipant } from 'vs/platform/theme/com
 import { tileBorder, gradientOne, gradientTwo, gradientBackground, extensionPackHeaderShadow, extensionPackGradientColorOneColor, extensionPackGradientColorTwoColor, tileBoxShadow, hoverShadow } from 'sql/platform/theme/common/colorRegistry';
 import { registerColor, foreground, textLinkActiveForeground, descriptionForeground, activeContrastBorder, buttonForeground, menuBorder, menuForeground, editorWidgetBorder, selectBackground, buttonHoverBackground, selectBorder, iconForeground, textLinkForeground, inputBackground, focusBorder, listFocusBackground, listFocusForeground, buttonSecondaryBackground, buttonSecondaryBorder, buttonDisabledForeground, buttonDisabledBackground, buttonSecondaryForeground, buttonSecondaryHoverBackground } from 'vs/platform/theme/common/colorRegistry';
 import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions';
-import { IEditorInputFactory, EditorInput } from 'vs/workbench/common/editor';
+import { IEditorInputSerializer } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
 import { TimeoutTimer } from 'vs/base/common/async';
 import { areSameExtensions } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
@@ -55,6 +54,7 @@ import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IExtensionRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { AddServerAction } from 'sql/workbench/services/objectExplorer/browser/connectionTreeAction';
+import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup';
 const configurationKey = 'workbench.startupEditor';
 const oldConfigurationKey = 'workbench.welcome.enabled';
 const telemetryFrom = 'welcomePage';
@@ -66,7 +66,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IBackupFileService private readonly backupFileService: IBackupFileService,
+		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
 		@IFileService private readonly fileService: IFileService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
@@ -78,7 +78,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 		const enabled = isWelcomePageEnabled(this.configurationService, this.contextService);
 		const guidedTourEnabled = isGuidedTourEnabled(this.configurationService);
 		if (enabled && this.lifecycleService.startupKind !== StartupKind.ReloadedWindow || guidedTourEnabled) {
-			const hasBackups: boolean = await this.backupFileService.hasBackups();
+			const hasBackups: boolean = await this.workingCopyBackupService.hasBackups();
 			const activeEditor = this.editorService.activeEditor;
 			if (!activeEditor && !hasBackups) {
 				const openWithReadme = this.configurationService.getValue(configurationKey) === 'readme';
@@ -88,7 +88,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 						try {
 							const folder = await this.fileService.resolve(folderUri);
 							const files = folder.children ? folder.children.map(child => child.name) : [];
-							const file = files.sort().find(file => strings.startsWith(file.toLowerCase(), 'readme'));
+							const file = files.sort().find(file => file.toLowerCase().startsWith('readme'));
 							if (file) {
 								return joinPath(folderUri, file);
 							}
@@ -100,7 +100,7 @@ export class WelcomePageContribution implements IWorkbenchContribution {
 					arrays.coalesceInPlace(readmes);
 					if (!this.editorService.activeEditor) {
 						if (readmes.length) {
-							const isMarkDown = (readme: URI) => strings.endsWith(readme.path.toLowerCase(), '.md');
+							const isMarkDown = (readme: URI) => readme.path.toLowerCase().endsWith('.md');
 							await Promise.all([
 								this.commandService.executeCommand('markdown.showPreview', null, readmes.filter(isMarkDown), { locked: true }),
 								this.editorService.openEditors(readmes.filter(readme => !isMarkDown(readme)).map(readme => ({ resource: readme }))),
@@ -151,7 +151,7 @@ export class WelcomePageAction extends Action {
 		super(id, label);
 	}
 
-	public run(): Promise<void> {
+	public override run(): Promise<void> {
 		return this.instantiationService.createInstance(WelcomePage)
 			.openEditor()
 			.then(() => undefined);
@@ -187,7 +187,7 @@ const extensionPacks: ExtensionSuggestion[] = [
 ];
 
 const extensionPackExtensions: ExtensionPackExtensions[] = [
-	{ name: localize('welcomePage.sqlServerAgent', "SQL Server Agent"), icon: require.toUrl('./../../media/defaultExtensionIcon.svg'), link: `command:azdata.extension.open?{"id":"microsoft.agent"}` },
+	{ name: localize('welcomePage.sqlServerAgent', "SQL Server Agent"), icon: require.toUrl('./../../media/agentExtensionIcon.png'), link: `command:azdata.extension.open?{"id":"microsoft.agent"}` },
 	{ name: localize('welcomePage.sqlServerProfiler', "SQL Server Profiler"), icon: require.toUrl('./../../media/defaultExtensionIcon.svg'), link: `command:azdata.extension.open?{"id":"microsoft.profiler"}` },
 	{ name: localize('welcomePage.sqlServerImport', "SQL Server Import"), icon: require.toUrl('./../../media/defaultExtensionIcon.svg'), link: `command:azdata.extension.open?{"id":"microsoft.import"}` },
 	{ name: localize('welcomePage.sqlServerDacpac', "SQL Server Dacpac"), icon: require.toUrl('./../../media/defaultExtensionIcon.svg'), link: `command:azdata.extension.open?{"id":"microsoft.dacpac"}` }
@@ -253,7 +253,7 @@ class WelcomePage extends Disposable {
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IThemeService private themeService: IThemeService) {
 		super();
-		this._register(lifecycleService.onShutdown(() => this.dispose()));
+		this._register(lifecycleService.onWillShutdown(() => this.dispose()));
 		const recentlyOpened = this.workspacesService.getRecentlyOpened();
 		const installedExtensions = this.instantiationService.invokeFunction(getInstalledExtensions);
 		const resource = URI.parse(require.toUrl('./az_data_welcome_page'))
@@ -666,7 +666,7 @@ class WelcomePage extends Disposable {
 			extensionId: extensionSuggestion.id,
 		});
 		this.instantiationService.invokeFunction(getInstalledExtensions).then(extensions => {
-			const installedExtension = arrays.first(extensions, extension => areSameExtensions(extension.identifier, { id: extensionSuggestion.id }));
+			const installedExtension = extensions.find(extension => areSameExtensions(extension.identifier, { id: extensionSuggestion.id }));
 			if (installedExtension && installedExtension.globallyEnabled) {
 				/* __GDPR__FRAGMENT__
 					"WelcomePageInstalled-1" : {
@@ -821,7 +821,7 @@ class WelcomePage extends Disposable {
 	}
 }
 
-export class WelcomeInputFactory implements IEditorInputFactory {
+export class WelcomeInputSerializer implements IEditorInputSerializer {
 
 	static readonly ID = welcomeInputTypeId;
 
@@ -953,7 +953,10 @@ registerThemingParticipant((theme, collector) => {
 	}
 	const foregroundColor = theme.getColor(foreground);
 	if (foregroundColor) {
-		collector.addRule(`.monaco-workbench .part.editor > .content .welcomePage h1, h2, h3, h4, h5, h6, h7, p { color: ${foregroundColor}; }`);
+		collector.addRule(`
+		.monaco-workbench .part.editor > .content .welcomePage a p,
+		.monaco-workbench .part.editor > .content .welcomePage a h3,
+		.monaco-workbench .part.editor > .content .welcomePage a h4 { color: ${foregroundColor}; }`);
 		collector.addRule(`.monaco-workbench .part.editor > .content .welcomePage .ads-homepage .resources .label { color: ${foregroundColor}; }`);
 		collector.addRule(`.monaco-workbench .part.editor > .content .welcomePageContainer .ads-homepage .ads-homepage-section .history .list li a { color: ${foregroundColor};}`);
 		collector.addRule(`.monaco-workbench .part.editor > .content .welcomePage .ads-homepage .resources .label { color: ${foregroundColor}; }`);

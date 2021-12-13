@@ -6,31 +6,53 @@
 import * as azdata from 'azdata';
 import * as vscode from 'vscode';
 import { MigrationWizardPage } from '../models/migrationWizardPage';
-import { MigrationStateModel, StateChangeEvent } from '../models/stateMachine';
+import { MigrationStateModel, Page, StateChangeEvent } from '../models/stateMachine';
 import * as constants from '../constants/strings';
 import { WIZARD_INPUT_COMPONENT_WIDTH } from './wizardController';
 import { deepClone, findDropDownItemIndex, selectDropDownIndex } from '../api/utils';
+import { getSubscriptions } from '../api/azure';
+import * as styles from '../constants/styles';
 
 export class AccountsSelectionPage extends MigrationWizardPage {
 	private _azureAccountsDropdown!: azdata.DropDownComponent;
 	private _accountTenantDropdown!: azdata.DropDownComponent;
 	private _accountTenantFlexContainer!: azdata.FlexContainer;
+	private _disposables: vscode.Disposable[] = [];
 
 	constructor(wizard: azdata.window.Wizard, migrationStateModel: MigrationStateModel) {
 		super(wizard, azdata.window.createWizardPage(constants.ACCOUNTS_SELECTION_PAGE_TITLE), migrationStateModel);
-		this.wizardPage.description = constants.ACCOUNTS_SELECTION_PAGE_DESCRIPTION;
 	}
 
 	protected async registerContent(view: azdata.ModelView): Promise<void> {
+		const pageDescription = {
+			title: '',
+			component: view.modelBuilder.text().withProps({
+				value: constants.ACCOUNTS_SELECTION_PAGE_DESCRIPTION,
+				CSSStyles: {
+					...styles.BODY_CSS,
+					'margin': '0',
+				}
+			}).component()
+		};
+
+		this.wizard.customButtons[0].enabled = true;
 		const form = view.modelBuilder.formContainer()
 			.withFormItems(
 				[
+					pageDescription,
 					await this.createAzureAccountsDropdown(view),
 					await this.createAzureTenantContainer(view),
 				]
-			);
-		await view.initializeModel(form.component());
+			).withProps({
+				CSSStyles: {
+					'padding-top': '0'
+				}
+			}).component();
+		await view.initializeModel(form);
 		await this.populateAzureAccountsDropdown();
+		this._disposables.push(view.onClosed(e =>
+			this._disposables.forEach(
+				d => { try { d.dispose(); } catch { } })));
 	}
 
 	private createAzureAccountsDropdown(view: azdata.ModelView): azdata.FormComponent {
@@ -38,13 +60,13 @@ export class AccountsSelectionPage extends MigrationWizardPage {
 		const azureAccountLabel = view.modelBuilder.text().withProps({
 			value: constants.ACCOUNTS_SELECTION_PAGE_TITLE,
 			CSSStyles: {
-				'font-size': '13px',
-				'font-weight': 'bold',
+				...styles.LABEL_CSS
 			}
 		}).component();
 
 		this._azureAccountsDropdown = view.modelBuilder.dropDown()
 			.withProps({
+				ariaLabel: constants.ACCOUNTS_SELECTION_PAGE_TITLE,
 				width: WIZARD_INPUT_COMPONENT_WIDTH,
 				editable: true,
 				fireOnTextChange: true,
@@ -60,6 +82,7 @@ export class AccountsSelectionPage extends MigrationWizardPage {
 					}
 					if (this.migrationStateModel._azureAccount?.isStale) {
 						this.wizard.message = {
+							level: azdata.window.MessageLevel.Error,
 							text: constants.ACCOUNT_STALE_ERROR(this.migrationStateModel._azureAccount)
 						};
 						return false;
@@ -72,7 +95,7 @@ export class AccountsSelectionPage extends MigrationWizardPage {
 				return false;
 			}).component();
 
-		this._azureAccountsDropdown.onValueChanged(async (value) => {
+		this._disposables.push(this._azureAccountsDropdown.onValueChanged(async (value) => {
 			const selectedIndex = findDropDownItemIndex(this._azureAccountsDropdown, value);
 			if (selectedIndex > -1) {
 				const selectedAzureAccount = this.migrationStateModel.getAccount(selectedIndex);
@@ -82,39 +105,49 @@ export class AccountsSelectionPage extends MigrationWizardPage {
 					this.migrationStateModel._accountTenants = selectedAzureAccount.properties.tenants;
 					this._accountTenantDropdown.values = await this.migrationStateModel.getTenantValues();
 					selectDropDownIndex(this._accountTenantDropdown, 0);
-					this._accountTenantFlexContainer.updateCssStyles({
+					await this._accountTenantFlexContainer.updateCssStyles({
 						'display': 'inline'
 					});
 				} else {
-					this._accountTenantFlexContainer.updateCssStyles({
+					await this._accountTenantFlexContainer.updateCssStyles({
 						'display': 'none'
 					});
+					if (this.migrationStateModel.retryMigration || (this.migrationStateModel.resumeAssessment && this.migrationStateModel.savedInfo.closedPage >= Page.AzureAccount)) {
+						(<azdata.CategoryValue[]>this._azureAccountsDropdown.values)?.forEach((account, index) => {
+							if (account.name.toLowerCase() === this.migrationStateModel.savedInfo.azureAccount?.displayInfo.userId.toLowerCase()) {
+								selectDropDownIndex(this._azureAccountsDropdown, index);
+							}
+						});
+					}
+
 				}
-				this.migrationStateModel._subscriptions = undefined!;
-				this.migrationStateModel._targetSubscription = undefined!;
-				this.migrationStateModel._databaseBackup.subscription = undefined!;
+				if (!(this.migrationStateModel.resumeAssessment && this.migrationStateModel.savedInfo.closedPage >= Page.Summary)) {
+					this.migrationStateModel._subscriptions = undefined!;
+					this.migrationStateModel._targetSubscription = undefined!;
+					this.migrationStateModel._databaseBackup.subscription = undefined!;
+				}
 				await this._azureAccountsDropdown.validate();
 			}
-		});
+		}));
 
 		const linkAccountButton = view.modelBuilder.hyperlink()
 			.withProps({
 				label: constants.ACCOUNT_LINK_BUTTON_LABEL,
 				url: '',
 				CSSStyles: {
-					'font-size': '13px',
+					...styles.BODY_CSS
 				}
 			})
 			.component();
 
-		linkAccountButton.onDidClick(async (event) => {
+		this._disposables.push(linkAccountButton.onDidClick(async (event) => {
 			await vscode.commands.executeCommand('workbench.actions.modal.linkedAccount');
 			await this.populateAzureAccountsDropdown();
 			this.wizard.message = {
 				text: ''
 			};
-			this._azureAccountsDropdown.validate();
-		});
+			await this._azureAccountsDropdown.validate();
+		}));
 
 		const flexContainer = view.modelBuilder.flexContainer()
 			.withLayout({
@@ -138,30 +171,33 @@ export class AccountsSelectionPage extends MigrationWizardPage {
 		const azureTenantDropdownLabel = view.modelBuilder.text().withProps({
 			value: constants.AZURE_TENANT,
 			CSSStyles: {
-				'font-size': '13px',
-				'font-weight': 'bold'
+				...styles.LABEL_CSS
 			}
 		}).component();
 
 		this._accountTenantDropdown = view.modelBuilder.dropDown().withProps({
+			ariaLabel: constants.AZURE_TENANT,
 			width: WIZARD_INPUT_COMPONENT_WIDTH,
 			editable: true,
 			fireOnTextChange: true,
 		}).component();
 
-		this._accountTenantDropdown.onValueChanged(value => {
+		this._disposables.push(this._accountTenantDropdown.onValueChanged(value => {
 			/**
 			 * Replacing all the tenants in azure account with the tenant user has selected.
 			 * All azure requests will only run on this tenant from now on
 			 */
 			const selectedIndex = findDropDownItemIndex(this._accountTenantDropdown, value);
+			const selectedTenant = this.migrationStateModel.getTenant(selectedIndex);
+			this.migrationStateModel._azureTenant = deepClone(selectedTenant);
 			if (selectedIndex > -1) {
 				this.migrationStateModel._azureAccount.properties.tenants = [this.migrationStateModel.getTenant(selectedIndex)];
 				this.migrationStateModel._subscriptions = undefined!;
 				this.migrationStateModel._targetSubscription = undefined!;
 				this.migrationStateModel._databaseBackup.subscription = undefined!;
 			}
-		});
+
+		}));
 
 		this._accountTenantFlexContainer = view.modelBuilder.flexContainer()
 			.withLayout({
@@ -195,19 +231,34 @@ export class AccountsSelectionPage extends MigrationWizardPage {
 		selectDropDownIndex(this._azureAccountsDropdown, 0);
 	}
 
-	public async onPageEnter(): Promise<void> {
-		this.wizard.registerNavigationValidator(pageChangeInfo => {
-			if (this.migrationStateModel._azureAccount?.isStale === true) {
+	public async onPageEnter(pageChangeInfo: azdata.window.WizardPageChangeInfo): Promise<void> {
+		this.wizard.registerNavigationValidator(async pageChangeInfo => {
+			try {
+				this.wizard.message = { text: '', };
+
+				if (this.migrationStateModel._azureAccount && !this.migrationStateModel._azureAccount?.isStale) {
+					const subscriptions = await getSubscriptions(this.migrationStateModel._azureAccount);
+					if (subscriptions?.length > 0) {
+						return true;
+					}
+				}
+
 				this.wizard.message = {
-					text: constants.ACCOUNT_STALE_ERROR(this.migrationStateModel._azureAccount)
+					level: azdata.window.MessageLevel.Error,
+					text: constants.ACCOUNT_STALE_ERROR(this.migrationStateModel._azureAccount),
 				};
-				return false;
+			} catch (error) {
+				this.wizard.message = {
+					level: azdata.window.MessageLevel.Error,
+					text: constants.ACCOUNT_ACCESS_ERROR(this.migrationStateModel._azureAccount, error),
+				};
 			}
-			return true;
+
+			return false;
 		});
 	}
 
-	public async onPageLeave(): Promise<void> {
+	public async onPageLeave(pageChangeInfo: azdata.window.WizardPageChangeInfo): Promise<void> {
 	}
 
 	protected async handleStateChange(e: StateChangeEvent): Promise<void> {

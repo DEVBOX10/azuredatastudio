@@ -21,6 +21,9 @@ export const defaultEngine = 'defaultEngine';
 
 export const passwordChars = '***************';
 
+/* default authentication type setting name*/
+export const defaultAuthenticationType = 'defaultAuthenticationType';
+
 /* authentication types */
 export const sqlLogin = 'SqlLogin';
 export const integrated = 'Integrated';
@@ -32,3 +35,7 @@ export const dstsAuth = 'dstsAuth';
 export const cmsProviderName = 'MSSQL-CMS';
 
 export const UNSAVED_GROUP_ID = 'unsaved';
+
+/* Server Type Constants */
+export const sqlDataWarehouse = 'Azure SQL Data Warehouse';
+export const gen3Version = 12;

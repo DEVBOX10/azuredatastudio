@@ -157,7 +157,7 @@ class Trait<T> implements IDisposable {
 	constructor(private _trait: string) { }
 
 	renderIndex(index: GridPosition, container: HTMLElement): void {
-		DOM.toggleClass(container, this._trait, this.contains(index));
+		container.classList.toggle(this._trait, this.contains(index));
 	}
 
 	unrender(container: HTMLElement): void {
@@ -207,7 +207,7 @@ class FocusTrait<T> extends Trait<T> {
 		super('focused');
 	}
 
-	renderIndex(index: GridPosition, container: HTMLElement): void {
+	override renderIndex(index: GridPosition, container: HTMLElement): void {
 		super.renderIndex(index, container);
 
 		if (this.contains(index)) {
@@ -1035,15 +1035,15 @@ export class Table<T> implements IDisposable {
 		}
 
 		this.view.domNode.setAttribute('role', 'tree');
-		DOM.toggleClass(this.view.domNode, 'element-focused', focus.length > 0);
+		this.view.domNode.classList.toggle('element-focused', focus.length > 0);
 	}
 
 	private _onSelectionChange(): void {
 		const selection = this.selection.get();
 
-		DOM.toggleClass(this.view.domNode, 'selection-none', selection.length === 0);
-		DOM.toggleClass(this.view.domNode, 'selection-single', selection.length === 1);
-		DOM.toggleClass(this.view.domNode, 'selection-multiple', selection.length > 1);
+		this.view.domNode.classList.toggle('selection-none', selection.length === 0);
+		this.view.domNode.classList.toggle('selection-single', selection.length === 1);
+		this.view.domNode.classList.toggle('selection-multiple', selection.length > 1);
 	}
 
 	dispose(): void {

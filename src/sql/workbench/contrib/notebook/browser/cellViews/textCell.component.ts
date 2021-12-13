@@ -23,13 +23,16 @@ import { IMarkdownRenderResult } from 'vs/editor/browser/core/markdownRenderer';
 
 import { NotebookMarkdownRenderer } from 'sql/workbench/contrib/notebook/browser/outputs/notebookMarkdown';
 import { CellView } from 'sql/workbench/contrib/notebook/browser/cellViews/interfaces';
-import { CellEditModes, ICellModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { ICaretPosition, CellEditModes, ICellModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
 import { ISanitizer, defaultSanitizer } from 'sql/workbench/services/notebook/browser/outputs/sanitizer';
 import { CodeComponent } from 'sql/workbench/contrib/notebook/browser/cellViews/code.component';
 import { NotebookRange, ICellEditorProvider, INotebookService } from 'sql/workbench/services/notebook/browser/notebookService';
 import { HTMLMarkdownConverter } from 'sql/workbench/contrib/notebook/browser/htmlMarkdownConverter';
 import { NotebookInput } from 'sql/workbench/contrib/notebook/browser/models/notebookInput';
+import { highlightSelectedText } from 'sql/workbench/contrib/notebook/browser/utils';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 export const TEXT_SELECTOR: string = 'text-cell-component';
 const USER_SELECT_CLASS = 'actionselect';
@@ -70,17 +73,38 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 	@HostListener('document:keydown', ['$event'])
 	onkeydown(e: KeyboardEvent) {
 		if (DOM.getActiveElement() === this.output?.nativeElement && this.isActive() && this.cellModel?.currentMode === CellEditModes.WYSIWYG) {
-			// select the active .
-			if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+			// Select all text
+			const keyEvent = new StandardKeyboardEvent(e);
+			if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_A) {
 				preventDefaultAndExecCommand(e, 'selectAll');
-			} else if ((e.metaKey && e.shiftKey && e.key === 'z') || (e.ctrlKey && e.key === 'y') && !this.markdownMode) {
-				preventDefaultAndExecCommand(e, 'redo');
-			} else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-				preventDefaultAndExecCommand(e, 'undo');
-			} else if (e.shiftKey && e.key === 'Tab') {
+			} else if ((keyEvent.metaKey && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KEY_Z) || (keyEvent.ctrlKey && keyEvent.keyCode === KeyCode.KEY_Y) && !this.markdownMode) {
+				// Redo text
+				this.redoRichTextChange();
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_Z) {
+				// Undo text
+				this.undoRichTextChange();
+			} else if (keyEvent.shiftKey && keyEvent.keyCode === KeyCode.Tab) {
+				// Outdent text
 				preventDefaultAndExecCommand(e, 'outdent');
-			} else if (e.key === 'Tab') {
+			} else if (keyEvent.keyCode === KeyCode.Tab) {
+				// Indent text
 				preventDefaultAndExecCommand(e, 'indent');
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_B) {
+				// Bold text
+				preventDefaultAndExecCommand(e, 'bold');
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_I) {
+				// Italicize text
+				preventDefaultAndExecCommand(e, 'italic');
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_U) {
+				// Underline text
+				preventDefaultAndExecCommand(e, 'underline');
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KEY_K) {
+				// Code Block
+				preventDefaultAndExecCommand(e, 'formatBlock', false, 'pre');
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KEY_H) {
+				// Highlight Text
+				DOM.EventHelper.stop(e, true);
+				highlightSelectedText();
 			}
 		}
 	}
@@ -103,18 +127,27 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 	public doubleClickEditEnabled: boolean;
 	private _highlightRange: NotebookRange;
 	private _isFindActive: boolean = false;
+	private _editorHeight: number;
+	private readonly _markdownMaxHeight = 4000;
+
+	private readonly _undoStack: RichTextEditStack;
+	private readonly _redoStack: RichTextEditStack;
 
 	constructor(
 		@Inject(forwardRef(() => ChangeDetectorRef)) private _changeRef: ChangeDetectorRef,
 		@Inject(IInstantiationService) private _instantiationService: IInstantiationService,
 		@Inject(IWorkbenchThemeService) private themeService: IWorkbenchThemeService,
 		@Inject(IConfigurationService) private _configurationService: IConfigurationService,
-		@Inject(INotebookService) private _notebookService: INotebookService,
+		@Inject(INotebookService) private _notebookService: INotebookService
 	) {
 		super();
 		this.markdownRenderer = this._instantiationService.createInstance(NotebookMarkdownRenderer);
 		this.doubleClickEditEnabled = this._configurationService.getValue('notebook.enableDoubleClickEdit');
 		this.markdownPreviewLineHeight = this._configurationService.getValue('notebook.markdownPreviewLineHeight');
+		let maxStackSize: number = this._configurationService.getValue('notebook.maxRichTextUndoHistory');
+		this._undoStack = new RichTextEditStack(maxStackSize);
+		this._redoStack = new RichTextEditStack(maxStackSize);
+
 		this._register(toDisposable(() => {
 			if (this.markdownResult) {
 				this.markdownResult.dispose();
@@ -126,6 +159,11 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 			if (e.affectsConfiguration('notebook.markdownPreviewLineHeight')) {
 				this.markdownPreviewLineHeight = this._configurationService.getValue('notebook.markdownPreviewLineHeight');
 				this.updatePreview();
+			}
+			if (e.affectsConfiguration('notebook.maxRichTextUndoHistory')) {
+				let newStackSize: number = this._configurationService.getValue('notebook.maxRichTextUndoHistory');
+				this._undoStack.maxStackSize = newStackSize;
+				this._redoStack.maxStackSize = newStackSize;
 			}
 		}));
 	}
@@ -154,18 +192,23 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 		return this._activeCellId;
 	}
 
+	get outputRef(): ElementRef {
+		return this.output;
+	}
+
 	private setLoading(isLoading: boolean): void {
 		this.cellModel.loaded = !isLoading;
 		this._changeRef.detectChanges();
 	}
 
 	ngOnInit() {
+		this._editorHeight = document.querySelector('.editor-container').clientHeight;
 		this.previewFeaturesEnabled = this._configurationService.getValue('workbench.enablePreviewFeatures');
 		this._register(this.themeService.onDidColorThemeChange(this.updateTheme, this));
 		this.updateTheme(this.themeService.getColorTheme());
 		this.setFocusAndScroll();
 		this.cellModel.isEditMode = false;
-		this._htmlMarkdownConverter = new HTMLMarkdownConverter(this.notebookUri);
+		this._htmlMarkdownConverter = this._instantiationService.createInstance(HTMLMarkdownConverter, this.notebookUri);
 		this._register(this.cellModel.onOutputsChanged(e => {
 			this.updatePreview();
 		}));
@@ -175,11 +218,47 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 			}
 			this._changeRef.detectChanges();
 		}));
-		this._register(this.cellModel.onCellPreviewModeChanged(preview => {
-			this.previewMode = preview;
-			this.focusIfPreviewMode();
-		}));
-		this._register(this.cellModel.onCellMarkdownModeChanged(markdown => {
+		this._register(this.cellModel.onCurrentEditModeChanged(editMode => {
+			let markdown: boolean = editMode !== CellEditModes.WYSIWYG;
+			if (!markdown) {
+				let editorControl = this.cellEditors.length > 0 ? this.cellEditors[0].getEditor().getControl() : undefined;
+				if (editorControl) {
+					let selection = editorControl.getSelection();
+					this.cellModel.markdownCursorPosition = selection?.getPosition();
+				}
+			}
+			// On preview mode change, get the cursor position (get the position only when the selection node is a text node)
+			if (window.getSelection() && window.getSelection().focusNode?.nodeName === '#text' && window.getSelection().getRangeAt(0)) {
+				let selection = window.getSelection().getRangeAt(0);
+				// Check to see if the last cursor position is still the same and skip
+				if (selection.startOffset !== this.cellModel.richTextCursorPosition?.startOffset) {
+					// window.getSelection gives the exact html element and offsets of cursor location
+					// Since we only have the output element reference which is the parent of all html nodes
+					// we iterate through it's child nodes until we get the selection element and store the node indexes
+					// in the startElementNodes and endElementNodes and their offsets respectively.
+					let startElementNodes = [];
+					let startNode = selection.startContainer;
+					let endNode = selection.endContainer;
+					while (startNode !== this.output.nativeElement) {
+						startElementNodes.push(this.getNodeIndex(startNode));
+						startNode = startNode.parentNode;
+					}
+					let endElementNodes = [];
+					while (endNode !== this.output.nativeElement) {
+						endElementNodes.push(this.getNodeIndex(endNode));
+						endNode = endNode.parentNode;
+					}
+					// Create cursor position
+					let cursorPosition: ICaretPosition = {
+						startElementNodes: startElementNodes,
+						startOffset: selection.startOffset,
+						endElementNodes: endElementNodes,
+						endOffset: selection.endOffset
+					};
+					this.cellModel.richTextCursorPosition = cursorPosition;
+				}
+			}
+			this.previewMode = editMode !== CellEditModes.MARKDOWN;
 			this.markdownMode = markdown;
 			this.focusIfPreviewMode();
 		}));
@@ -199,6 +278,17 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 				break;
 			}
 		}
+	}
+
+	getNodeIndex(n: Node): number {
+		let i = 0;
+		// walk up the node to the top and get it's index
+		n = n.previousSibling;
+		while (n) {
+			i++;
+			n = n.previousSibling;
+		}
+		return i;
 	}
 
 	public cellGuid(): string {
@@ -245,6 +335,10 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 			if (this._previewMode) {
 				let outputElement = <HTMLElement>this.output.nativeElement;
 				outputElement.innerHTML = this.markdownResult.element.innerHTML;
+				this.addUndoElement(outputElement.innerHTML);
+				if (this.markdownMode) {
+					this.setSplitViewHeight();
+				}
 				outputElement.style.lineHeight = this.markdownPreviewLineHeight.toString();
 				this.cellModel.renderedOutputTextContent = this.getRenderedTextOutput();
 				outputElement.focus();
@@ -255,11 +349,65 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 		}
 	}
 
+	private setSplitViewHeight(): void {
+		// Set the same height for markdown editor and preview
+		this.setMarkdownEditorHeight(this._editorHeight);
+		let outputElement = <HTMLElement>this.output.nativeElement;
+		outputElement.style.maxHeight = this._editorHeight.toString() + 'px';
+		outputElement.style.overflowY = 'scroll';
+	}
+
+	private setMarkdownEditorHeight(height: number): void {
+		// Find cell editor provider via cell guid to set markdown editor max height
+		let cellEditorProvider = this.markdowncodeCell.find(c => c.cellGuid() === this.cellModel.cellGuid);
+		let markdownEditor = cellEditorProvider?.getEditor();
+		if (markdownEditor) {
+			markdownEditor.setMaximumHeight(height);
+		}
+	}
+
 	private updateCellSource(): void {
 		let textOutputElement = <HTMLElement>this.output.nativeElement;
 		let newCellSource: string = this._htmlMarkdownConverter.convert(textOutputElement.innerHTML);
 		this.cellModel.source = newCellSource;
 		this._changeRef.detectChanges();
+	}
+
+	private addUndoElement(newText: string) {
+		if (newText !== this._undoStack.peek()) {
+			this._redoStack.clear();
+			this._undoStack.push(newText);
+		}
+	}
+
+	private undoRichTextChange(): void {
+		// The first element in the undo stack is the initial cell text,
+		// which is the hard stop for undoing text changes. So we can only
+		// undo text changes after that one.
+		if (this._undoStack.count > 1) {
+			// The most recent change is at the top of the undo stack, so we want to
+			// update the text so that it's the change just before that.
+			let redoText = this._undoStack.pop();
+			this._redoStack.push(redoText);
+			let undoText = this._undoStack.peek();
+
+			let textOutputElement = <HTMLElement>this.output.nativeElement;
+			textOutputElement.innerHTML = undoText;
+
+			this.updateCellSource();
+		}
+	}
+
+	private redoRichTextChange(): void {
+		if (this._redoStack.count > 0) {
+			let text = this._redoStack.pop();
+			this._undoStack.push(text);
+
+			let textOutputElement = <HTMLElement>this.output.nativeElement;
+			textOutputElement.innerHTML = text;
+
+			this.updateCellSource();
+		}
 	}
 
 	//Sanitizes the content based on trusted mode of Cell Model
@@ -286,6 +434,9 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 	}
 
 	public handleHtmlChanged(): void {
+		let textOutputElement = <HTMLElement>this.output.nativeElement;
+		this.addUndoElement(textOutputElement.innerHTML);
+
 		this.updateCellSource();
 	}
 
@@ -344,11 +495,49 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 	}
 
 	private focusIfPreviewMode(): void {
-		if (this.previewMode && !this.markdownMode) {
-			let outputElement = this.output?.nativeElement as HTMLElement;
-			if (outputElement) {
-				outputElement.focus();
+		if (this.previewMode) {
+			if (!this.markdownMode) {
+				let outputElement = this.output?.nativeElement as HTMLElement;
+				if (outputElement) {
+					outputElement.style.maxHeight = 'unset';
+					outputElement.focus();
+				}
+			} else {
+				this.setSplitViewHeight();
 			}
+			// Move cursor to the richTextCursorPosition
+			// We iterate through the output element childnodes to get to the element of cursor location
+			// If the elements exist, we set the selection, else the cursor defaults to beginning.
+			// Only do this if the cell is active so we don't steal the window selection from another cell
+			// since this function is called whenever any cell in the Notebook changes, not just ourself
+			if (this.isActive() && !this.markdownMode && this.cellModel.richTextCursorPosition) {
+				let selection = window.getSelection();
+				let htmlNodes = this.cellModel.richTextCursorPosition.startElementNodes;
+				let depthToNode = htmlNodes.length;
+				let startNodeElement: any = this.output.nativeElement;
+				while (depthToNode-- && startNodeElement) {
+					startNodeElement = startNodeElement.childNodes[htmlNodes[depthToNode]];
+				}
+				htmlNodes = this.cellModel.richTextCursorPosition.endElementNodes;
+				depthToNode = htmlNodes.length;
+				let endNodeElement: any = this.output.nativeElement;
+				while (depthToNode-- && endNodeElement) {
+					endNodeElement = endNodeElement?.childNodes[htmlNodes[depthToNode]];
+				}
+				// check to see if the nodes exist and set the cursor
+				if (startNodeElement && endNodeElement) {
+					// check the offset is still valid (element's text updates can make it invalid)
+					if (startNodeElement.length >= this.cellModel.richTextCursorPosition.startOffset && endNodeElement.length >= this.cellModel.richTextCursorPosition.endOffset) {
+						let range = document.createRange();
+						range.setStart(startNodeElement, this.cellModel.richTextCursorPosition.startOffset);
+						range.setEnd(endNodeElement, this.cellModel.richTextCursorPosition.endOffset);
+						selection.removeAllRanges();
+						selection.addRange(range);
+					}
+				}
+			}
+		} else {
+			this.setMarkdownEditorHeight(this._markdownMaxHeight);
 		}
 	}
 
@@ -356,7 +545,7 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 		return this.cellModel && this.cellModel.id === this.activeCellId;
 	}
 
-	public deltaDecorations(newDecorationsRange: NotebookRange | NotebookRange[], oldDecorationsRange: NotebookRange | NotebookRange[]): void {
+	public override deltaDecorations(newDecorationsRange: NotebookRange | NotebookRange[], oldDecorationsRange: NotebookRange | NotebookRange[]): void {
 		if (newDecorationsRange) {
 			this._isFindActive = true;
 			if (Array.isArray(newDecorationsRange)) {
@@ -494,8 +683,68 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 	}
 }
 
-function preventDefaultAndExecCommand(e: KeyboardEvent, commandId: string) {
-	// use preventDefault() to avoid invoking the editor's select all
+function preventDefaultAndExecCommand(e: KeyboardEvent, commandId: string, showUI?: boolean, value?: string) {
+	// Use preventDefault() to avoid invoking the editor's select all and stopPropagation to prevent further propagation of the current event
+	e.stopPropagation();
 	e.preventDefault();
-	document.execCommand(commandId);
+	document.execCommand(commandId, showUI, value);
+}
+
+/**
+ * A string stack used to track changes to Undo and Redo for the Rich Text editor in text cells.
+ */
+export class RichTextEditStack {
+	private _list: string[] = [];
+
+	constructor(private _maxStackSize: number) {
+	}
+
+	public set maxStackSize(stackSize: number) {
+		this._maxStackSize = stackSize;
+	}
+
+	/**
+	 * Adds an element to the top of the stack. If the number of elements
+	 * exceeds the max stack size, then the oldest elements are removed until
+	 * the max size is reached.
+	 * @param element The string element to add to the stack.
+	 */
+	public push(element: string): void {
+		this._list.push(element);
+		if (this._list.length > this._maxStackSize) {
+			this._list = this._list.slice(this._list.length - this._maxStackSize);
+		}
+	}
+
+	/**
+	 * Removes the topmost element of the stack and returns it.
+	 */
+	public pop(): string | undefined {
+		return this._list.pop();
+	}
+
+	/**
+	 * Returns the topmost element of the stack without removing it.
+	 */
+	public peek(): string | undefined {
+		if (this._list.length > 0) {
+			return this._list[this._list.length - 1];
+		} else {
+			return undefined;
+		}
+	}
+
+	/**
+	 * Removes all elements from the stack.
+	 */
+	public clear(): void {
+		this._list = [];
+	}
+
+	/**
+	 * Returns the number of elements in the stack.
+	 */
+	public get count(): number {
+		return this._list.length;
+	}
 }

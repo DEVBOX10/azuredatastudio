@@ -8,7 +8,7 @@ import { FindMatch } from 'vs/editor/common/model';
 import { NotebookContentChange, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
 import { repeat } from 'vs/base/common/strings';
-import { ITextEditorModel } from 'vs/workbench/common/editor';
+import { ITextEditorModel } from 'vs/editor/common/services/resolverService';
 
 export class NotebookTextFileModel {
 	// save active cell's line/column in editor model for the beginning of the source property
@@ -200,8 +200,15 @@ export class NotebookTextFileModel {
 		return false;
 	}
 
-	public replaceEntireTextEditorModel(notebookModel: INotebookModel, type: NotebookChangeType, textEditorModel: ITextEditorModel) {
-		let content = JSON.stringify(notebookModel.toJSON(type), undefined, '    ');
+	public async replaceEntireTextEditorModel(notebookModel: INotebookModel, type: NotebookChangeType, textEditorModel: ITextEditorModel): Promise<void> {
+		let content: string;
+		let notebookContents = notebookModel.toJSON(type);
+		let serializer = notebookModel.serializationManager;
+		if (serializer) {
+			content = await serializer.contentManager.serializeNotebook(notebookContents);
+		} else {
+			content = JSON.stringify(notebookContents, undefined, '    ');
+		}
 		let model = textEditorModel.textEditorModel;
 		let endLine = model.getLineCount();
 		let endCol = model.getLineMaxColumn(endLine);

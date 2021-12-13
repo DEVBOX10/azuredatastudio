@@ -4,10 +4,11 @@
 		{
 			"type": "npm",
 			"script": "watch-clientd",
-			"label": "Build VS Code Core",
+			"label": "Core - Build",
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never"
+				"reveal": "never",
+				"group": "buildWatchers"
 			},
 			"problemMatcher": {
 				"owner": "typescript",
@@ -30,10 +31,11 @@
 		{
 			"type": "npm",
 			"script": "watch-extensionsd",
-			"label": "Build VS Code Extensions",
+			"label": "Ext - Build",
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never"
+				"reveal": "never",
+				"group": "buildWatchers"
 			},
 			"problemMatcher": {
 				"owner": "typescript",
@@ -54,10 +56,10 @@
 			}
 		},
 		{
-			"label": "Build VS Code",
+			"label": "VS Code - Build",
 			"dependsOn": [
-				"Build VS Code Core",
-				"Build VS Code Extensions"
+				"Core - Build",
+				"Ext - Build"
 			],
 			"group": {
 				"kind": "build",
@@ -68,28 +70,32 @@
 		{
 			"type": "npm",
 			"script": "kill-watch-clientd",
-			"label": "Kill Build VS Code Core",
+			"label": "Kill Core - Build",
 			"group": "build",
 			"presentation": {
-				"reveal": "never"
+				"reveal": "never",
+				"group": "buildKillers",
+				"close": true
 			},
 			"problemMatcher": "$tsc"
 		},
 		{
 			"type": "npm",
 			"script": "kill-watch-extensionsd",
-			"label": "Kill Build VS Code Extensions",
+			"label": "Kill Ext - Build",
 			"group": "build",
 			"presentation": {
-				"reveal": "never"
+				"reveal": "never",
+				"group": "buildKillers",
+				"close": true
 			},
 			"problemMatcher": "$tsc"
 		},
 		{
-			"label": "Kill Build VS Code",
+			"label": "Kill VS Code - Build",
 			"dependsOn": [
-				"Kill Build VS Code Core",
-				"Kill Build VS Code Extensions"
+				"Kill Core - Build",
+				"Kill Ext - Build"
 			],
 			"group": "build",
 			"problemMatcher": []
@@ -111,7 +117,7 @@
 		{
 			"type": "npm",
 			"script": "watch-webd",
-			"label": "Build Web Extensions",
+			"label": "Web Ext - Build",
 			"group": "build",
 			"isBackground": true,
 			"presentation": {
@@ -138,7 +144,7 @@
 		{
 			"type": "npm",
 			"script": "kill-watch-webd",
-			"label": "Kill Build Web Extensions",
+			"label": "Kill Web Ext - Build",
 			"group": "build",
 			"presentation": {
 				"reveal": "never"
@@ -208,7 +214,8 @@
 			"command": "node build/lib/preLaunch.js",
 			"label": "Ensure Prelaunch Dependencies",
 			"presentation": {
-				"reveal": "silent"
+				"reveal": "silent",
+				"close": true
 			}
 		},
 		{
@@ -224,6 +231,18 @@
 			"group": "build",
 			"label": "npm: tsec-compile-check",
 			"detail": "node_modules/tsec/bin/tsec -p src/tsconfig.json --noEmit"
+		},
+		{
+			"type": "npm",
+			"script": "watch",
+			"label": "Watch sample-resource-deployment",
+			"path": "./samples/sample-resource-deployment/package.json",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never"
+			},
+			"group": "build"
 		}
 	]
 }

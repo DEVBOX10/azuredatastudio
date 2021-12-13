@@ -7,8 +7,9 @@ import * as should from 'should';
 import * as path from 'path';
 import * as TypeMoq from 'typemoq';
 import * as constants from '../../common/constants';
+import { BookTreeItemType } from '../../common/utils';
 import { IBookTrustManager, BookTrustManager } from '../../book/bookTrustManager';
-import { BookTreeItem, BookTreeItemFormat, BookTreeItemType } from '../../book/bookTreeItem';
+import { BookTreeItem, BookTreeItemFormat } from '../../book/bookTreeItem';
 import * as vscode from 'vscode';
 import { BookModel } from '../../book/bookModel';
 import * as sinon from 'sinon';
@@ -354,6 +355,8 @@ describe('BookTrustManagerTests', function () {
 				});
 
 				it('should trust notebook after book has been added to a folder', async () => {
+					//Set book as not trusted before running test
+					bookTrustManager.setBookAsTrusted('/temp/SubFolder2/', false);
 					let notebookUri = run.book2.notebook1;
 					let isNotebookTrustedBeforeChange = bookTrustManager.isNotebookTrustedByDefault(notebookUri);
 

@@ -5,14 +5,12 @@
 import * as azdata from 'azdata';
 import { EOL } from 'os';
 import * as vscode from 'vscode';
-import * as nls from 'vscode-nls';
 import { InitialVariableValues, NotebookWizardPageInfo } from '../../interfaces';
 import { initializeWizardPage, InputComponent, InputComponentInfo, setModelValues, Validator } from '../modelViewUtils';
 import { ResourceTypePage } from '../resourceTypePage';
 import { WizardPageInfo } from '../wizardPageInfo';
 import { NotebookWizardModel } from './notebookWizardModel';
-
-const localize = nls.loadMessageBundle();
+import * as loc from '../../localizedConstants';
 
 export class NotebookWizardPage extends ResourceTypePage {
 
@@ -73,14 +71,14 @@ export class NotebookWizardPage extends ResourceTypePage {
 		});
 	}
 
-	public async onLeave(): Promise<void> {
+	public override async onLeave(): Promise<void> {
 		// The following callback registration clears previous navigation validators.
 		this.wizard.wizardObject.registerNavigationValidator((pcInfo) => {
 			return true;
 		});
 	}
 
-	public async onEnter(pageInfo: WizardPageInfo): Promise<void> {
+	public override async onEnter(pageInfo: WizardPageInfo): Promise<void> {
 		if (pageInfo.isLastPage) {
 			// on the last page either one or both of done button and generateScript button are visible depending on configuration of 'runNotebook' in wizard info
 			this.wizard.wizardObject.doneButton.hidden = !this.isDoneButtonVisible;
@@ -135,10 +133,7 @@ export class NotebookWizardPage extends ResourceTypePage {
 			this.wizard.wizardObject.message = {
 				text: messages.length === 1
 					? messages[0]
-					: localize(
-						"wizardPage.ValidationError",
-						"There are some errors on this page, click 'Show Details' to view the errors."
-					),
+					: loc.multipleValidationErrors,
 				description: messages.length === 1 ? undefined : messages.join(EOL),
 				level: azdata.window.MessageLevel.Error,
 			};

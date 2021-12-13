@@ -40,7 +40,8 @@ export abstract class BasePage {
 	 * Sets up a navigation validator.
 	 * This will be called right before onPageEnter().
 	 */
-	public abstract setupNavigationValidator(): void;
+	public setupNavigationValidator(): void {
+	}
 
 	public async getServerValues(): Promise<{ connection: azdata.connection.Connection, displayName: string, name: string }[]> {
 		let cons = await azdata.connection.getActiveConnections();
@@ -90,7 +91,7 @@ export abstract class BasePage {
 		return values;
 	}
 
-	public async getDatabaseValues(): Promise<{ displayName: string, name: string }[]> {
+	public async getDatabaseValues(): Promise<azdata.CategoryValue[]> {
 		let idx = -1;
 		let count = -1;
 		let values = (await azdata.connection.listDatabases(this.model.server.connectionId)).map(db => {

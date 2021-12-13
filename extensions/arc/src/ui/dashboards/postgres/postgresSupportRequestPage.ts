@@ -13,7 +13,7 @@ import { ResourceType } from 'arc';
 import { PostgresModel } from '../../../models/postgresModel';
 
 export class PostgresSupportRequestPage extends DashboardPage {
-	constructor(protected modelView: azdata.ModelView, dashboard: azdata.window.ModelViewDashboard, private _controllerModel: ControllerModel, private _postgresModel: PostgresModel) {
+	constructor(modelView: azdata.ModelView, dashboard: azdata.window.ModelViewDashboard, private _controllerModel: ControllerModel, private _postgresModel: PostgresModel) {
 		super(modelView, dashboard);
 	}
 
@@ -34,22 +34,22 @@ export class PostgresSupportRequestPage extends DashboardPage {
 		const content = this.modelView.modelBuilder.divContainer().component();
 		root.addItem(content, { CSSStyles: { 'margin': '20px' } });
 
-		content.addItem(this.modelView.modelBuilder.text().withProperties<azdata.TextComponentProperties>({
+		content.addItem(this.modelView.modelBuilder.text().withProps({
 			value: loc.newSupportRequest,
 			CSSStyles: { ...cssStyles.title, 'margin-bottom': '20px' }
 		}).component());
 
-		content.addItem(this.modelView.modelBuilder.text().withProperties<azdata.TextComponentProperties>({
+		content.addItem(this.modelView.modelBuilder.text().withProps({
 			value: loc.clickTheNewSupportRequestButton,
 			CSSStyles: { ...cssStyles.text, 'margin-bottom': '20px' }
 		}).component());
 
-		content.addItem(this.modelView.modelBuilder.text().withProperties<azdata.TextComponentProperties>({
+		content.addItem(this.modelView.modelBuilder.text().withProps({
 			value: loc.supportRequestNote,
 			CSSStyles: { ...cssStyles.text, 'margin-bottom': '20px' }
 		}).component());
 
-		const supportRequestButton = this.modelView.modelBuilder.button().withProperties<azdata.ButtonProperties>({
+		const supportRequestButton = this.modelView.modelBuilder.button().withProps({
 			iconPath: IconPathHelper.support,
 			label: loc.newSupportRequest,
 			width: '205px'

@@ -29,8 +29,16 @@ export const SearchViewFocusedKey = new RawContextKey<boolean>('notebookSearchVi
 export const InputBoxFocusedKey = new RawContextKey<boolean>('inputBoxFocus', false);
 export const SearchInputBoxFocusedKey = new RawContextKey<boolean>('searchInputBoxFocus', false);
 
+// !! Do not change these or updates won't be able to deserialize editors correctly !!
+export const UNTITLED_NOTEBOOK_TYPEID = 'workbench.editorinputs.untitledNotebookInput';
+export const UNTITLED_QUERY_EDITOR_TYPEID = 'workbench.editorInput.untitledQueryInput';
+export const FILE_QUERY_EDITOR_TYPEID = 'workbench.editorInput.fileQueryInput';
+export const RESOURCE_VIEWER_TYPEID = 'workbench.editorInput.resourceViewerInput';
+
+export const JUPYTER_PROVIDER_ID = 'jupyter';
+
 export const enum NotebookLanguage {
-	Notebook = 'notebook',
+	Notebook = 'Notebook',
 	Ipynb = 'ipynb'
 }
 export interface INotebookSearchConfigurationProperties {
@@ -61,3 +69,8 @@ export interface INotebookSearchConfigurationProperties {
 	};
 	sortOrder: SearchSortOrder;
 }
+
+export const RESULTS_GRID_DEFAULTS = {
+	cellPadding: [5, 8, 4],
+	rowHeight: 24
+};

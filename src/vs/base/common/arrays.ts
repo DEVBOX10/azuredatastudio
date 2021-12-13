@@ -121,58 +121,10 @@ export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
 	}
 }
 
-/**
- * Like `Array#sort` but always stable. Usually runs a little slower `than Array#sort`
- * so only use this when actually needing stable sort.
- */
-export function mergeSort<T>(data: T[], compare: Compare<T>): T[] {
-	_sort(data, compare, 0, data.length - 1, []);
-	return data;
-}
-
-function _merge<T>(a: T[], compare: Compare<T>, lo: number, mid: number, hi: number, aux: T[]): void {
-	let leftIdx = lo, rightIdx = mid + 1;
-	for (let i = lo; i <= hi; i++) {
-		aux[i] = a[i];
-	}
-	for (let i = lo; i <= hi; i++) {
-		if (leftIdx > mid) {
-			// left side consumed
-			a[i] = aux[rightIdx++];
-		} else if (rightIdx > hi) {
-			// right side consumed
-			a[i] = aux[leftIdx++];
-		} else if (compare(aux[rightIdx], aux[leftIdx]) < 0) {
-			// right element is less -> comes first
-			a[i] = aux[rightIdx++];
-		} else {
-			// left element comes first (less or equal)
-			a[i] = aux[leftIdx++];
-		}
-	}
-}
-
-function _sort<T>(a: T[], compare: Compare<T>, lo: number, hi: number, aux: T[]) {
-	if (hi <= lo) {
-		return;
-	}
-	const mid = lo + ((hi - lo) / 2) | 0;
-	_sort(a, compare, lo, mid, aux);
-	_sort(a, compare, mid + 1, hi, aux);
-	if (compare(a[mid], a[mid + 1]) <= 0) {
-		// left and right are sorted and if the last-left element is less
-		// or equals than the first-right element there is nothing else
-		// to do
-		return;
-	}
-	_merge(a, compare, lo, mid, hi, aux);
-}
-
-
 export function groupBy<T>(data: ReadonlyArray<T>, compare: (a: T, b: T) => number): T[][] {
 	const result: T[][] = [];
 	let currentGroup: T[] | undefined = undefined;
-	for (const element of mergeSort(data.slice(0), compare)) {
+	for (const element of data.slice(0).sort(compare)) {
 		if (!currentGroup || compare(currentGroup[0], element) !== 0) {
 			currentGroup = [element];
 			result.push(currentGroup);
@@ -433,16 +385,6 @@ export function lastIndex<T>(array: ReadonlyArray<T>, fn: (item: T) => boolean):
 	return -1;
 }
 
-/**
- * @deprecated ES6: use `Array.find`
- */
-export function first<T>(array: ReadonlyArray<T>, fn: (item: T) => boolean, notFoundValue: T): T;
-export function first<T>(array: ReadonlyArray<T>, fn: (item: T) => boolean): T | undefined;
-export function first<T>(array: ReadonlyArray<T>, fn: (item: T) => boolean, notFoundValue: T | undefined = undefined): T | undefined {
-	const index = array.findIndex(fn);
-	return index < 0 ? notFoundValue : array[index];
-}
-
 export function firstOrDefault<T, NotFound = T>(array: ReadonlyArray<T>, notFoundValue: NotFound): T | NotFound;
 export function firstOrDefault<T>(array: ReadonlyArray<T>): T | undefined;
 export function firstOrDefault<T, NotFound = T>(array: ReadonlyArray<T>, notFoundValue?: NotFound): T | NotFound | undefined {
@@ -614,76 +556,35 @@ export function mapFind<T, R>(array: Iterable<T>, mapFn: (value: T) => R | undef
 }
 
 /**
- * An alternative for Array.push(...items) method, Use this if you need to push large number of items to the array.
- * Array.push(...item) can only support limited number of items due to the maximum call stack size limit.
- * @param array The array to add items to.
- * @param items The new items to be added.
+ * Like Math.min with a delegate, and returns the winning index
  */
-export function push<T>(array: T[], items: T[]): void {
-	// set array length and then assign value at index is faster than doing array.push(item) individually
-	const newLength = array.length + items.length;
-	const startIdx = array.length;
-	array.length = newLength;
-	items.forEach((item, index) => {
-		array[startIdx + index] = item;
-	});
-}
-
-/**
- * Insert the new items to array, the insertion be performed on the original array directly, the alternative insertArray() method will return a new array.
- * @param array The original array.
- * @param start The zero-based location in the array from which to start inserting elements.
- * @param newItems The items to be inserted
- */
-export function insertArray2<T>(array: T[], start: number, newItems: T[]): void {
-	const startIdx = getActualStartIndex(array, start);
-	const originalLength = array.length;
-	const newItemsLength = newItems.length;
-	array.length = originalLength + newItemsLength;
-	// Move the items after the start index, start from the end so that we don't overwrite any value.
-	for (let i = originalLength - 1; i >= startIdx; i--) {
-		array[i + newItemsLength] = array[i];
-	}
-
-	for (let i = 0; i < newItemsLength; i++) {
-		array[i + startIdx] = newItems[i];
-	}
-}
-
-/**
- * Removes elements from an array and inserts new elements in their place, returning the deleted elements. Alternative to the native Array.splice method, it
- * can only support limited number of items due to the maximum call stack size limit.
- * @param array The original array.
- * @param start The zero-based location in the array from which to start removing elements.
- * @param deleteCount The number of elements to remove.
- * @returns An array containing the elements that were deleted.
- */
-export function splice<T>(array: T[], start: number, deleteCount: number, newItems: T[]): T[] {
-	const startIdx = getActualStartIndex(array, start);
-	const deletedItems = array.splice(startIdx, deleteCount);
-	insertArray2(array, startIdx, newItems);
-	return deletedItems;
-}
-
-/**
- * Determine the actual start index (same logic as the native splice() or slice())
- * If greater than the length of the array, start will be set to the length of the array. In this case, no element will be deleted but the method will behave as an adding function, adding as many element as item[n*] provided.
- * If negative, it will begin that many elements from the end of the array. (In this case, the origin -1, meaning -n is the index of the nth last element, and is therefore equivalent to the index of array.length - n.) If array.length + start is less than 0, it will begin from index 0.
- * @param array The target array.
- * @param start The operation index.
- */
-function getActualStartIndex<T>(array: T[], start: number): number {
-	let startIndex: number;
-	if (start > array.length) {
-		startIndex = array.length;
-	} else if (start < 0) {
-		if ((start + array.length) < 0) {
-			startIndex = 0;
-		} else {
-			startIndex = start + array.length;
+export function minIndex<T>(array: readonly T[], fn: (value: T) => number): number {
+	let minValue = Number.MAX_SAFE_INTEGER;
+	let minIdx = 0;
+	array.forEach((value, i) => {
+		const thisValue = fn(value);
+		if (thisValue < minValue) {
+			minValue = thisValue;
+			minIdx = i;
 		}
-	} else {
-		startIndex = start;
-	}
-	return startIndex;
+	});
+
+	return minIdx;
+}
+
+/**
+ * Like Math.max with a delegate, and returns the winning index
+ */
+export function maxIndex<T>(array: readonly T[], fn: (value: T) => number): number {
+	let minValue = Number.MIN_SAFE_INTEGER;
+	let maxIdx = 0;
+	array.forEach((value, i) => {
+		const thisValue = fn(value);
+		if (thisValue > minValue) {
+			minValue = thisValue;
+			maxIdx = i;
+		}
+	});
+
+	return maxIdx;
 }

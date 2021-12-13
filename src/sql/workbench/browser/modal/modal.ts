@@ -29,6 +29,7 @@ import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
 import { ILogService } from 'vs/platform/log/common/log';
 import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { Emitter } from 'vs/base/common/event';
 
 export enum MessageLevel {
 	Error = 0,
@@ -147,6 +148,9 @@ export abstract class Modal extends Disposable implements IThemable {
 	private _modalShowingContext: IContextKey<Array<string>>;
 	private readonly _staticKey: string;
 
+	private _onClosed = new Emitter<HideReason>();
+	public onClosed = this._onClosed.event;
+
 	/**
 	 * Get the back button, only available after render and if the hasBackButton option is true
 	 */
@@ -161,7 +165,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * (hyoshi - 10/2/2017 tracked by https://github.com/Microsoft/carbon/issues/1836)
 	 */
 	public setWide(isWide: boolean): void {
-		DOM.toggleClass(this._bodyContainer!, 'wide', isWide);
+		this._bodyContainer!.classList.toggle('wide', isWide);
 	}
 
 	/**
@@ -356,18 +360,18 @@ export abstract class Modal extends Disposable implements IThemable {
 		if (this.shouldShowExpandMessageButton) {
 			DOM.append(this._detailsButtonContainer!, this._toggleMessageDetailButton!.element);
 		} else {
-			DOM.removeNode(this._toggleMessageDetailButton!.element);
+			this._toggleMessageDetailButton!.element.remove();
 		}
 	}
 
 	private toggleMessageDetail() {
-		const isExpanded = DOM.hasClass(this._messageSummary!, MESSAGE_EXPANDED_MODE_CLASS);
-		DOM.toggleClass(this._messageSummary!, MESSAGE_EXPANDED_MODE_CLASS, !isExpanded);
+		const isExpanded = this._messageSummary!.classList.contains(MESSAGE_EXPANDED_MODE_CLASS);
+		this._messageSummary!.classList.toggle(MESSAGE_EXPANDED_MODE_CLASS, !isExpanded);
 		this._toggleMessageDetailButton!.label = isExpanded ? SHOW_DETAILS_TEXT : localize('hideMessageDetails', "Hide Details");
 
 		if (this._messageDetailText) {
 			if (isExpanded) {
-				DOM.removeNode(this._messageDetail!);
+				this._messageDetail!.remove();
 			} else {
 				DOM.append(this._messageBody!, this._messageDetail!);
 			}
@@ -382,12 +386,9 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Set focusable elements in the modal dialog
 	 */
 	public setInitialFocusedElement() {
-		// Try to find focusable element in dialog pane rather than overall container. _modalBodySection contains items in the pane for a wizard.
-		// This ensures that we are setting the focus on a useful element in the form when possible.
-		const focusableElements = getFocusableElements(this._modalBodySection ?? this._bodyContainer!);
-
-		if (focusableElements && focusableElements.length > 0) {
-			(<HTMLElement>focusableElements[0]).focus();
+		const focusableElements = getFocusableElements(this._modalDialog!);
+		if (focusableElements?.length > 0) {
+			focusableElements[0].focus();
 		}
 	}
 
@@ -452,6 +453,7 @@ export abstract class Modal extends Disposable implements IThemable {
 			if (context[context.length - 1] === this._staticKey) {
 				let event = new StandardKeyboardEvent(e);
 				if (event.equals(KeyCode.Enter)) {
+					DOM.EventHelper.stop(e, true);
 					this.onAccept(event);
 				} else if (event.equals(KeyCode.Escape)) {
 					DOM.EventHelper.stop(e, true);
@@ -460,7 +462,7 @@ export abstract class Modal extends Disposable implements IThemable {
 			}
 		}));
 		this.disposableStore.add(trapKeyboardNavigation(this._modalDialog!));
-		this.disposableStore.add(DOM.addDisposableListener(window, DOM.EventType.RESIZE, (e: Event) => {
+		this.disposableStore.add(DOM.addDisposableListener(window, DOM.EventType.RESIZE, e => {
 			this.layout(DOM.getTotalHeight(this._modalBodySection!));
 		}));
 
@@ -478,7 +480,7 @@ export abstract class Modal extends Disposable implements IThemable {
 	/**
 	 * Hides the modal and removes key listeners
 	 */
-	protected hide(reason?: HideReason, currentPageName?: string): void {
+	protected hide(reason: HideReason = 'close', currentPageName?: string): void {
 		this._modalShowingContext.get()!.pop();
 		this._bodyContainer!.remove();
 		this.disposableStore.clear();
@@ -490,6 +492,7 @@ export abstract class Modal extends Disposable implements IThemable {
 			})
 			.send();
 		this.restoreKeyboardFocus();
+		this._onClosed.fire(reason);
 	}
 
 	private restoreKeyboardFocus() {
@@ -502,17 +505,22 @@ export abstract class Modal extends Disposable implements IThemable {
 	 * Adds a button to the footer of the modal
 	 * @param label Label to show on the button
 	 * @param onSelect The callback to call when the button is selected
-	 * @param isSecondary Set the css class if true
+	 * @param position The position of the button. Optional values: 'left', 'right'. Default value is 'right'
+	 * @param isSecondary Indicates whether the button is a secondary button
+	 * @param index If specified, the button will be inserted at the specified index
 	 */
-	protected addFooterButton(label: string, onSelect: () => void, orientation: 'left' | 'right' = 'right', isSecondary: boolean = false): Button {
+	protected addFooterButton(label: string, onSelect: () => void, position: 'left' | 'right' = 'right', isSecondary: boolean = false, index?: number): Button {
 		let footerButton = DOM.$('.footer-button');
 		let button = this._register(new Button(footerButton, { secondary: isSecondary }));
 		button.label = label;
 		button.onDidClick(() => onSelect()); // @todo this should be registered to dispose but that brakes some dialogs
-		if (orientation === 'left') {
-			DOM.append(this._leftFooter!, footerButton);
+		const container = position === 'left' ? this._leftFooter! : this._rightFooter!;
+		const buttonIndex = index !== undefined && index <= container.childElementCount ? index : container.childElementCount;
+		if (buttonIndex < container.childElementCount) {
+			const insertBefore = container.children.item(buttonIndex);
+			container.insertBefore(footerButton, insertBefore);
 		} else {
-			DOM.append(this._rightFooter!, footerButton);
+			DOM.append(container, footerButton);
 		}
 		attachButtonStyler(button, this._themeService);
 		this._footerButtons.push(button);
@@ -544,7 +552,7 @@ export abstract class Modal extends Disposable implements IThemable {
 		});
 		if (buttonIndex > -1 && buttonIndex < this._footerButtons.length) {
 			let button = this._footerButtons[buttonIndex];
-			DOM.removeNode(button.element);
+			button.element.parentElement.remove(); // The parent element of the button is the top level element we added to the footer button container.
 			button.dispose();
 			this._footerButtons.splice(buttonIndex, 1);
 		}
@@ -573,8 +581,8 @@ export abstract class Modal extends Disposable implements IThemable {
 					severityText = WARNING_ALT_TEXT;
 				}
 				levelClasses.forEach(level => {
-					DOM.toggleClass(this._messageIcon!, level, selectedLevel === level);
-					DOM.toggleClass(this._messageElement!, level, selectedLevel === level);
+					this._messageIcon!.classList.toggle(level, selectedLevel === level);
+					this._messageElement!.classList.toggle(level, selectedLevel === level);
 				});
 
 				this._messageIcon!.title = severityText;
@@ -583,8 +591,13 @@ export abstract class Modal extends Disposable implements IThemable {
 				this._messageSummary!.title = message!;
 				this._messageDetail!.innerText = description;
 			}
-			DOM.removeNode(this._messageDetail!);
+			this._messageDetail!.remove();
 			this.messagesElementVisible = !!this._messageSummaryText;
+			// Read out the description to screen readers so they don't have to
+			// search around for the alert box to hear the extra information
+			if (description) {
+				alert(description);
+			}
 			this.updateExpandMessageState();
 		}
 	}
@@ -595,10 +608,14 @@ export abstract class Modal extends Disposable implements IThemable {
 				DOM.prepend(this._modalContent!, this._messageElement!);
 			}
 		} else {
-			DOM.removeNode(this._messageElement!);
-			// Set the focus to first focus element if the focus is not within the dialog
-			if (!DOM.isAncestor(document.activeElement, this._bodyContainer!)) {
-				this.setInitialFocusedElement();
+			// only do the removal when the messageElement has parent element.
+			if (this._messageElement!.parentElement) {
+				// Reset the focus if keyboard focus is currently in the message area.
+				const resetFocus = DOM.isAncestor(document.activeElement, this._messageElement!);
+				this._messageElement!.remove();
+				if (resetFocus) {
+					this.setInitialFocusedElement();
+				}
 			}
 		}
 	}
@@ -753,7 +770,7 @@ export abstract class Modal extends Disposable implements IThemable {
 		}
 	}
 
-	public dispose() {
+	public override dispose() {
 		super.dispose();
 		this._footerButtons = [];
 	}

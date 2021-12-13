@@ -25,6 +25,10 @@ export const enum extension {
 */
 export interface IExtension {
 	/**
+	 * Path to the root of the SQL Tools Service folder
+	 */
+	readonly sqlToolsServicePath: string;
+	/**
 	 * Gets the object explorer API that supports querying over the connections supported by this extension
 	 *
 	 */
@@ -118,7 +122,10 @@ export const enum SchemaDifferenceType {
 
 export const enum SchemaCompareEndpointType {
 	Database = 0,
-	Dacpac = 1
+	Dacpac = 1,
+	Project = 2,
+	// must be kept in-sync with SchemaCompareEndpointType in SQL Tools Service
+	// located at \src\Microsoft.SqlTools.ServiceLayer\SchemaCompare\Contracts\SchemaCompareRequest.cs
 }
 
 export interface SchemaCompareEndpointInfo {
@@ -130,6 +137,10 @@ export interface SchemaCompareEndpointInfo {
 	ownerUri: string;
 	connectionDetails: azdata.ConnectionInfo;
 	connectionName?: string;
+	projectFilePath: string;
+	targetScripts: string[];
+	folderStructure: string;
+	dataSchemaProvider: string;
 }
 
 export interface SchemaCompareObjectId {
@@ -303,10 +314,11 @@ export interface SchemaCompareObjectId {
 }
 
 export interface ISchemaCompareService {
-
 	schemaCompare(operationId: string, sourceEndpointInfo: SchemaCompareEndpointInfo, targetEndpointInfo: SchemaCompareEndpointInfo, taskExecutionMode: azdata.TaskExecutionMode, deploymentOptions: DeploymentOptions): Thenable<SchemaCompareResult>;
 	schemaCompareGenerateScript(operationId: string, targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<azdata.ResultStatus>;
 	schemaComparePublishChanges(operationId: string, targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<azdata.ResultStatus>;
+	schemaComparePublishDatabaseChanges(operationId: string, targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<azdata.ResultStatus>;
+	schemaComparePublishProjectChanges(operationId: string, targetProjectPath: string, targetFolderStructure: ExtractTarget, taskExecutionMode: azdata.TaskExecutionMode): Thenable<SchemaComparePublishProjectResult>;
 	schemaCompareGetDefaultOptions(): Thenable<SchemaCompareOptionsResult>;
 	schemaCompareIncludeExcludeNode(operationId: string, diffEntry: DiffEntry, IncludeRequest: boolean, taskExecutionMode: azdata.TaskExecutionMode): Thenable<SchemaCompareIncludeExcludeResult>;
 	schemaCompareOpenScmp(filePath: string): Thenable<SchemaCompareOpenScmpResult>;
@@ -322,6 +334,12 @@ export interface SchemaCompareOpenScmpResult extends azdata.ResultStatus {
 	deploymentOptions: DeploymentOptions;
 	excludedSourceElements: SchemaCompareObjectId[];
 	excludedTargetElements: SchemaCompareObjectId[];
+}
+
+export interface SchemaComparePublishProjectResult extends azdata.ResultStatus {
+	changedFiles: string[];
+	addedFiles: string[];
+	deletedFiles: string[];
 }
 
 //#endregion
@@ -444,7 +462,7 @@ export interface ICmsService {
 	/**
 	 * Connects to or creates a Central management Server
 	 */
-	createCmsServer(name: string, description:string, connectiondetails: azdata.ConnectionInfo, ownerUri: string): Thenable<ListRegisteredServersResult>;
+	createCmsServer(name: string, description: string, connectiondetails: azdata.ConnectionInfo, ownerUri: string): Thenable<ListRegisteredServersResult>;
 
 	/**
 	 * gets all Registered Servers inside a CMS on a particular level
@@ -454,22 +472,22 @@ export interface ICmsService {
 	/**
 	 * Adds a Registered Server inside a CMS on a particular level
 	 */
-	addRegisteredServer (ownerUri: string, relativePath: string, registeredServerName: string, registeredServerDescription:string, connectionDetails:azdata.ConnectionInfo): Thenable<boolean>;
+	addRegisteredServer(ownerUri: string, relativePath: string, registeredServerName: string, registeredServerDescription: string, connectionDetails: azdata.ConnectionInfo): Thenable<boolean>;
 
 	/**
 	 * Removes a Registered Server inside a CMS on a particular level
 	 */
-	removeRegisteredServer (ownerUri: string, relativePath: string, registeredServerName: string): Thenable<boolean>;
+	removeRegisteredServer(ownerUri: string, relativePath: string, registeredServerName: string): Thenable<boolean>;
 
 	/**
 	 * Adds a Server Group inside a CMS on a particular level
 	 */
-	addServerGroup (ownerUri: string, relativePath: string, groupName: string, groupDescription:string): Thenable<boolean>;
+	addServerGroup(ownerUri: string, relativePath: string, groupName: string, groupDescription: string): Thenable<boolean>;
 
 	/**
 	 * Removes a Server Group inside a CMS on a particular level
 	 */
-	removeServerGroup (ownerUri: string, relativePath: string, groupName: string): Thenable<boolean>;
+	removeServerGroup(ownerUri: string, relativePath: string, groupName: string): Thenable<boolean>;
 }
 /**
  * CMS Result interfaces as passed back to Extensions
@@ -525,8 +543,7 @@ export interface SqlMigrationAssessmentResultItem {
 	rulesetVersion: string;
 	rulesetName: string;
 	ruleId: string;
-	targetType: azdata.sqlAssessment.SqlAssessmentTargetType;
-	targetName: string;
+	targetType: string;
 	checkId: string;
 	tags: string[];
 	displayName: string;
@@ -540,12 +557,65 @@ export interface SqlMigrationAssessmentResultItem {
 	issueCategory: string;
 	databaseName: string;
 	impactedObjects: SqlMigrationImpactedObjectInfo[];
+	databaseRestoreFails: boolean;
 }
 
-export interface SqlMigrationAssessmentResult extends azdata.ResultStatus {
+export interface ServerTargetReadiness {
+	numberOfDatabasesReadyForMigration: number;
+	numberOfNonOnlineDatabases: number;
+	totalNumberOfDatabases: number;
+}
+
+export interface ErrorModel {
+	errorId: number;
+	message: string;
+	errorSummary: string;
+	possibleCauses: string;
+	guidance: string;
+}
+
+export interface DatabaseTargetReadiness {
+	noSelectionForMigration: boolean;
+	numOfBlockerIssues: number;
+}
+
+export interface DatabaseAssessmentProperties {
+	compatibilityLevel: string;
+	databaseSize: number;
+	isReplicationEnabled: boolean;
+	assessmentTimeInMilliseconds: number;
 	items: SqlMigrationAssessmentResultItem[];
+	errors: ErrorModel[];
+	sqlManagedInstanceTargetReadiness: DatabaseTargetReadiness;
+	name: string;
+}
+
+export interface ServerAssessmentProperties {
+	cpuCoreCount: number;
+	physicalServerMemory: number;
+	serverHostPlatform: string;
+	serverVersion: string;
+	serverEngineEdition: string;
+	serverEdition: string;
+	isClustered: boolean;
+	numberOfUserDatabases: number;
+	sqlAssessmentStatus: number;
+	assessedDatabaseCount: number;
+	sqlManagedInstanceTargetReadiness: ServerTargetReadiness;
+	items: SqlMigrationAssessmentResultItem[];
+	errors: ErrorModel[];
+	databases: DatabaseAssessmentProperties[];
+	name: string;
+}
+
+export interface AssessmentResult {
+	startTime: string;
+	endedTime: string;
+	assessmentResult: ServerAssessmentProperties;
+	rawAssessmentResult: any;
+	errors: ErrorModel[];
 }
 
 export interface ISqlMigrationService {
-	getAssessments(ownerUri: string): Promise<SqlMigrationAssessmentResult | undefined>;
+	getAssessments(ownerUri: string, databases: string[]): Promise<AssessmentResult | undefined>;
 }

@@ -67,7 +67,7 @@ export class ManageAccessDialog {
 					azdata.window.closeDialog(this.dialog);
 					await this.hdfsModel.apply(true);
 				} catch (err) {
-					vscode.window.showErrorMessage(loc.errorApplyingAclChanges(err instanceof HdfsError ? err.message : err));
+					void vscode.window.showErrorMessage(loc.errorApplyingAclChanges(err instanceof HdfsError ? err.message : err));
 				}
 			});
 			this.dialog.customButtons = [this.applyRecursivelyButton];
@@ -76,7 +76,7 @@ export class ManageAccessDialog {
 					await this.hdfsModel.apply();
 					return true;
 				} catch (err) {
-					vscode.window.showErrorMessage(loc.errorApplyingAclChanges(err instanceof HdfsError ? err.message : err));
+					void vscode.window.showErrorMessage(loc.errorApplyingAclChanges(err instanceof HdfsError ? err.message : err));
 				}
 				return false;
 			});
@@ -111,13 +111,13 @@ export class ManageAccessDialog {
 		const locationContainer = this.modelBuilder.flexContainer().withLayout({ flexFlow: 'row', alignItems: 'center' }).component();
 
 		const locationLabel = this.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>({
+			.withProps({
 				value: loc.locationTitle,
 				CSSStyles: { ...cssStyles.titleCss }
 			}).component();
 
 		const pathLabel = this.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>({
+			.withProps({
 				value: this.hdfsPath,
 				title: this.hdfsPath,
 				height: locationLabelHeight,
@@ -141,7 +141,7 @@ export class ManageAccessDialog {
 		// = Permissions Title =
 		// =====================
 		const permissionsTitle = this.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>({ value: loc.permissionsHeader })
+			.withProps({ value: loc.permissionsHeader })
 			.component();
 		contentContainer.addItem(permissionsTitle, { CSSStyles: { 'margin-top': '15px', ...cssStyles.titleCss } });
 
@@ -158,7 +158,7 @@ export class ManageAccessDialog {
 		// = Sticky =
 		// ==========
 		this.stickyCheckbox = this.modelBuilder.checkBox()
-			.withProperties<azdata.CheckBoxProperties>({
+			.withProps({
 				width: checkboxSize,
 				height: checkboxSize,
 				checked: permissionStatus.stickyBit,
@@ -184,11 +184,11 @@ export class ManageAccessDialog {
 		// ===========================
 
 		const addUserOrGroupTitle = this.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>({ value: loc.addUserOrGroupHeader, CSSStyles: { 'margin-block-start': '0px', 'margin-block-end': '10px' } })
+			.withProps({ value: loc.addUserOrGroupHeader, CSSStyles: { 'margin-block-start': '0px', 'margin-block-end': '10px' } })
 			.component();
 		contentContainer.addItem(addUserOrGroupTitle, { CSSStyles: { 'margin-top': '15px', ...cssStyles.titleCss } });
 
-		const typeContainer = this.modelBuilder.flexContainer().withProperties({ flexFlow: 'row' }).component();
+		const typeContainer = this.modelBuilder.flexContainer().component();
 		const aclEntryTypeGroup = 'aclEntryType';
 		const userTypeButton = this.createRadioButton(this.modelBuilder, loc.userLabel, aclEntryTypeGroup, AclType.user);
 		const groupTypeButton = this.createRadioButton(this.modelBuilder, loc.groupLabel, aclEntryTypeGroup, AclType.group);
@@ -197,10 +197,10 @@ export class ManageAccessDialog {
 
 		typeContainer.addItems([userTypeButton, groupTypeButton], { flex: '0 0 auto' });
 		contentContainer.addItem(typeContainer, { flex: '0 0 auto', CSSStyles: { 'margin-bottom': '5px' } });
-		const addUserOrGroupInputRow = this.modelBuilder.flexContainer().withLayout({ flexFlow: 'row' }).component();
+		const addUserOrGroupInputRow = this.modelBuilder.flexContainer().component();
 
 		this.addUserOrGroupInput = this.modelBuilder.inputBox()
-			.withProperties<azdata.InputBoxProperties>({
+			.withProps({
 				inputType: 'text',
 				placeHolder: loc.enterNamePlaceholder,
 				width: 250,
@@ -306,7 +306,7 @@ export class ManageAccessDialog {
 			namedUsersAndGroupsColumns.push(this.createTableColumn('', loc.deleteTitle, permissionsDeleteColumnWidth, azdata.DeclarativeDataType.component));
 
 			const posixPermissionsTable = this.modelBuilder.declarativeTable()
-				.withProperties<azdata.DeclarativeTableProperties>(
+				.withProps(
 					{
 						columns: posixPermissionsColumns,
 						data: posixPermissionData
@@ -321,7 +321,7 @@ export class ManageAccessDialog {
 			});
 
 			const namedUsersAndGroupsTable = this.modelBuilder.declarativeTable()
-				.withProperties<azdata.DeclarativeTableProperties>(
+				.withProps(
 					{
 						columns: namedUsersAndGroupsColumns,
 						data: namedUsersAndGroupsData
@@ -331,12 +331,12 @@ export class ManageAccessDialog {
 
 			this.rootLoadingComponent.loading = false;
 
-			this.addUserOrGroupInput.focus();
+			void this.addUserOrGroupInput.focus();
 		});
 	}
 
 	private createRadioButton(modelBuilder: azdata.ModelBuilder, label: string, name: string, aclEntryType: AclType): azdata.RadioButtonComponent {
-		const button = modelBuilder.radioButton().withProperties<azdata.RadioButtonProperties>({ label: label, name: name }).component();
+		const button = modelBuilder.radioButton().withProps({ label: label, name: name }).component();
 		button.onDidClick(() => {
 			this.addUserOrGroupSelectedType = aclEntryType;
 		});
@@ -368,7 +368,7 @@ export class ManageAccessDialog {
 	private createImageComponent(type: AclType | PermissionType): azdata.ImageComponent {
 		const imageProperties = getImageForType(type);
 		return this.modelBuilder.image()
-			.withProperties<azdata.ImageComponentProperties>({
+			.withProps({
 				iconPath: imageProperties.iconPath,
 				width: permissionsTypeIconColumnWidth,
 				height: permissionsRowHeight,
@@ -474,7 +474,7 @@ export class ManageAccessDialog {
 
 		if (includeDelete) {
 			const deleteButton = this.modelBuilder.button()
-				.withProperties<azdata.ButtonProperties>(
+				.withProps(
 					{
 						label: '',
 						title: loc.deleteTitle,
@@ -492,7 +492,7 @@ export class ManageAccessDialog {
 
 	private createInheritDefaultsCheckbox(): azdata.CheckBoxComponent {
 		this.inheritDefaultsCheckbox = this.modelBuilder.checkBox()
-			.withProperties<azdata.CheckBoxProperties>({
+			.withProps({
 				width: checkboxSize,
 				height: checkboxSize,
 				checked: false, // Will be set when we get the model update
@@ -550,7 +550,7 @@ export class ManageAccessDialog {
 
 		// Access
 		const accessSectionHeader = this.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>({
+			.withProps({
 				value: loc.accessHeader,
 				ariaHidden: true,
 				CSSStyles: {
@@ -566,12 +566,12 @@ export class ManageAccessDialog {
 		// Only show default section for directories
 		if (this.hdfsModel.fileStatus.type === HdfsFileType.Directory) {
 			// Middle spacer
-			const middleSpacer = this.modelBuilder.text().withProperties({ CSSStyles: { 'width': `${middleSpacerWidth}px`, 'min-width': `${middleSpacerWidth}px` } }).component();
+			const middleSpacer = this.modelBuilder.text().withProps({ CSSStyles: { 'width': `${middleSpacerWidth}px`, 'min-width': `${middleSpacerWidth}px` } }).component();
 			sectionHeaderContainer.addItem(middleSpacer, { flex: '0 0 auto' });
 
 			// Default
 			const defaultSectionHeader = this.modelBuilder.text()
-				.withProperties<azdata.TextComponentProperties>({
+				.withProps({
 					value: loc.defaultHeader,
 					ariaHidden: true,
 					CSSStyles: {
@@ -586,7 +586,7 @@ export class ManageAccessDialog {
 		}
 
 		// Right spacer
-		const rightSpacer = this.modelBuilder.text().withProperties({ CSSStyles: { 'width': `${rightSpacerWidth}px`, 'min-width': `${rightSpacerWidth}px` } }).component();
+		const rightSpacer = this.modelBuilder.text().withProps({ CSSStyles: { 'width': `${rightSpacerWidth}px`, 'min-width': `${rightSpacerWidth}px` } }).component();
 		sectionHeaderContainer.addItem(rightSpacer, { flex: '0 0 auto' });
 
 		return sectionHeaderContainer;
@@ -623,7 +623,7 @@ export class ManageAccessDialog {
  */
 function createCheckbox(builder: azdata.ModelBuilder, checked: boolean, enabled: boolean, containerWidth: number, containerHeight: number, ariaLabel: string): { container: azdata.FlexContainer, checkbox: azdata.CheckBoxComponent } {
 	const checkbox = builder.checkBox()
-		.withProperties<azdata.CheckBoxProperties>({
+		.withProps({
 			checked: checked,
 			enabled: enabled,
 			height: checkboxSize,

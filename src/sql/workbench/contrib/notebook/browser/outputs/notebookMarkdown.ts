@@ -8,18 +8,22 @@ import { nb } from 'azdata';
 import { URI } from 'vs/base/common/uri';
 import { IMarkdownString, removeMarkdownEscapes } from 'vs/base/common/htmlContent';
 import { IMarkdownRenderResult } from 'vs/editor/browser/core/markdownRenderer';
-import * as marked from 'vs/base/common/marked/marked';
+import * as sqlMarked from 'sql/base/common/marked/marked';
+import * as vsMarked from 'vs/base/common/marked/marked';
 import { defaultGenerator } from 'vs/base/common/idGenerator';
 import { revive } from 'vs/base/common/marshalling';
 import { ImageMimeTypes } from 'sql/workbench/services/notebook/common/contracts';
 import { IMarkdownStringWithCellAttachments, MarkdownRenderOptionsWithCellAttachments } from 'sql/workbench/contrib/notebook/browser/cellViews/interfaces';
+import { replaceInvalidLinkPath } from 'sql/workbench/contrib/notebook/common/utils';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { useNewMarkdownRendererKey } from 'sql/workbench/contrib/notebook/common/notebookCommon';
 
 // Based off of HtmlContentRenderer
 export class NotebookMarkdownRenderer {
 	private _notebookURI: URI;
 	private _baseUrls: string[] = [];
 
-	constructor() {
+	constructor(@IConfigurationService private _configurationService: IConfigurationService) {
 
 	}
 
@@ -64,7 +68,8 @@ export class NotebookMarkdownRenderer {
 		if (!this._baseUrls.some(x => x === notebookFolder)) {
 			this._baseUrls.push(notebookFolder);
 		}
-		const renderer = new marked.Renderer({ baseUrl: notebookFolder });
+		const useNewRenderer = this._configurationService.getValue(useNewMarkdownRendererKey);
+		const renderer = useNewRenderer ? new vsMarked.Renderer({ baseUrl: notebookFolder }) : new sqlMarked.Renderer({ baseUrl: notebookFolder });
 		renderer.image = (href: string, title: string, text: string) => {
 			const attachment = findAttachmentIfExists(href, options.cellAttachments);
 			// Attachments are already properly formed, so do not need cleaning. Cleaning only takes into account relative/absolute
@@ -107,6 +112,8 @@ export class NotebookMarkdownRenderer {
 			return '<img ' + attributes.join(' ') + '>';
 		};
 		renderer.link = (href: string, title: string, text: string): string => {
+			// check for isAbsolute prior to escaping and replacement
+			let hrefAbsolute: boolean = path.isAbsolute(href);
 			href = this.cleanUrl(!markdown.isTrusted, notebookFolder, href);
 			if (href === null) {
 				return text;
@@ -119,7 +126,7 @@ export class NotebookMarkdownRenderer {
 			// only remove markdown escapes if it's a hyperlink, filepath usually can start with .{}_
 			// and the below function escapes them if it encounters in the path.
 			// dev note: using path.isAbsolute instead of isPathLocal since the latter accepts resolver (IRenderMime.IResolver) to check isLocal
-			if (!path.isAbsolute(href)) {
+			if (!hrefAbsolute) {
 				href = removeMarkdownEscapes(href);
 			}
 			if (
@@ -133,12 +140,17 @@ export class NotebookMarkdownRenderer {
 
 			} else {
 				// HTML Encode href
-				href = href.replace(/&(?!amp;)/g, '&amp;')
-					.replace(/</g, '&lt;')
+				let uri = URI.parse(href);
+				// mailto uris do not need additional encoding of &, otherwise it would not render properly
+				if (uri.scheme !== 'mailto') {
+					href = href.replace(/&(?!amp;)/g, '&amp;');
+				}
+				href = href.replace(/</g, '&lt;')
 					.replace(/>/g, '&gt;')
 					.replace(/"/g, '&quot;')
 					.replace(/'/g, '&#39;');
-				return `<a href=${href} data-href="${href}" title="${title || href}">${text}</a>`;
+				let isMarkdown = markdown.value ? true : false;
+				return `<a href=${href} data-href="${href}" title="${title || href}" is-markdown=${isMarkdown} is-absolute=${hrefAbsolute}>${text}</a>`;
 			}
 		};
 		renderer.paragraph = (text): string => {
@@ -171,13 +183,22 @@ export class NotebookMarkdownRenderer {
 			};
 		}
 
-		const markedOptions: marked.MarkedOptions = {
-			sanitize: !markdown.isTrusted,
-			renderer,
-			baseUrl: notebookFolder
-		};
+		if (useNewRenderer) {
+			const markedOptions: vsMarked.MarkedOptions = {
+				sanitize: !markdown.isTrusted,
+				renderer,
+				baseUrl: notebookFolder
+			};
+			element.innerHTML = vsMarked.parse(markdown.value, markedOptions);
+		} else {
+			const markedOptions: sqlMarked.MarkedOptions = {
+				sanitize: !markdown.isTrusted,
+				renderer,
+				baseUrl: notebookFolder
+			};
+			element.innerHTML = sqlMarked.parse(markdown.value, markedOptions);
+		}
 
-		element.innerHTML = marked.parse(markdown.value, markedOptions);
 		signalInnerHTML!();
 
 		return element;
@@ -240,6 +261,10 @@ export class NotebookMarkdownRenderer {
 		} else if (href.charAt(0) === '/') {
 			return base.replace(/(:\/*[^/]*)[\s\S]*/, '$1') + href;
 		} else if (href.slice(0, 2) === '..') {
+			// we need to format invalid href formats (ex. ....\file to ..\..\file)
+			// in order to resolve to an absolute link
+			// Issue tracked here: https://github.com/markedjs/marked/issues/2135
+			href = replaceInvalidLinkPath(href);
 			return path.join(base, href);
 		} else {
 			return base + href;

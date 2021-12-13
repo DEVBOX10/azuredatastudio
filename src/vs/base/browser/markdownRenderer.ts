@@ -3,7 +3,7 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as DOM from 'vs/base/browser/dom'; // {{SQL CARBON EDIT}} added missing import to fix build break
+import * as DOM from 'vs/base/browser/dom';
 import { createElement, FormattedTextRenderOptions } from 'vs/base/browser/formattedTextRenderer';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { IMarkdownString, parseHrefAndDimensions, removeMarkdownEscapes } from 'vs/base/common/htmlContent';
@@ -168,29 +168,17 @@ export function renderMarkdown(markdown: IMarkdownString, options: MarkdownRende
 			// when code-block rendering is async we return sync
 			// but update the node with the real result later.
 			const id = defaultGenerator.nextId();
-
 			// {{SQL CARBON EDIT}} - Promise.all not returning the strValue properly in original code? @todo anthonydresser 4/12/19 investigate a better way to do this.
 			const promise = value.then(strValue => {
 				withInnerHTML.then(e => {
 					const span = <HTMLDivElement>element.querySelector(`div[data-code="${id}"]`);
 					if (span) {
-						span.innerHTML = strValue.innerHTML;
+						DOM.reset(span, strValue);
 					}
 				}).catch(err => {
 					// ignore
 				});
 			});
-
-			// original VS Code source
-			// const promise = Promise.all([value, withInnerHTML]).then(values => {
-			// 	const strValue = values[0];
-			// 	const span = element.querySelector(`div[data-code="${id}"]`);
-			// 	if (span) {
-			// 		span.innerHTML = strValue;
-			// 	}
-			// }).catch(err => {
-			// 	// ignore
-			// });
 
 			if (options.asyncRenderCallback) {
 				promise.then(options.asyncRenderCallback);
@@ -328,6 +316,14 @@ function getInsaneOptions(options: { readonly isTrusted?: boolean }): InsaneOpti
 }
 
 /**
+ * Strips all markdown from `string`, if it's an IMarkdownString. For example
+ * `# Header` would be output as `Header`. If it's not, the string is returned.
+ */
+export function renderStringAsPlaintext(string: IMarkdownString | string) {
+	return typeof string === 'string' ? string : renderMarkdownAsPlaintext(string);
+}
+
+/**
  * Strips all markdown from `markdown`. For example `# Header` would be output as `Header`.
  */
 export function renderMarkdownAsPlaintext(markdown: IMarkdownString) {
@@ -398,5 +394,17 @@ export function renderMarkdownAsPlaintext(markdown: IMarkdownString) {
 	if (value.length > 100_000) {
 		value = `${value.substr(0, 100_000)}…`;
 	}
-	return sanitizeRenderedMarkdown({ isTrusted: false }, marked.parse(value, { renderer })).toString();
+
+	const unescapeInfo = new Map<string, string>([
+		['&quot;', '"'],
+		['&nbsp;', ' '],
+		['&amp;', '&'],
+		['&#39;', '\''],
+		['&lt;', '<'],
+		['&gt;', '>'],
+	]);
+
+	const html = marked.parse(value, { renderer }).replace(/&(#\d+|[a-zA-Z]+);/g, m => unescapeInfo.get(m) ?? m);
+
+	return sanitizeRenderedMarkdown({ isTrusted: false }, html).toString();
 }

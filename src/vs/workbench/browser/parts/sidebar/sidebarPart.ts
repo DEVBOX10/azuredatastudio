@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/sidebarpart';
-import * as nls from 'vs/nls';
+import { localize } from 'vs/nls';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { CompositePart } from 'vs/workbench/browser/parts/compositePart';
 import { Viewlet, ViewletRegistry, Extensions as ViewletExtensions, ViewletDescriptor } from 'vs/workbench/browser/viewlet';
@@ -35,6 +35,7 @@ import { CompositeDragAndDropObserver } from 'vs/workbench/browser/dnd';
 import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views';
 import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { CATEGORIES } from 'vs/workbench/common/actions';
+import { Gesture, EventType as GestureEventType } from 'vs/base/browser/touch';
 
 export class SidebarPart extends CompositePart<Viewlet> implements IViewletService {
 
@@ -117,9 +118,6 @@ export class SidebarPart extends CompositePart<Viewlet> implements IViewletServi
 			{ hasTitle: true, borderWidth: () => (this.getColor(SIDE_BAR_BORDER) || this.getColor(contrastBorder)) ? 1 : 0 }
 		);
 
-		// let t = viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar);
-		// console.log(t.id);
-
 		this.registerListeners();
 	}
 
@@ -158,7 +156,7 @@ export class SidebarPart extends CompositePart<Viewlet> implements IViewletServi
 		}));
 	}
 
-	create(parent: HTMLElement): void {
+	override create(parent: HTMLElement): void {
 		this.element = parent;
 
 		super.create(parent);
@@ -168,10 +166,14 @@ export class SidebarPart extends CompositePart<Viewlet> implements IViewletServi
 		this._register(focusTracker.onDidBlur(() => this.sideBarFocusContextKey.set(false)));
 	}
 
-	createTitleArea(parent: HTMLElement): HTMLElement {
+	override createTitleArea(parent: HTMLElement): HTMLElement {
 		const titleArea = super.createTitleArea(parent);
 
 		this._register(addDisposableListener(titleArea, EventType.CONTEXT_MENU, e => {
+			this.onTitleAreaContextMenu(new StandardMouseEvent(e));
+		}));
+		this._register(Gesture.addTarget(titleArea));
+		this._register(addDisposableListener(titleArea, GestureEventType.Contextmenu, e => {
 			this.onTitleAreaContextMenu(new StandardMouseEvent(e));
 		}));
 
@@ -186,7 +188,7 @@ export class SidebarPart extends CompositePart<Viewlet> implements IViewletServi
 		return titleArea;
 	}
 
-	updateStyles(): void {
+	override updateStyles(): void {
 		super.updateStyles();
 
 		// Part container
@@ -206,7 +208,7 @@ export class SidebarPart extends CompositePart<Viewlet> implements IViewletServi
 		container.style.outlineColor = this.getColor(SIDE_BAR_DRAG_AND_DROP_BACKGROUND) ?? '';
 	}
 
-	layout(width: number, height: number): void {
+	override layout(width: number, height: number): void {
 		if (!this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
 			return;
 		}
@@ -278,7 +280,7 @@ export class SidebarPart extends CompositePart<Viewlet> implements IViewletServi
 		return this.openComposite(id, focus) as Viewlet;
 	}
 
-	protected getTitleAreaDropDownAnchorAlignment(): AnchorAlignment {
+	protected override getTitleAreaDropDownAnchorAlignment(): AnchorAlignment {
 		return this.layoutService.getSideBarPosition() === SideBarPosition.LEFT ? AnchorAlignment.LEFT : AnchorAlignment.RIGHT;
 	}
 
@@ -310,7 +312,7 @@ class FocusSideBarAction extends Action2 {
 	constructor() {
 		super({
 			id: 'workbench.action.focusSideBar',
-			title: { value: nls.localize('focusSideBar', "Focus into Side Bar"), original: 'Focus into Side Bar' },
+			title: { value: localize('focusSideBar', "Focus into Side Bar"), original: 'Focus into Side Bar' },
 			category: CATEGORIES.View,
 			f1: true,
 			keybinding: {

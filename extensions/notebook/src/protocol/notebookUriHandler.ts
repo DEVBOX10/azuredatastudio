@@ -30,7 +30,7 @@ export class NotebookUriHandler implements vscode.UriHandler {
 			case '/open':
 				return this.open(uri);
 			default:
-				vscode.window.showErrorMessage(localize('notebook.unsupportedAction', "Action {0} is not supported for this handler", uri.path));
+				void vscode.window.showErrorMessage(localize('notebook.unsupportedAction', "Action {0} is not supported for this handler", uri.path));
 		}
 	}
 	/**
@@ -84,22 +84,21 @@ export class NotebookUriHandler implements vscode.UriHandler {
 				case 'https':
 					break;
 				default:
-					vscode.window.showErrorMessage(localize('unsupportedScheme', "Cannot open link {0} as only HTTP, HTTPS, and File links are supported", url));
+					void vscode.window.showErrorMessage(localize('unsupportedScheme', "Cannot open link {0} as only HTTP, HTTPS, and File links are supported", url));
 					return;
-			}
-
-			let doOpen = await this.prompter.promptSingle<boolean>(<IQuestion>{
-				type: QuestionTypes.confirm,
-				message: localize('notebook.confirmOpen', "Download and open '{0}'?", url),
-				default: true
-			});
-			if (!doOpen) {
-				return;
 			}
 			let contents: string;
 			if (uri.scheme === 'file') {
 				contents = await readJson(uri.fsPath);
 			} else {
+				let doOpen = await this.prompter.promptSingle<boolean>(<IQuestion>{
+					type: QuestionTypes.confirm,
+					message: localize('notebook.confirmOpen', "Download and open '{0}'?", url),
+					default: true
+				});
+				if (!doOpen) {
+					return;
+				}
 				contents = await this.download(url);
 			}
 			let untitledUriPath = this.getUntitledUriPath(path.basename(uri.fsPath));
@@ -117,7 +116,7 @@ export class NotebookUriHandler implements vscode.UriHandler {
 				});
 			}
 		} catch (err) {
-			vscode.window.showErrorMessage(getErrorMessage(err));
+			void vscode.window.showErrorMessage(getErrorMessage(err));
 		}
 	}
 

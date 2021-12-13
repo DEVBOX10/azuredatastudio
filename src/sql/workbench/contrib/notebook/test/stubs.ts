@@ -8,7 +8,7 @@ import * as vsEvent from 'vs/base/common/event';
 import { INotebookModel, ICellModel, IClientSession, NotebookContentChange, ISingleNotebookEditOperation, MoveDirection, ViewMode } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { INotebookFindModel } from 'sql/workbench/contrib/notebook/browser/models/notebookFindModel';
 import { NotebookChangeType, CellType } from 'sql/workbench/services/notebook/common/contracts';
-import { INotebookManager, INotebookService, INotebookEditor, ILanguageMagic, INotebookProvider, INavigationProvider, INotebookParams, INotebookSection, ICellEditorProvider, NotebookRange } from 'sql/workbench/services/notebook/browser/notebookService';
+import { IExecuteManager, INotebookService, INotebookEditor, ILanguageMagic, IExecuteProvider, INavigationProvider, INotebookParams, INotebookSection, ICellEditorProvider, NotebookRange, ISerializationProvider, ISerializationManager } from 'sql/workbench/services/notebook/browser/notebookService';
 import { IStandardKernelWithProvider } from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 import { IModelDecorationsChangeAccessor } from 'vs/editor/common/model';
 import { NotebookFindMatch } from 'sql/workbench/contrib/notebook/browser/find/notebookFindDecorations';
@@ -19,6 +19,10 @@ import { QueryTextEditor } from 'sql/workbench/browser/modelComponents/queryText
 import { IContextViewProvider, IDelegate } from 'vs/base/browser/ui/contextview/contextview';
 import { IEditorPane } from 'vs/workbench/common/editor';
 import { INotebookShowOptions } from 'sql/workbench/api/common/sqlExtHost.protocol';
+import { NotebookViewsExtension } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViewsExtension';
+import { INotebookView, INotebookViewCell, INotebookViewMetadata, INotebookViews } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViews';
+import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
+import { ITelemetryEventProperties } from 'sql/platform/telemetry/common/telemetry';
 
 export class NotebookModelStub implements INotebookModel {
 	constructor(private _languageInfo?: nb.ILanguageInfo, private _cells?: ICellModel[], private _testContents?: nb.INotebookContents) {
@@ -45,7 +49,10 @@ export class NotebookModelStub implements INotebookModel {
 	get sessionLoadFinished(): Promise<void> {
 		throw new Error('method not implemented.');
 	}
-	get notebookManagers(): INotebookManager[] {
+	get serializationManager(): ISerializationManager {
+		throw new Error('method not implemented.');
+	}
+	get executeManagers(): IExecuteManager[] {
 		throw new Error('method not implemented.');
 	}
 	get kernelChanged(): vsEvent.Event<nb.IKernelChangedArgs> {
@@ -153,6 +160,8 @@ export class NotebookModelStub implements INotebookModel {
 	requestConnection(): Promise<boolean> {
 		throw new Error('Method not implemented.');
 	}
+	sendNotebookTelemetryActionEvent(action: TelemetryKeys.TelemetryAction | TelemetryKeys.NbTelemetryAction, additionalProperties?: ITelemetryEventProperties): void {
+	}
 }
 
 export class NotebookFindModelStub implements INotebookFindModel {
@@ -195,9 +204,13 @@ export class NotebookFindModelStub implements INotebookFindModel {
 	}
 }
 
-export class NotebookManagerStub implements INotebookManager {
+export class SerializationManagerStub implements ISerializationManager {
 	providerId: string;
 	contentManager: nb.ContentManager;
+}
+
+export class ExecuteManagerStub implements IExecuteManager {
+	providerId: string;
 	sessionManager: nb.SessionManager;
 	serverManager: nb.ServerManager;
 }
@@ -243,10 +256,16 @@ export class NotebookServiceStub implements INotebookService {
 	setTrusted(notebookUri: URI, isTrusted: boolean): Promise<boolean> {
 		throw new Error('Method not implemented.');
 	}
-	registerProvider(providerId: string, provider: INotebookProvider): void {
+	registerSerializationProvider(providerId: string, provider: ISerializationProvider): void {
 		throw new Error('Method not implemented.');
 	}
-	unregisterProvider(providerId: string): void {
+	registerExecuteProvider(providerId: string, provider: IExecuteProvider): void {
+		throw new Error('Method not implemented.');
+	}
+	unregisterSerializationProvider(providerId: string): void {
+		throw new Error('Method not implemented.');
+	}
+	unregisterExecuteProvider(providerId: string): void {
 		throw new Error('Method not implemented.');
 	}
 	registerNavigationProvider(provider: INavigationProvider): void {
@@ -264,7 +283,10 @@ export class NotebookServiceStub implements INotebookService {
 	getStandardKernelsForProvider(provider: string): nb.IStandardKernel[] {
 		throw new Error('Method not implemented.');
 	}
-	getOrCreateNotebookManager(providerId: string, uri: URI): Thenable<INotebookManager> {
+	getOrCreateSerializationManager(providerId: string, uri: URI): Promise<ISerializationManager> {
+		throw new Error('Method not implemented.');
+	}
+	getOrCreateExecuteManager(providerId: string, uri: URI): Thenable<IExecuteManager> {
 		throw new Error('Method not implemented.');
 	}
 	addNotebookEditor(editor: INotebookEditor): void {
@@ -490,6 +512,9 @@ export class NotebookComponentStub implements INotebookEditor {
 	get model(): INotebookModel {
 		throw new Error('Method not implemented.');
 	}
+	get views(): NotebookViewsExtension {
+		throw new Error('Method not implemented.');
+	}
 	isDirty(): boolean {
 		throw new Error('Method not implemented.');
 	}
@@ -684,6 +709,7 @@ export class NotebookEditorStub implements INotebookEditor {
 	cellEditors: CellEditorProviderStub[];
 	modelReady: Promise<INotebookModel>;
 	model: INotebookModel;
+	views: NotebookViewsExtension;
 	viewMode: string;
 	isDirty(): boolean {
 		throw new Error('Method not implemented.');
@@ -753,4 +779,81 @@ export class ContextViewProviderStub implements IContextViewProvider {
 	layout(): void {
 		throw new Error('Method not implemented.');
 	}
+}
+
+export class NotebookViewStub implements INotebookView {
+	isNew: boolean;
+	name: string = '';
+	guid: string = '';
+	cells: readonly ICellModel[] = [];
+	hiddenCells: readonly ICellModel[];
+	displayedCells: readonly ICellModel[];
+
+	onDeleted: vsEvent.Event<INotebookView>;
+	onCellVisibilityChanged: vsEvent.Event<ICellModel>;
+	initialize(): void {
+		throw new Error('Method not implemented.');
+	}
+	nameAvailable(name: string): boolean {
+		throw new Error('Method not implemented.');
+	}
+	getCellMetadata(cell: ICellModel): INotebookViewCell {
+		throw new Error('Method not implemented.');
+	}
+	hideCell(cell: ICellModel): void {
+		throw new Error('Method not implemented.');
+	}
+	moveCell(cell: ICellModel, x: number, y: number): void {
+		throw new Error('Method not implemented.');
+	}
+	resizeCell(cell: ICellModel, width: number, height: number): void {
+		throw new Error('Method not implemented.');
+	}
+	compactCells() {
+		throw new Error('Method not implemented.');
+	}
+	markAsViewed(): void {
+		throw new Error('Method not implemented.');
+	}
+	getCell(guid: string): Readonly<ICellModel> {
+		throw new Error('Method not implemented.');
+	}
+	insertCell(cell: ICellModel): void {
+		throw new Error('Method not implemented.');
+	}
+	save(): void {
+		throw new Error('Method not implemented.');
+	}
+	delete(): void {
+		throw new Error('Method not implemented.');
+	}
+}
+
+export class NotebookViewsStub implements INotebookViews {
+	onActiveViewChanged: vsEvent.Event<void>;
+	metadata: INotebookViewMetadata;
+	notebook: INotebookModel;
+	onViewDeleted: vsEvent.Event<void>;
+	createNewView(name?: string): INotebookView {
+		throw new Error('Method not implemented.');
+	}
+	removeView(guid: string): void {
+		throw new Error('Method not implemented.');
+	}
+	generateDefaultViewName(): string {
+		throw new Error('Method not implemented.');
+	}
+	getViews(): INotebookView[] {
+		throw new Error('Method not implemented.');
+	}
+	getActiveView(): INotebookView {
+		throw new Error('Method not implemented.');
+	}
+	setActiveView(view: INotebookView): void {
+		throw new Error('Method not implemented.');
+	}
+	viewNameIsTaken(name: string): boolean {
+		throw new Error('Method not implemented.');
+	}
+
 }

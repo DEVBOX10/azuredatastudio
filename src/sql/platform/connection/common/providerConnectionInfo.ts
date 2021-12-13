@@ -9,7 +9,6 @@ import { isString } from 'vs/base/common/types';
 import * as azdata from 'azdata';
 import * as Constants from 'sql/platform/connection/common/constants';
 import { ICapabilitiesService, ConnectionProviderProperties } from 'sql/platform/capabilities/common/capabilitiesService';
-import { assign } from 'vs/base/common/objects';
 import { ConnectionOptionSpecialType, ServiceOptionType } from 'sql/platform/connection/common/interfaces';
 
 type SettableProperty = 'serverName' | 'authenticationType' | 'databaseName' | 'password' | 'connectionName' | 'userName';
@@ -86,7 +85,7 @@ export class ProviderConnectionInfo extends Disposable implements azdata.Connect
 		}
 	}
 
-	public dispose(): void {
+	public override dispose(): void {
 		if (this._onCapabilitiesRegisteredDisposable) {
 			dispose(this._onCapabilitiesRegisteredDisposable);
 		}
@@ -95,7 +94,7 @@ export class ProviderConnectionInfo extends Disposable implements azdata.Connect
 
 	public clone(): ProviderConnectionInfo {
 		let instance = new ProviderConnectionInfo(this.capabilitiesService, this.providerName);
-		instance.options = assign({}, this.options);
+		instance.options = Object.assign({}, this.options);
 		return instance;
 	}
 
@@ -161,9 +160,13 @@ export class ProviderConnectionInfo extends Disposable implements azdata.Connect
 	}
 
 	private getServerInfo() {
-		let databaseName = this.databaseName ? this.databaseName : '<default>';
-		let userName = this.userName ? this.userName : 'Windows Authentication';
-		return this.serverName + ', ' + databaseName + ' (' + userName + ')';
+		let title = this.serverName;
+		// Only show database name if the provider supports it.
+		if (this.serverCapabilities?.connectionOptions?.find(option => option.specialValueType === ConnectionOptionSpecialType.databaseName)) {
+			title += `, ${this.databaseName || '<default>'}`;
+		}
+		title += ` (${this.userName || this.authenticationType})`;
+		return title;
 	}
 
 	/**

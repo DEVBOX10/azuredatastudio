@@ -53,6 +53,7 @@ export class SelectBox extends vsSelectBox {
 	private contextViewProvider: IContextViewProvider;
 	private message?: IMessage;
 	private _onDidSelect: Emitter<ISelectData>;
+	private _onDidFocus: Emitter<void>;
 
 	private inputValidationInfoBorder?: Color;
 	private inputValidationInfoBackground?: Color;
@@ -71,6 +72,7 @@ export class SelectBox extends vsSelectBox {
 		super(optionItems, 0, contextViewProvider, undefined, selectBoxOptions);
 
 		this._onDidSelect = new Emitter<ISelectData>();
+		this._onDidFocus = new Emitter<void>();
 		this._optionsDictionary = new Map<string, number>();
 		this.populateOptionsDictionary(optionItems);
 		this._dialogOptions = optionItems;
@@ -100,7 +102,10 @@ export class SelectBox extends vsSelectBox {
 		let focusTracker = dom.trackFocus(this.selectElement);
 		this._register(focusTracker);
 		this._register(focusTracker.onDidBlur(() => this._hideMessage()));
-		this._register(focusTracker.onDidFocus(() => this._showMessage()));
+		this._register(focusTracker.onDidFocus(() => {
+			this._showMessage();
+			this._onDidFocus.fire();
+		}));
 		// Stop propagation - we've handled the event already and letting it bubble up causes issues with parent
 		// controls handling it (such as dialog pages)
 		this.onkeydown(this.selectElement, (e: IKeyboardEvent) => {
@@ -125,12 +130,16 @@ export class SelectBox extends vsSelectBox {
 		}
 	}
 
-	public get onDidSelect(): Event<ISelectData> {
+	public override get onDidSelect(): Event<ISelectData> {
 		// We override the onDidSelect event here because the base onDidSelect event isn't fired when
 		// selecting an element via select - which means that we'll miss out on a selection made that way.
 		// So we expose our own event that's fired either when the base onDidSelect is called or when we
 		// manually select an item
 		return this._onDidSelect.event;
+	}
+
+	public get onDidFocus(): Event<void> {
+		return this._onDidFocus.event;
 	}
 
 	public onSelect(newInput: ISelectData) {
@@ -165,7 +174,7 @@ export class SelectBox extends vsSelectBox {
 		this._dialogOptions = options;
 	}
 
-	public style(styles: ISelectBoxStyles): void {
+	public override style(styles: ISelectBoxStyles): void {
 		super.style(styles);
 		this.enabledSelectBackground = this.selectBackground;
 		this.enabledSelectForeground = this.selectForeground;
@@ -196,7 +205,7 @@ export class SelectBox extends vsSelectBox {
 		}
 	}
 
-	public select(index: number): void {
+	public override select(index: number): void {
 		super.select(index);
 		let selectedOptionIndex = this._optionsDictionary.get(this._selectedOption);
 		if (selectedOptionIndex === index) { // Not generating an event if the same value is selected.
@@ -212,7 +221,7 @@ export class SelectBox extends vsSelectBox {
 	}
 
 
-	public setOptions(options: string[] | SelectOptionItemSQL[] | ISelectOptionItem[], selected?: number): void {
+	public override setOptions(options: string[] | SelectOptionItemSQL[] | ISelectOptionItem[], selected?: number): void {
 		let selectOptions: SelectOptionItemSQL[] = SelectBox.createOptions(options);
 		this.populateOptionsDictionary(selectOptions);
 		super.setOptions(selectOptions, selected);
@@ -350,7 +359,7 @@ export class SelectBox extends vsSelectBox {
 		}
 	}
 
-	public render(container: HTMLElement): void {
+	public override render(container: HTMLElement): void {
 		let selectOptions: ISelectBoxOptionsWithLabel = this._selectBoxOptions as ISelectBoxOptionsWithLabel;
 
 		if (selectOptions && selectOptions.labelText && selectOptions.labelText !== undefined) {

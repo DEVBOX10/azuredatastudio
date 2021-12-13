@@ -51,7 +51,7 @@ export class AzureDeviceCode extends AzureAuth {
 		context: vscode.ExtensionContext,
 		uriEventEmitter: vscode.EventEmitter<vscode.Uri>,
 	) {
-		super(metadata, tokenCache, context, uriEventEmitter, AzureAuthType.AuthCodeGrant, AzureDeviceCode.USER_FRIENDLY_NAME);
+		super(metadata, tokenCache, context, uriEventEmitter, AzureAuthType.DeviceCode, AzureDeviceCode.USER_FRIENDLY_NAME);
 		this.pageTitle = localize('addAccount', "Add {0} account", this.metadata.displayName);
 
 	}
@@ -142,7 +142,7 @@ export class AzureDeviceCode extends AzureAuth {
 	}
 
 
-	public async autoOAuthCancelled(): Promise<void> {
+	public override async autoOAuthCancelled(): Promise<void> {
 		return azdata.accounts.endAutoOAuthDeviceCode();
 	}
 }

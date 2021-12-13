@@ -19,31 +19,59 @@ const glob = require('glob');
 const root = path.dirname(__dirname);
 const commit = util.getVersion(root);
 const plumber = require('gulp-plumber');
-const fancyLog = require('fancy-log');
-const ansiColors = require('ansi-colors');
 const ext = require('./lib/extensions');
 
 const extensionsPath = path.join(path.dirname(__dirname), 'extensions');
-// {{SQL CARBON EDIT}}
-const sqlLocalizedExtensions = [
-	'admin-tool-ext-win',
-	'agent',
-	'cms',
-	'dacpac',
-	'import',
-	'machine-learning',
-	'profiler',
-	'schema-compare',
-	'server-report',
-	'sql-assessment',
-	'sql-database-projects'
-];
-// {{SQL CARBON EDIT}}
 
+// {{SQL CARBON EDIT}} - TODO: Import needs to be updated to work with langpacks.
+const sqlLocalizedExtensions = [
+	'import',
+];
+
+// {{SQL CARBON EDIT}} Not doing this for us right now
+// To save 250ms for each gulp startup, we are caching the result here
 const compilations = glob.sync('**/tsconfig.json', {
 	cwd: extensionsPath,
 	ignore: ['**/out/**', '**/node_modules/**']
 });
+// const compilations = [
+// 	'configuration-editing/build/tsconfig.json',
+// 	'configuration-editing/tsconfig.json',
+// 	'css-language-features/client/tsconfig.json',
+// 	'css-language-features/server/tsconfig.json',
+// 	'debug-auto-launch/tsconfig.json',
+// 	'debug-server-ready/tsconfig.json',
+// 	'emmet/tsconfig.json',
+// 	'extension-editing/tsconfig.json',
+// 	'git/tsconfig.json',
+// 	'github-authentication/tsconfig.json',
+// 	'github/tsconfig.json',
+// 	'grunt/tsconfig.json',
+// 	'gulp/tsconfig.json',
+// 	'html-language-features/client/tsconfig.json',
+// 	'html-language-features/server/tsconfig.json',
+// 	'image-preview/tsconfig.json',
+// 	'jake/tsconfig.json',
+// 	'json-language-features/client/tsconfig.json',
+// 	'json-language-features/server/tsconfig.json',
+// 	'markdown-language-features/preview-src/tsconfig.json',
+// 	'markdown-language-features/tsconfig.json',
+// 	'markdown-math/tsconfig.json',
+// 	'merge-conflict/tsconfig.json',
+// 	'microsoft-authentication/tsconfig.json',
+// 	'npm/tsconfig.json',
+// 	'php-language-features/tsconfig.json',
+// 	'search-result/tsconfig.json',
+// 	'simple-browser/tsconfig.json',
+// 	'testing-editor-contributions/tsconfig.json',
+// 	'typescript-language-features/test-workspace/tsconfig.json',
+// 	'typescript-language-features/tsconfig.json',
+// 	'vscode-api-tests/tsconfig.json',
+// 	'vscode-colorize-tests/tsconfig.json',
+// 	'vscode-custom-editor-tests/tsconfig.json',
+// 	'vscode-notebook-tests/tsconfig.json',
+// 	'vscode-test-resolver/tsconfig.json'
+// ];
 
 const getBaseUrl = out => `https://sqlopsbuilds.blob.core.windows.net/sourcemaps/${commit}/${out}`;
 
@@ -175,7 +203,22 @@ exports.watchExtensionsTask = watchExtensionsTask;
 const compileExtensionsBuildLegacyTask = task.define('compile-extensions-build-legacy', task.parallel(...tasks.map(t => t.compileBuildTask)));
 gulp.task(compileExtensionsBuildLegacyTask);
 
-// Azure Pipelines
+//#region Extension media
+
+const compileExtensionMediaTask = task.define('compile-extension-media', () => ext.buildExtensionMedia(false));
+gulp.task(compileExtensionMediaTask);
+exports.compileExtensionMediaTask = compileExtensionMediaTask;
+
+const watchExtensionMedia = task.define('watch-extension-media', () => ext.buildExtensionMedia(true));
+gulp.task(watchExtensionMedia);
+exports.watchExtensionMedia = watchExtensionMedia;
+
+const compileExtensionMediaBuildTask = task.define('compile-extension-media-build', () => ext.buildExtensionMedia(false, '.build/extensions'));
+gulp.task(compileExtensionMediaBuildTask);
+
+//#endregion
+
+//#region Azure Pipelines
 
 const cleanExtensionsBuildTask = task.define('clean-extensions-build', util.rimraf('.build/extensions'));
 const compileExtensionsBuildTask = task.define('compile-extensions-build', task.series(
@@ -185,9 +228,54 @@ const compileExtensionsBuildTask = task.define('compile-extensions-build', task.
 ));
 
 gulp.task(compileExtensionsBuildTask);
-gulp.task(task.define('extensions-ci', task.series(compileExtensionsBuildTask)));
+gulp.task(task.define('extensions-ci', task.series(compileExtensionsBuildTask, compileExtensionMediaBuildTask)));
 
 exports.compileExtensionsBuildTask = compileExtensionsBuildTask;
+
+//#endregion
+
+// {{SQL CARBON EDIT}}
+//#region XLF Creation
+
+//Get every extension in 'extensions' to create XLF files.
+const exportCompilations = glob.sync('**/package.json', {
+	cwd: extensionsPath,
+	ignore: ['**/out/**', '**/node_modules/**', 'package.json']
+});
+
+//Run the localization packaging task on all extensions in ADS.
+const exportTasks = exportCompilations.map(function (packageFile) {
+	const locFunc = require('./lib/locFunc');
+	const relativeDirname = path.dirname(packageFile);
+
+	const extensionName = relativeDirname.replace(/\//g, '-');
+	const packageTask = task.define(`localization-package-extension:${extensionName}`, task.series(() => {
+		return locFunc.packageSingleExtensionStream(extensionName)
+			.pipe(gulp.dest('.build'));
+	}));
+
+	// Tasks
+	gulp.task(packageTask);
+
+	return { packageTask };
+});
+
+const packageLocalizationExtensionsTask = task.define('package-localization-extensions-task', task.series(...exportTasks.map(t => t.packageTask)));
+gulp.task(packageLocalizationExtensionsTask);
+
+//Builds all ADS extensions including external/excluded extensions (only for creating XLF files, not for compiling extensions for shipping)
+const compileLocalizationExtensionsBuildTask = task.define('compile-localization-extensions-build', task.series(
+	cleanExtensionsBuildTask,
+	compileExtensionsTask,
+	task.define('bundle-marketplace-extensions-build', () => ext.packageMarketplaceExtensionsStream(false).pipe(gulp.dest('.build'))),
+	packageLocalizationExtensionsTask,
+));
+
+gulp.task(compileLocalizationExtensionsBuildTask);
+exports.compileLocalizationExtensionsBuildTask = compileLocalizationExtensionsBuildTask;
+
+//#endregion
+// {{SQL CARBON EDIT}} end
 
 const compileWebExtensionsTask = task.define('compile-web', () => buildWebExtensions(false));
 gulp.task(compileWebExtensionsTask);
@@ -198,69 +286,9 @@ gulp.task(watchWebExtensionsTask);
 exports.watchWebExtensionsTask = watchWebExtensionsTask;
 
 async function buildWebExtensions(isWatch) {
-	const webpack = require('webpack');
-
 	const webpackConfigLocations = await nodeUtil.promisify(glob)(
 		path.join(extensionsPath, '**', 'extension-browser.webpack.config.js'),
 		{ ignore: ['**/node_modules'] }
 	);
-
-	const webpackConfigs = [];
-
-	for (const webpackConfigPath of webpackConfigLocations) {
-		const configOrFnOrArray = require(webpackConfigPath);
-		function addConfig(configOrFn) {
-			if (typeof configOrFn === 'function') {
-				webpackConfigs.push(configOrFn({}, {}));
-			} else {
-				webpackConfigs.push(configOrFn);
-			}
-		}
-		addConfig(configOrFnOrArray);
-	}
-	function reporter(fullStats) {
-		if (Array.isArray(fullStats.children)) {
-			for (const stats of fullStats.children) {
-				const outputPath = stats.outputPath;
-				if (outputPath) {
-					const relativePath = path.relative(extensionsPath, outputPath).replace(/\\/g, '/');
-					const match = relativePath.match(/[^\/]+(\/server|\/client)?/);
-					fancyLog(`Finished ${ansiColors.green('packaging web extension')} ${ansiColors.cyan(match[0])} with ${stats.errors.length} errors.`);
-				}
-				if (Array.isArray(stats.errors)) {
-					stats.errors.forEach(error => {
-						fancyLog.error(error);
-					});
-				}
-				if (Array.isArray(stats.warnings)) {
-					stats.warnings.forEach(warning => {
-						fancyLog.warn(warning);
-					});
-				}
-			}
-		}
-	}
-	return new Promise((resolve, reject) => {
-		if (isWatch) {
-			webpack(webpackConfigs).watch({}, (err, stats) => {
-				if (err) {
-					reject();
-				} else {
-					reporter(stats.toJson());
-				}
-			});
-		} else {
-			webpack(webpackConfigs).run((err, stats) => {
-				if (err) {
-					fancyLog.error(err);
-					reject();
-				} else {
-					reporter(stats.toJson());
-					resolve();
-				}
-			});
-		}
-	});
+	return ext.webpackExtensions('packaging web extension', isWatch, webpackConfigLocations.map(configPath => ({ configPath })));
 }
-
-

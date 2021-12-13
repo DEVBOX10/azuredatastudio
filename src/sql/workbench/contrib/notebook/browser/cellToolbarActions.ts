@@ -17,8 +17,7 @@ import Severity from 'vs/base/common/severity';
 import { INotebookService } from 'sql/workbench/services/notebook/browser/notebookService';
 import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { MoveDirection } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
-
+import { CellEditModes, MoveDirection } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 const moreActionsLabel = localize('moreActionsLabel', "More");
 
 export class EditCellAction extends ToggleableAction {
@@ -52,9 +51,40 @@ export class EditCellAction extends ToggleableAction {
 		this.toggle(value);
 	}
 
-	public async run(context: CellContext): Promise<void> {
+	public override async run(context: CellContext): Promise<void> {
 		this.editMode = !this.editMode;
 		context.cell.isEditMode = this.editMode;
+	}
+}
+
+export class SplitCellAction extends CellActionBase {
+	public cellType: CellType;
+
+	constructor(
+		id: string,
+		label: string,
+		cssClass: string,
+		@INotificationService notificationService: INotificationService,
+		@INotebookService private notebookService: INotebookService,
+	) {
+		super(id, label, cssClass, notificationService);
+		this._cssClass = cssClass;
+		this._tooltip = label;
+		this._label = '';
+	}
+	doRun(context: CellContext): Promise<void> {
+		let model = context.model;
+		let index = model.cells.findIndex((cell) => cell.id === context.cell.id);
+		context.model?.splitCell(context.cell.cellType, this.notebookService, index);
+		return Promise.resolve();
+	}
+	public setListener(context: CellContext) {
+		this._register(context.cell.onCurrentEditModeChanged(currentMode => {
+			this.enabled = currentMode === CellEditModes.WYSIWYG ? false : true;
+		}));
+		this._register(context.cell.notebookModel.onCellTypeChanged(_ => {
+			this.enabled = context.cell.currentMode === CellEditModes.WYSIWYG ? false : true;
+		}));
 	}
 }
 
@@ -236,7 +266,7 @@ export class ClearCellOutputAction extends CellActionBase {
 		super(id, label, undefined, notificationService);
 	}
 
-	public canRun(context: CellContext): boolean {
+	public override canRun(context: CellContext): boolean {
 		return context.cell && context.cell.cellType === CellTypes.Code;
 	}
 
@@ -270,7 +300,7 @@ export class RunCellsAction extends CellActionBase {
 		super(id, label, undefined, notificationService);
 	}
 
-	public canRun(context: CellContext): boolean {
+	public override canRun(context: CellContext): boolean {
 		return context.cell && context.cell.cellType === CellTypes.Code;
 	}
 
@@ -307,7 +337,7 @@ export class CollapseCellAction extends CellActionBase {
 		super(id, label, undefined, notificationService);
 	}
 
-	public canRun(context: CellContext): boolean {
+	public override canRun(context: CellContext): boolean {
 		return context.cell && context.cell.cellType === CellTypes.Code;
 	}
 
@@ -350,7 +380,7 @@ export class ToggleMoreActions extends Action {
 		super(ToggleMoreActions.ID, ToggleMoreActions.LABEL, ToggleMoreActions.ICON);
 	}
 
-	async run(context: StandardKeyboardEvent): Promise<void> {
+	override async run(context: StandardKeyboardEvent): Promise<void> {
 		this._contextMenuService.showContextMenu({
 			getAnchor: () => context.target,
 			getActions: () => this._actions,
@@ -368,7 +398,7 @@ export class ParametersCellAction extends CellActionBase {
 		super(id, label, undefined, notificationService);
 	}
 
-	public canRun(context: CellContext): boolean {
+	public override canRun(context: CellContext): boolean {
 		return context.cell?.cellType === CellTypes.Code;
 	}
 

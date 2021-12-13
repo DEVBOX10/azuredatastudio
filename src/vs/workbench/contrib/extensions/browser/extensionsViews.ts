@@ -6,10 +6,10 @@
 import { localize } from 'vs/nls';
 import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
 import { Event, Emitter } from 'vs/base/common/event';
-import { isPromiseCanceledError, getErrorMessage } from 'vs/base/common/errors';
+import { isPromiseCanceledError, getErrorMessage, createErrorWithActions } from 'vs/base/common/errors';
 import { PagedModel, IPagedModel, IPager, DelayedPagedModel } from 'vs/base/common/paging';
 import { SortBy, SortOrder, IQueryOptions } from 'vs/platform/extensionManagement/common/extensionManagement';
-import { IExtensionManagementServer, IExtensionManagementServerService, EnablementState, IWorkbenchExtensioManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
+import { IExtensionManagementServer, IExtensionManagementServerService, EnablementState, IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
 import { IExtensionRecommendationsService } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations';
 import { areSameExtensions } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -17,7 +17,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { append, $ } from 'vs/base/browser/dom';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { Delegate, Renderer, IExtensionsViewState, EXTENSION_LIST_ELEMENT_HEIGHT } from 'vs/workbench/contrib/extensions/browser/extensionsList';
-import { ExtensionState, IExtension, IExtensionsWorkbenchService, IWorkspaceRecommendedExtensionsView } from 'vs/workbench/contrib/extensions/common/extensions';
+import { ExtensionState, IExtension, IExtensionsWorkbenchService, IWorkspaceRecommendedExtensionsView } from 'vs/workbench/contrib/extensions/common/extensions'; // {{SQL CARBON EDIT}} Add ExtensionState
 import { Query } from 'vs/workbench/contrib/extensions/common/extensionQuery';
 import { IExtensionService, toExtension } from 'vs/workbench/services/extensions/common/extensions';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
@@ -26,7 +26,7 @@ import { IViewletViewOptions } from 'vs/workbench/browser/parts/views/viewsViewl
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { CountBadge } from 'vs/base/browser/ui/countBadge/countBadge';
 import { ManageExtensionAction, getContextMenuActions, ExtensionAction } from 'vs/workbench/contrib/extensions/browser/extensionsActions';
-import { WorkbenchPagedList, ListResourceNavigator } from 'vs/platform/list/browser/listService';
+import { WorkbenchPagedList } from 'vs/platform/list/browser/listService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
 import { ViewPane, IViewPaneOptions } from 'vs/workbench/browser/parts/views/viewPane';
@@ -35,10 +35,9 @@ import { coalesce, distinct, flatten } from 'vs/base/common/arrays'; // {{SQL CA
 import { IExperimentService, IExperiment, ExperimentActionType } from 'vs/workbench/contrib/experiments/common/experimentService';
 import { alert } from 'vs/base/browser/ui/aria/aria';
 import { IListContextMenuEvent } from 'vs/base/browser/ui/list/list';
-import { createErrorWithActions } from 'vs/base/common/errorsWithActions';
 import { CancellationToken } from 'vs/base/common/cancellation';
-import { IAction, Action, Separator } from 'vs/base/common/actions';
-import { ExtensionIdentifier, ExtensionType, IExtensionDescription, isLanguagePackExtension } from 'vs/platform/extensions/common/extensions'; // {{SQL CARBON EDIT}}
+import { IAction, Action, Separator, ActionRunner } from 'vs/base/common/actions';
+import { ExtensionIdentifier, ExtensionUntrustedWorkpaceSupportType, ExtensionVirtualWorkpaceSupportType, IExtensionDescription, isLanguagePackExtension, ExtensionType } from 'vs/platform/extensions/common/extensions'; // {{SQL CARBON EDIT}} Add ExtensionType
 import { CancelablePromise, createCancelablePromise } from 'vs/base/common/async';
 import { IProductService } from 'vs/platform/product/common/productService';
 import { SeverityIcon } from 'vs/platform/severityIcon/common/severityIcon';
@@ -49,6 +48,10 @@ import { IOpenerService } from 'vs/platform/opener/common/opener';
 import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
 import { IListAccessibilityProvider } from 'vs/base/browser/ui/list/listWidget';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IExtensionManifestPropertiesService } from 'vs/workbench/services/extensions/common/extensionManifestPropertiesService';
+import * as locConstants from 'sql/base/common/locConstants'; // {{SQL CARBON EDIT}}
+import { isVirtualWorkspace } from 'vs/platform/remote/common/remoteHosts';
+import { IWorkspaceTrustManagementService } from 'vs/platform/workspace/common/workspaceTrust';
 
 // Extensions that are automatically classified as Programming Language extensions, but should be Feature extensions
 const FORCE_FEATURE_EXTENSIONS = ['vscode.git', 'vscode.search-result'];
@@ -101,13 +104,15 @@ export class ExtensionsListView extends ViewPane {
 	private queryRequest: { query: string, request: CancelablePromise<IPagedModel<IExtension>> } | null = null;
 	private queryResult: IQueryResult | undefined;
 
+	private readonly contextMenuActionRunner = this._register(new ActionRunner());
+
 	constructor(
 		protected readonly options: ExtensionsListViewOptions,
 		viewletViewOptions: IViewletViewOptions,
 		@INotificationService protected notificationService: INotificationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IInstantiationService protected instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IExtensionsWorkbenchService protected extensionsWorkbenchService: IExtensionsWorkbenchService,
@@ -117,13 +122,16 @@ export class ExtensionsListView extends ViewPane {
 		@IWorkspaceContextService protected contextService: IWorkspaceContextService,
 		@IExperimentService private readonly experimentService: IExperimentService,
 		@IExtensionManagementServerService protected readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IWorkbenchExtensioManagementService protected readonly extensionManagementService: IWorkbenchExtensioManagementService,
+		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkbenchExtensionManagementService protected readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkspaceContextService protected readonly workspaceService: IWorkspaceContextService,
 		@IProductService protected readonly productService: IProductService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IOpenerService openerService: IOpenerService,
 		@IPreferencesService private readonly preferencesService: IPreferencesService,
 		@IStorageService private readonly storageService: IStorageService,
+		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService
 	) {
 		super({
 			...(viewletViewOptions as IViewPaneOptions),
@@ -134,12 +142,13 @@ export class ExtensionsListView extends ViewPane {
 			this._register(this.options.onDidChangeTitle(title => this.updateTitle(title)));
 		}
 
+		this._register(this.contextMenuActionRunner.onDidRun(({ error }) => error && this.notificationService.error(error)));
 		this.registerActions();
 	}
 
 	protected registerActions(): void { }
 
-	protected renderHeader(container: HTMLElement): void {
+	protected override renderHeader(container: HTMLElement): void {
 		container.classList.add('extension-view-header');
 		super.renderHeader(container);
 
@@ -147,7 +156,7 @@ export class ExtensionsListView extends ViewPane {
 		this._register(attachBadgeStyler(this.badge, this.themeService));
 	}
 
-	renderBody(container: HTMLElement): void {
+	override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
 		const extensionsList = append(container, $('.extensions-list'));
@@ -157,13 +166,13 @@ export class ExtensionsListView extends ViewPane {
 		const delegate = new Delegate();
 		const extensionsViewState = new ExtensionsViewState();
 		const renderer = this.instantiationService.createInstance(Renderer, extensionsViewState);
-		this.list = this.instantiationService.createInstance<typeof WorkbenchPagedList, WorkbenchPagedList<IExtension>>(WorkbenchPagedList, 'Extensions', extensionsList, delegate, [renderer], {
+		this.list = this.instantiationService.createInstance(WorkbenchPagedList, 'Extensions', extensionsList, delegate, [renderer], {
 			multipleSelectionSupport: false,
 			setRowLineHeight: false,
 			horizontalScrolling: false,
 			accessibilityProvider: <IListAccessibilityProvider<IExtension | null>>{
 				getAriaLabel(extension: IExtension | null): string {
-					return extension ? localize('extension-arialabel', "{0}, {1}, {2}, press enter for extension details.", extension.displayName, extension.version, extension.publisherDisplayName) : '';
+					return extension ? localize('extension.arialabel', "{0}, {1}, {2}, {3}", extension.displayName, extension.version, extension.publisherDisplayName, extension.description) : '';
 				},
 				getWidgetAriaLabel(): string {
 					return localize('extensions', "Extensions");
@@ -171,15 +180,15 @@ export class ExtensionsListView extends ViewPane {
 			},
 			overrideStyles: {
 				listBackground: SIDE_BAR_BACKGROUND
-			}
-		});
+			},
+			openOnSingleClick: true
+		}) as WorkbenchPagedList<IExtension>;
 		this._register(this.list.onContextMenu(e => this.onContextMenu(e), this));
 		this._register(this.list.onDidChangeFocus(e => extensionsViewState.onFocusChange(coalesce(e.elements)), this));
 		this._register(this.list);
 		this._register(extensionsViewState);
 
-		const resourceNavigator = this._register(new ListResourceNavigator(this.list, { openOnSingleClick: true }));
-		this._register(Event.debounce(Event.filter(resourceNavigator.onDidOpen, e => e.element !== null), (_, event) => event, 75, true)(options => {
+		this._register(Event.debounce(Event.filter(this.list.onDidOpen, e => e.element !== null), (_, event) => event, 75, true)(options => {
 			this.openExtension(options.element!, { sideByside: options.sideBySide, ...options.editorOptions });
 		}));
 
@@ -191,7 +200,7 @@ export class ExtensionsListView extends ViewPane {
 		};
 	}
 
-	protected layoutBody(height: number, width: number): void {
+	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
 		if (this.bodyTemplate) {
 			this.bodyTemplate.extensionsList.style.height = height + 'px';
@@ -285,7 +294,8 @@ export class ExtensionsListView extends ViewPane {
 			actions.pop();
 			this.contextMenuService.showContextMenu({
 				getAnchor: () => e.anchor,
-				getActions: () => actions
+				getActions: () => actions,
+				actionRunner: this.contextMenuActionRunner,
 			});
 		}
 	}
@@ -387,6 +397,10 @@ export class ExtensionsListView extends ViewPane {
 
 		else if (/@enabled/i.test(value)) {
 			extensions = this.filterEnabledExtensions(local, runningExtensions, query, options);
+		}
+
+		else if (/@workspaceUnsupported/i.test(value)) {
+			extensions = this.filterWorkspaceUnsupportedExtensions(local, query, options);
 		}
 
 		return { extensions, canIncludeInstalledExtensions };
@@ -539,6 +553,47 @@ export class ExtensionsListView extends ViewPane {
 		return this.sortExtensions(result, options);
 	}
 
+	private filterWorkspaceUnsupportedExtensions(local: IExtension[], query: Query, options: IQueryOptions): IExtension[] {
+
+		// shows local extensions which are restricted or disabled in the current workspace because of the extension's capability
+
+		const inVirtualWorkspace = isVirtualWorkspace(this.workspaceService.getWorkspace());
+		const inRestrictedWorkspace = !this.workspaceTrustManagementService.isWorkpaceTrusted();
+		if (!inVirtualWorkspace && !inRestrictedWorkspace) {
+			return [];
+		}
+
+		let queryString = query.value; // @sortby is already filtered out
+
+		const match = queryString.match(/^\s*@workspaceUnsupported(?::(untrusted|virtual)(Partial)?)?(?:\s+([^\s]*))?/i);
+		if (!match) {
+			return [];
+		}
+		const type = match[1]?.toLowerCase();
+		const partial = !!match[2];
+		const nameFilter = match[3]?.toLowerCase();
+
+		if (nameFilter) {
+			local = local.filter(extension => extension.name.toLowerCase().indexOf(nameFilter) > -1 || extension.displayName.toLowerCase().indexOf(nameFilter) > -1);
+		}
+
+		const hasVirtualSupportType = (extension: IExtension, supportType: ExtensionVirtualWorkpaceSupportType) => extension.local && this.extensionManifestPropertiesService.getExtensionVirtualWorkspaceSupportType(extension.local.manifest) === supportType;
+		const hasRestrictedSupportType = (extension: IExtension, supportType: ExtensionUntrustedWorkpaceSupportType) => extension.local && this.extensionManifestPropertiesService.getExtensionUntrustedWorkspaceSupportType(extension.local.manifest) === supportType;
+
+		if (type === 'virtual') {
+			// show limited and disabled extensions unless disabled because of a untrusted workspace
+			local = local.filter(extension => inVirtualWorkspace && hasVirtualSupportType(extension, partial ? 'limited' : false) && !(inRestrictedWorkspace && hasRestrictedSupportType(extension, false)));
+		} else if (type === 'untrusted') {
+			// show limited and disabled extensions unless disabled because of a virtual workspace
+			local = local.filter(extension => inRestrictedWorkspace && hasRestrictedSupportType(extension, partial ? 'limited' : false) && !(inVirtualWorkspace && hasVirtualSupportType(extension, false)));
+		} else {
+			// show extensions that are restricted or disabled in the current workspace
+			local = local.filter(extension => inVirtualWorkspace && !hasVirtualSupportType(extension, true) || inRestrictedWorkspace && !hasRestrictedSupportType(extension, true));
+		}
+		return this.sortExtensions(local, options);
+	}
+
+
 	private mergeAddedExtensions(extensions: IExtension[], newExtensions: IExtension[]): IExtension[] | undefined {
 		const oldExtensions = [...extensions];
 		const findPreviousExtensionIndex = (from: number): number => {
@@ -686,6 +741,7 @@ export class ExtensionsListView extends ViewPane {
 	private isRecommendationsQuery(query: Query): boolean {
 		return ExtensionsListView.isWorkspaceRecommendedExtensionsQuery(query.value)
 			|| ExtensionsListView.isKeymapsRecommendedExtensionsQuery(query.value)
+			|| ExtensionsListView.isLanguageRecommendedExtensionsQuery(query.value)
 			|| ExtensionsListView.isExeRecommendedExtensionsQuery(query.value)
 			|| /@recommended:all/i.test(query.value)
 			|| ExtensionsListView.isSearchRecommendedExtensionsQuery(query.value)
@@ -695,6 +751,7 @@ export class ExtensionsListView extends ViewPane {
 	// {{SQL CARBON EDIT}}
 	private getAllMarketplaceModel(query: Query, options: IQueryOptions, token: CancellationToken): Promise<IPagedModel<IExtension>> {
 		const value = query.value.trim().toLowerCase();
+		options.excludeFlags = 'hidden'; // {{SQL CARBON EDIT}} exclude extensions with 'hidden' flag from marketplace query
 		return this.extensionsWorkbenchService.queryLocal()
 			.then(result => result.filter(e => e.type === ExtensionType.User))
 			.then(local => {
@@ -734,7 +791,7 @@ export class ExtensionsListView extends ViewPane {
 	// {{SQL CARBON EDIT}}
 	private getRecommendedExtensionsByScenario(token: CancellationToken, scenarioType: string): Promise<IPagedModel<IExtension>> {
 		if (!scenarioType) {
-			return Promise.reject(new Error(localize('scenarioTypeUndefined', 'The scenario type for extension recommendations must be provided.')));
+			return Promise.reject(new Error(locConstants.extensionsViewsScenarioTypeUndefined));
 		}
 		return this.extensionsWorkbenchService.queryLocal()
 			.then(result => result.filter(e => e.type === ExtensionType.User))
@@ -765,6 +822,11 @@ export class ExtensionsListView extends ViewPane {
 		// Keymap recommendations
 		if (ExtensionsListView.isKeymapsRecommendedExtensionsQuery(query.value)) {
 			return this.getKeymapRecommendationsModel(query, options, token);
+		}
+
+		// Language recommendations
+		if (ExtensionsListView.isLanguageRecommendedExtensionsQuery(query.value)) {
+			return this.getLanguageRecommendationsModel(query, options, token);
 		}
 
 		// Exe recommendations
@@ -827,6 +889,14 @@ export class ExtensionsListView extends ViewPane {
 		const value = query.value.replace(/@recommended:keymaps/g, '').trim().toLowerCase();
 		const recommendations = this.extensionRecommendationsService.getKeymapRecommendations();
 		const installableRecommendations = (await this.getInstallableRecommendations(recommendations, { ...options, source: 'recommendations-keymaps' }, token))
+			.filter(extension => extension.identifier.id.toLowerCase().indexOf(value) > -1);
+		return new PagedModel(installableRecommendations);
+	}
+
+	private async getLanguageRecommendationsModel(query: Query, options: IQueryOptions, token: CancellationToken): Promise<IPagedModel<IExtension>> {
+		const value = query.value.replace(/@recommended:languages/g, '').trim().toLowerCase();
+		const recommendations = this.extensionRecommendationsService.getLanguageRecommendations();
+		const installableRecommendations = (await this.getInstallableRecommendations(recommendations, { ...options, source: 'recommendations-languages' }, token))
 			.filter(extension => extension.identifier.id.toLowerCase().indexOf(value) > -1);
 		return new PagedModel(installableRecommendations);
 	}
@@ -987,7 +1057,7 @@ export class ExtensionsListView extends ViewPane {
 		return new PagedModel(pager);
 	}
 
-	dispose(): void {
+	override dispose(): void {
 		super.dispose();
 		if (this.queryRequest) {
 			this.queryRequest.request.cancel();
@@ -1007,7 +1077,8 @@ export class ExtensionsListView extends ViewPane {
 			|| this.isDisabledExtensionsQuery(query)
 			|| this.isBuiltInExtensionsQuery(query)
 			|| this.isSearchBuiltInExtensionsQuery(query)
-			|| this.isBuiltInGroupExtensionsQuery(query);
+			|| this.isBuiltInGroupExtensionsQuery(query)
+			|| this.isSearchWorkspaceUnsupportedExtensionsQuery(query);
 	}
 
 	static isSearchBuiltInExtensionsQuery(query: string): boolean {
@@ -1020,6 +1091,10 @@ export class ExtensionsListView extends ViewPane {
 
 	static isBuiltInGroupExtensionsQuery(query: string): boolean {
 		return /^\s*@builtin:.+$/i.test(query.trim());
+	}
+
+	static isSearchWorkspaceUnsupportedExtensionsQuery(query: string): boolean {
+		return /^\s*@workspaceUnsupported(:(untrusted|virtual)(Partial)?)?(\s|$)/i.test(query);
 	}
 
 	static isInstalledExtensionsQuery(query: string): boolean {
@@ -1058,7 +1133,11 @@ export class ExtensionsListView extends ViewPane {
 		return /@recommended:keymaps/i.test(query);
 	}
 
-	focus(): void {
+	static isLanguageRecommendedExtensionsQuery(query: string): boolean {
+		return /@recommended:languages/i.test(query);
+	}
+
+	override focus(): void {
 		super.focus();
 		if (!this.list) {
 			return;
@@ -1078,7 +1157,7 @@ export class ExtensionsListView extends ViewPane {
 
 export class ServerInstalledExtensionsView extends ExtensionsListView {
 
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		query = query ? query : '@installed';
 		if (!ExtensionsListView.isLocalExtensionsQuery(query)) {
 			query = query += ' @installed';
@@ -1090,7 +1169,7 @@ export class ServerInstalledExtensionsView extends ExtensionsListView {
 
 export class EnabledExtensionsView extends ExtensionsListView {
 
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		query = query || '@enabled';
 		return ExtensionsListView.isEnabledExtensionsQuery(query) ? super.show(query) : this.showEmptyModel();
 	}
@@ -1098,27 +1177,70 @@ export class EnabledExtensionsView extends ExtensionsListView {
 
 export class DisabledExtensionsView extends ExtensionsListView {
 
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		query = query || '@disabled';
 		return ExtensionsListView.isDisabledExtensionsQuery(query) ? super.show(query) : this.showEmptyModel();
 	}
 }
 
 export class BuiltInFeatureExtensionsView extends ExtensionsListView {
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		return (query && query.trim() !== '@builtin') ? this.showEmptyModel() : super.show('@builtin:features');
 	}
 }
 
 export class BuiltInThemesExtensionsView extends ExtensionsListView {
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		return (query && query.trim() !== '@builtin') ? this.showEmptyModel() : super.show('@builtin:themes');
 	}
 }
 
 export class BuiltInProgrammingLanguageExtensionsView extends ExtensionsListView {
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		return (query && query.trim() !== '@builtin') ? this.showEmptyModel() : super.show('@builtin:basics');
+	}
+}
+
+function toSpecificWorkspaceUnsupportedQuery(query: string, qualifier: string): string | undefined {
+	if (!query) {
+		return '@workspaceUnsupported:' + qualifier;
+	}
+	const match = query.match(new RegExp(`@workspaceUnsupported(:${qualifier})?(\\s|$)`, 'i'));
+	if (match) {
+		if (!match[1]) {
+			return query.replace(/@workspaceUnsupported/gi, '@workspaceUnsupported:' + qualifier);
+		}
+		return query;
+	}
+	return undefined;
+}
+
+
+export class UntrustedWorkspaceUnsupportedExtensionsView extends ExtensionsListView {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
+		const updatedQuery = toSpecificWorkspaceUnsupportedQuery(query, 'untrusted');
+		return updatedQuery ? super.show(updatedQuery) : this.showEmptyModel();
+	}
+}
+
+export class UntrustedWorkspacePartiallySupportedExtensionsView extends ExtensionsListView {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
+		const updatedQuery = toSpecificWorkspaceUnsupportedQuery(query, 'untrustedPartial');
+		return updatedQuery ? super.show(updatedQuery) : this.showEmptyModel();
+	}
+}
+
+export class VirtualWorkspaceUnsupportedExtensionsView extends ExtensionsListView {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
+		const updatedQuery = toSpecificWorkspaceUnsupportedQuery(query, 'virtual');
+		return updatedQuery ? super.show(updatedQuery) : this.showEmptyModel();
+	}
+}
+
+export class VirtualWorkspacePartiallySupportedExtensionsView extends ExtensionsListView {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
+		const updatedQuery = toSpecificWorkspaceUnsupportedQuery(query, 'virtualPartial');
+		return updatedQuery ? super.show(updatedQuery) : this.showEmptyModel();
 	}
 }
 
@@ -1126,7 +1248,7 @@ export class DefaultRecommendedExtensionsView extends ExtensionsListView {
 	// {{SQL CARBON EDIT}}
 	private readonly recommendedExtensionsQuery = '@allmarketplace';
 
-	renderBody(container: HTMLElement): void {
+	override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
 		this._register(this.extensionRecommendationsService.onDidChangeRecommendations(() => {
@@ -1134,7 +1256,7 @@ export class DefaultRecommendedExtensionsView extends ExtensionsListView {
 		}));
 	}
 
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		if (query && query.trim() !== this.recommendedExtensionsQuery) {
 			return this.showEmptyModel();
 		}
@@ -1151,7 +1273,7 @@ export class DefaultRecommendedExtensionsView extends ExtensionsListView {
 export class RecommendedExtensionsView extends ExtensionsListView {
 	// private readonly recommendedExtensionsQuery = '@recommended'; {{SQL CARBON EDIT}} no unused
 
-	renderBody(container: HTMLElement): void {
+	override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
 		this._register(this.extensionRecommendationsService.onDidChangeRecommendations(() => {
@@ -1159,23 +1281,22 @@ export class RecommendedExtensionsView extends ExtensionsListView {
 		}));
 	}
 
-	async show(query: string): Promise<IPagedModel<IExtension>> {
-		// {{SQL CARBON EDIT}}
-		return super.show('@allmarketplace');
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
+		return super.show('@allmarketplace'); // {{SQL CARBON EDIT}} Show all available extensions in marketplace
 	}
 }
 
 export class WorkspaceRecommendedExtensionsView extends ExtensionsListView implements IWorkspaceRecommendedExtensionsView {
 	private readonly recommendedExtensionsQuery = '@recommended:workspace';
 
-	renderBody(container: HTMLElement): void {
+	override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
 		this._register(this.extensionRecommendationsService.onDidChangeRecommendations(() => this.show(this.recommendedExtensionsQuery)));
 		this._register(this.contextService.onDidChangeWorkbenchState(() => this.show(this.recommendedExtensionsQuery)));
 	}
 
-	async show(query: string): Promise<IPagedModel<IExtension>> {
+	override async show(query: string): Promise<IPagedModel<IExtension>> {
 		let shouldShowEmptyView = query && query.trim() !== '@recommended' && query.trim() !== '@recommended:workspace';
 		let model = await (shouldShowEmptyView ? this.showEmptyModel() : super.show(this.recommendedExtensionsQuery));
 		this.setExpanded(model.length > 0);

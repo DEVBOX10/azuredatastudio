@@ -7,7 +7,7 @@
 
 import { IMainContext } from 'vs/workbench/api/common/extHost.protocol';
 import { Emitter } from 'vs/base/common/event';
-import { deepClone, assign } from 'vs/base/common/objects';
+import { deepClone } from 'vs/base/common/objects';
 import { URI } from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
 
@@ -323,17 +323,17 @@ class ComponentBuilderImpl<T extends azdata.Component, TPropertyBag extends azda
 
 	withProperties<U>(properties: U): azdata.ComponentBuilder<T, TPropertyBag> {
 		// Keep any properties that may have been set during initial object construction
-		this._component.properties = assign({}, this._component.properties, properties);
+		this._component.properties = Object.assign({}, this._component.properties, properties);
 		return this;
 	}
 
 	withProps(properties: TPropertyBag): azdata.ComponentBuilder<T, TPropertyBag> {
-		this._component.properties = assign({}, this._component.properties, properties);
+		this._component.properties = Object.assign({}, this._component.properties, properties);
 		return this;
 	}
 
 	withValidation(validation: (component: T) => boolean | Thenable<boolean>): azdata.ComponentBuilder<T, TPropertyBag> {
-		this._component.customValidations.push(validation);
+		this._component.customValidations.push(validation as (component: ThisType<ComponentWrapper>) => boolean | Thenable<boolean>); // Use specific type to avoid type assertion error
 		return this;
 	}
 
@@ -406,7 +406,7 @@ class FormContainerBuilder extends GenericContainerBuilder<azdata.FormContainer,
 			});
 		}
 
-		return new InternalItemConfig(componentWrapper, assign({}, itemLayout || {}, {
+		return new InternalItemConfig(componentWrapper, Object.assign({}, itemLayout || {}, {
 			title: formComponent.title,
 			actions: actions,
 			isFormComponent: true,
@@ -794,7 +794,7 @@ class ComponentWrapper implements azdata.Component {
 	}
 
 	public updateProperties(properties: { [key: string]: any }): Thenable<void> {
-		this.properties = assign(this.properties, properties);
+		this.properties = Object.assign(this.properties, properties);
 		return this.notifyPropertyChanged();
 	}
 
@@ -803,7 +803,7 @@ class ComponentWrapper implements azdata.Component {
 	}
 
 	public updateCssStyles(cssStyles: { [key: string]: string }): Thenable<void> {
-		this.properties.CSSStyles = assign(this.properties.CSSStyles || {}, cssStyles);
+		this.properties.CSSStyles = Object.assign(this.properties.CSSStyles || {}, cssStyles);
 		return this.notifyPropertyChanged();
 	}
 
@@ -1350,10 +1350,10 @@ class TextComponentWrapper extends ComponentWrapper implements azdata.TextCompon
 		this.properties = {};
 	}
 
-	public get value(): string {
+	public get value(): string | string[] {
 		return this.properties['value'];
 	}
-	public set value(v: string) {
+	public set value(v: string | string[]) {
 		this.setProperty('value', v);
 	}
 
@@ -1369,6 +1369,20 @@ class TextComponentWrapper extends ComponentWrapper implements azdata.TextCompon
 	}
 	public set requiredIndicator(requiredIndicator: boolean) {
 		this.setProperty('requiredIndicator', requiredIndicator);
+	}
+
+	public get headingLevel(): azdata.HeadingLevel | undefined {
+		return this.properties['headingLevel'];
+	}
+	public set headingLevel(headingLevel: azdata.HeadingLevel | undefined) {
+		this.setProperty('headingLevel', headingLevel);
+	}
+
+	public get textType(): azdata.TextType | undefined {
+		return this.properties['textType'];
+	}
+	public set textType(type: azdata.TextType | undefined) {
+		this.setProperty('textType', type);
 	}
 }
 
@@ -1536,6 +1550,22 @@ class DropDownWrapper extends ComponentWrapper implements azdata.DropDownCompone
 		let emitter = this._emitterMap.get(ComponentEventType.onDidChange);
 		return emitter && emitter.event;
 	}
+
+	public get placeholder(): string | undefined {
+		return this.properties['placeholder'];
+	}
+
+	public set placeholder(v: string) {
+		this.setProperty('placeholder', v);
+	}
+
+	public get validationErrorMessages(): string[] | undefined {
+		return this.properties['validationErrorMessages'];
+	}
+
+	public set validationErrorMessages(v: string[]) {
+		this.setProperty('validationErrorMessages', v);
+	}
 }
 
 class DeclarativeTableWrapper extends ComponentWrapper implements azdata.DeclarativeTableComponent {
@@ -1544,7 +1574,7 @@ class DeclarativeTableWrapper extends ComponentWrapper implements azdata.Declara
 		super(proxy, handle, ModelComponentTypes.DeclarativeTable, id, logService);
 		this.properties = {};
 		this._emitterMap.set(ComponentEventType.onDidChange, new Emitter<any>());
-		this._emitterMap.set(ComponentEventType.onDidClick, new Emitter<any>());
+		this._emitterMap.set(ComponentEventType.onSelectedRowChanged, new Emitter<azdata.DeclarativeTableRowSelectedEvent>());
 
 	}
 
@@ -1568,6 +1598,11 @@ class DeclarativeTableWrapper extends ComponentWrapper implements azdata.Declara
 		});
 	}
 
+	async setDataValues(v: azdata.DeclarativeTableCellValue[][]): Promise<void> {
+		await this.clearItems();
+		await this.setProperty('dataValues', v);
+	}
+
 	public get columns(): azdata.DeclarativeTableColumn[] {
 		return this.properties['columns'];
 	}
@@ -1581,12 +1616,12 @@ class DeclarativeTableWrapper extends ComponentWrapper implements azdata.Declara
 		return emitter && emitter.event;
 	}
 
-	public get onRowSelected(): vscode.Event<any> {
-		let emitter = this._emitterMap.get(ComponentEventType.onDidClick);
+	public get onRowSelected(): vscode.Event<azdata.DeclarativeTableRowSelectedEvent> {
+		let emitter = this._emitterMap.get(ComponentEventType.onSelectedRowChanged);
 		return emitter && emitter.event;
 	}
 
-	protected notifyPropertyChanged(): Thenable<void> {
+	protected override notifyPropertyChanged(): Thenable<void> {
 		return this._proxy.$setProperties(this._handle, this._id, this.getPropertiesForMainThread());
 	}
 
@@ -1602,7 +1637,15 @@ class DeclarativeTableWrapper extends ComponentWrapper implements azdata.Declara
 		this._proxy.$doAction(this._handle, this._id, ModelViewAction.Filter, rowIndexes);
 	}
 
-	public toComponentShape(): IComponentShape {
+	public get selectedRow(): number {
+		return this.properties['selectedRow'] ?? -1;
+	}
+
+	public set selectedRow(v: number) {
+		this.setProperty('selectedRow', v);
+	}
+
+	public override toComponentShape(): IComponentShape {
 		// Overridden to ensure we send the correct properties mapping.
 		return <IComponentShape>{
 			id: this.id,
@@ -1621,7 +1664,7 @@ class DeclarativeTableWrapper extends ComponentWrapper implements azdata.Declara
 		// and so map them into their IDs instead. We don't want to update the actual
 		// data property though since the caller would still expect that to contain
 		// the Component objects they created
-		const properties = assign({}, this.properties);
+		const properties = Object.assign({}, this.properties);
 		const componentsToAdd: ComponentWrapper[] = [];
 		if (properties.data?.length > 0) {
 
@@ -1702,6 +1745,13 @@ class ButtonWrapper extends ComponentWithIconWrapper implements azdata.ButtonCom
 	}
 	public set label(v: string) {
 		this.setProperty('label', v);
+	}
+
+	public get fileType(): string {
+		return this.properties['fileType'];
+	}
+	public set fileType(v: string) {
+		this.setProperty('fileType', v);
 	}
 
 	public get onDidClick(): vscode.Event<any> {

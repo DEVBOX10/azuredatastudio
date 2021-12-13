@@ -20,12 +20,13 @@ import { Range } from 'vs/editor/common/core/range';
 import { IEditorPane } from 'vs/workbench/common/editor';
 import { INotebookInput } from 'sql/workbench/services/notebook/browser/interface';
 import { INotebookShowOptions } from 'sql/workbench/api/common/sqlExtHost.protocol';
+import { NotebookViewsExtension } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViewsExtension';
 
 export const SERVICE_ID = 'sqlNotebookService';
 export const INotebookService = createDecorator<INotebookService>(SERVICE_ID);
 
 export const DEFAULT_NOTEBOOK_PROVIDER = 'builtin';
-export const DEFAULT_NOTEBOOK_FILETYPE = 'IPYNB';
+export const DEFAULT_NOTEBOOK_FILETYPE = '.ipynb';
 export const SQL_NOTEBOOK_PROVIDER = 'sql';
 export const OVERRIDE_EDITOR_THEMING_SETTING = 'notebook.overrideEditorTheming';
 
@@ -56,15 +57,14 @@ export interface INotebookService {
 	readonly isRegistrationComplete: boolean;
 	readonly registrationComplete: Promise<void>;
 	readonly languageMagics: ILanguageMagic[];
-	/**
-	 * Register a metadata provider
-	 */
-	registerProvider(providerId: string, provider: INotebookProvider): void;
 
-	/**
-	 * Register a metadata provider
-	 */
-	unregisterProvider(providerId: string): void;
+	registerSerializationProvider(providerId: string, provider: ISerializationProvider): void;
+
+	registerExecuteProvider(providerId: string, provider: IExecuteProvider): void;
+
+	unregisterSerializationProvider(providerId: string): void;
+
+	unregisterExecuteProvider(providerId: string): void;
 
 	registerNavigationProvider(provider: INavigationProvider): void;
 
@@ -72,18 +72,13 @@ export interface INotebookService {
 
 	getSupportedFileExtensions(): string[];
 
-	getProvidersForFileType(fileType: string): string[];
+	getProvidersForFileType(fileType: string): string[] | undefined;
 
-	getStandardKernelsForProvider(provider: string): azdata.nb.IStandardKernel[];
+	getStandardKernelsForProvider(provider: string): azdata.nb.IStandardKernel[] | undefined;
 
-	/**
-	 * Initializes and returns a Notebook manager that can handle all important calls to open, display, and
-	 * run cells in a notebook.
-	 * @param providerId ID for the provider to be used to instantiate a backend notebook service
-	 * @param uri URI for a notebook that is to be opened. Based on this an existing manager may be used, or
-	 * a new one may need to be created
-	 */
-	getOrCreateNotebookManager(providerId: string, uri: URI): Thenable<INotebookManager>;
+	getOrCreateSerializationManager(providerId: string, uri: URI): Promise<ISerializationManager>;
+
+	getOrCreateExecuteManager(providerId: string, uri: URI): Thenable<IExecuteManager>;
 
 	addNotebookEditor(editor: INotebookEditor): void;
 
@@ -147,15 +142,24 @@ export interface INotebookService {
 	getUntitledUriPath(originalTitle: string): string;
 }
 
-export interface INotebookProvider {
+export interface IExecuteProvider {
 	readonly providerId: string;
-	getNotebookManager(notebookUri: URI): Thenable<INotebookManager>;
+	getExecuteManager(notebookUri: URI): Thenable<IExecuteManager>;
 	handleNotebookClosed(notebookUri: URI): void;
 }
 
-export interface INotebookManager {
+export interface ISerializationProvider {
+	readonly providerId: string;
+	getSerializationManager(notebookUri: URI): Thenable<ISerializationManager>;
+}
+
+export interface ISerializationManager {
 	providerId: string;
 	readonly contentManager: azdata.nb.ContentManager;
+}
+
+export interface IExecuteManager {
+	providerId: string;
 	readonly sessionManager: azdata.nb.SessionManager;
 	readonly serverManager: azdata.nb.ServerManager;
 }
@@ -210,6 +214,7 @@ export interface INotebookEditor {
 	readonly cellEditors: ICellEditorProvider[];
 	readonly modelReady: Promise<INotebookModel>;
 	readonly model: INotebookModel | null;
+	readonly views: NotebookViewsExtension | null;
 	isDirty(): boolean;
 	isActive(): boolean;
 	isVisible(): boolean;

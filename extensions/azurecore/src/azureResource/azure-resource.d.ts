@@ -5,7 +5,10 @@
 
 declare module 'azureResource' {
 	import { TreeDataProvider } from 'vscode';
-	import { DataProvider, Account, TreeItem } from 'azdata';
+	import { DataProvider, TreeItem } from 'azdata';
+	import { BlobItem } from '@azure/storage-blob';
+	import { AzureAccount } from 'azurecore';
+
 	export namespace azureResource {
 
 		/**
@@ -24,6 +27,7 @@ declare module 'azureResource' {
 			postgresServer = 'microsoft.dbforpostgresql/servers',
 			azureArcService = 'microsoft.azuredata/datacontrollers',
 			storageAccount = 'microsoft.storage/storageaccounts',
+			logAnalytics = 'microsoft.operationalinsights/workspaces'
 		}
 
 		export interface IAzureResourceProvider extends DataProvider {
@@ -35,7 +39,7 @@ declare module 'azureResource' {
 		}
 
 		export interface IAzureResourceNode {
-			readonly account: Account;
+			readonly account: AzureAccount;
 			readonly subscription: AzureResourceSubscription;
 			readonly tenantId: string;
 			readonly treeItem: TreeItem;
@@ -69,6 +73,12 @@ declare module 'azureResource' {
 		}
 
 		export interface AzureResourceResourceGroup extends AzureResource {
+			location?: string;
+			managedBy?: string;
+			properties?: {
+				provisioningState?: string
+			};
+			type?: string;
 		}
 
 		export interface AzureLocation {
@@ -115,7 +125,7 @@ declare module 'azureResource' {
 				proxyOverride: string,
 				vCores: number,
 				dnsZone: string,
-			  }
+			}
 
 		}
 
@@ -142,5 +152,7 @@ declare module 'azureResource' {
 		export interface BlobContainer extends AzureResource { }
 
 		export interface FileShare extends AzureResource { }
+
+		export interface Blob extends BlobItem { }
 	}
 }

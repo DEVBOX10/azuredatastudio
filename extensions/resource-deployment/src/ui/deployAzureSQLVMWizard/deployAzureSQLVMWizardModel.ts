@@ -146,7 +146,7 @@ export class DeployAzureSQLVMWizardModel extends ResourceTypeModel {
 		});
 
 		const labelText = view.modelBuilder.text()
-			.withProperties<azdata.TextComponentProperties>(
+			.withProps(
 				{
 					value: title,
 					width: '250px',
@@ -240,7 +240,7 @@ export class DeployAzureSQLVMWizardModel extends ResourceTypeModel {
 	}
 
 
-	public getCodeCellContentForNotebook(): string[] {
+	public override getCodeCellContentForNotebook(): string[] {
 
 		const statements: string[] = [];
 		statements.push('import os');

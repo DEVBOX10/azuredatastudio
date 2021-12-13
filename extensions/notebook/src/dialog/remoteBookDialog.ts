@@ -45,7 +45,7 @@ export class RemoteBookDialog {
 		this.dialog.registerContent(async view => {
 			this.view = view;
 
-			this.remoteLocationDropdown = this.view.modelBuilder.dropDown().withProperties({
+			this.remoteLocationDropdown = this.view.modelBuilder.dropDown().withProps({
 				values: this.remoteLocationCategories,
 				value: '',
 				editable: false,
@@ -53,14 +53,14 @@ export class RemoteBookDialog {
 
 			this.remoteLocationDropdown.onValueChanged(e => this.onRemoteLocationChanged());
 
-			this.githubRepoDropdown = this.view.modelBuilder.dropDown().withProperties({
+			this.githubRepoDropdown = this.view.modelBuilder.dropDown().withProps({
 				values: defaultRepos,
 				value: '',
 				editable: true,
 				fireOnTextChange: true,
 			}).component();
 
-			this.searchButton = this.view.modelBuilder.button().withProperties<azdata.ButtonProperties>({
+			this.searchButton = this.view.modelBuilder.button().withProps({
 				label: loc.search,
 				title: loc.search,
 				width: '200px',
@@ -69,7 +69,7 @@ export class RemoteBookDialog {
 			this.searchButton.onDidClick(async () => await this.validate());
 
 			this.releaseDropdown = this.view.modelBuilder.dropDown()
-				.withProperties({
+				.withProps({
 					values: [],
 					value: '',
 					enabled: false
@@ -77,7 +77,7 @@ export class RemoteBookDialog {
 
 			this.releaseDropdown.onValueChanged(async () => await this.getAssets());
 
-			this.bookDropdown = this.view.modelBuilder.dropDown().withProperties({
+			this.bookDropdown = this.view.modelBuilder.dropDown().withProps({
 				values: [],
 				value: '',
 				editable: false,
@@ -85,7 +85,7 @@ export class RemoteBookDialog {
 
 			this.bookDropdown.onValueChanged(async () => await this.fillVersionDropdown());
 
-			this.versionDropdown = this.view.modelBuilder.dropDown().withProperties({
+			this.versionDropdown = this.view.modelBuilder.dropDown().withProps({
 				values: [],
 				value: '',
 				editable: false,
@@ -93,14 +93,14 @@ export class RemoteBookDialog {
 
 			this.versionDropdown.onValueChanged(async () => await this.fillLanguageDropdown());
 
-			this.languageDropdown = this.view.modelBuilder.dropDown().withProperties({
+			this.languageDropdown = this.view.modelBuilder.dropDown().withProps({
 				values: [],
 				value: '',
 				editable: false,
 			}).component();
 
 			this.languageDropdown.onValueChanged(async () => this.checkValues());
-			this.setFieldsToEmpty();
+			await this.setFieldsToEmpty();
 
 			this.formModel = this.view.modelBuilder.formContainer()
 				.withFormItems([{
@@ -191,7 +191,7 @@ export class RemoteBookDialog {
 					if (releases) {
 						this.releaseDropdown.enabled = true;
 						await this.fillReleasesDropdown();
-						this.setFieldsToEmpty();
+						await this.setFieldsToEmpty();
 					}
 				} else {
 					throw new Error(loc.urlGithubError);
@@ -200,7 +200,7 @@ export class RemoteBookDialog {
 		}
 		catch (error) {
 			await this.fillReleasesDropdown();
-			this.setFieldsToEmpty();
+			await this.setFieldsToEmpty();
 			this.showErrorMessage(error.message);
 		}
 	}
@@ -219,7 +219,7 @@ export class RemoteBookDialog {
 			}
 		}
 		catch (error) {
-			this.setFieldsToEmpty();
+			await this.setFieldsToEmpty();
 			this.showErrorMessage(error.message);
 		}
 	}

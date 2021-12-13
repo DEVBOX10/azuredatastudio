@@ -23,6 +23,8 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { Event } from 'vs/base/common/event';
 import { URI } from 'vs/base/common/uri';
 import { attachTabbedPanelStyler } from 'sql/workbench/common/styler';
+import { INotificationService } from 'vs/platform/notification/common/notification';
+import { ILogService } from 'vs/platform/log/common/log';
 
 class MessagesView extends Disposable implements IPanelView {
 	private messagePanel: MessagePanel;
@@ -42,10 +44,6 @@ class MessagesView extends Disposable implements IPanelView {
 		this.container.style.width = `${dimension.width}px`;
 		this.container.style.height = `${dimension.height}px`;
 		this.messagePanel.layout(dimension);
-	}
-
-	focus(): void {
-		this.messagePanel.focus();
 	}
 
 	public clear() {
@@ -81,10 +79,6 @@ class ResultsView extends Disposable implements IPanelView {
 		this.container.style.width = `${dimension.width}px`;
 		this.container.style.height = `${dimension.height}px`;
 		this.gridPanel.layout(dimension);
-	}
-
-	focus(): void {
-		this.gridPanel.focus();
 	}
 
 	public clear() {
@@ -178,7 +172,9 @@ export class QueryResultsView extends Disposable {
 		container: HTMLElement,
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService private instantiationService: IInstantiationService,
-		@IQueryModelService private queryModelService: IQueryModelService
+		@IQueryModelService private queryModelService: IQueryModelService,
+		@INotificationService private notificationService: INotificationService,
+		@ILogService private logService: ILogService
 	) {
 		super();
 		this.resultsTab = this._register(new ResultsTab(instantiationService));
@@ -201,7 +197,7 @@ export class QueryResultsView extends Disposable {
 	private hasResults(runner: QueryRunner): boolean {
 		let hasResults = false;
 		for (const batch of runner.batchSets) {
-			if (batch.resultSetSummaries.length > 0) {
+			if (batch.resultSetSummaries?.length > 0) {
 				hasResults = true;
 				break;
 			}
@@ -238,9 +234,9 @@ export class QueryResultsView extends Disposable {
 				this._panelView.showTab(this.messagesTab.identifier);
 			}
 			// Currently we only need to support visualization options for the first result set.
-			if (runner.batchSets[0]?.resultSetSummaries[0]?.visualization) {
-				const batchSet = runner.batchSets[0];
-				const resultSet = batchSet.resultSetSummaries[0];
+			const batchSet = runner.batchSets[0];
+			const resultSet = batchSet?.resultSetSummaries?.[0];
+			if (resultSet?.visualization) {
 				this.chartData({
 					resultId: batchSet.id,
 					batchId: resultSet.batchId
@@ -304,36 +300,52 @@ export class QueryResultsView extends Disposable {
 		}
 	}
 
+	private showQueryEditorError(): void {
+		this.notificationService.error(nls.localize('queryResults.queryEditorCrashError', "The query editor ran into an issue and has stopped working. Please save and reopen it."));
+	}
+
 	public set input(input: QueryResultsInput | undefined) {
-		this._input = input;
-		this.runnerDisposables.clear();
+		try {
+			this._input = input;
+			this.runnerDisposables.clear();
 
-		[this.resultsTab, this.messagesTab, this.qpTab, this.topOperationsTab, this.chartTab].forEach(t => t.clear());
-		this.dynamicModelViewTabs.forEach(t => t.clear());
+			[this.resultsTab, this.messagesTab, this.qpTab, this.topOperationsTab, this.chartTab].forEach(t => t.clear());
+			this.dynamicModelViewTabs.forEach(t => t.clear());
 
-		if (input) {
-			this.resultsTab.view.state = input.state.gridPanelState;
-			this.qpTab.view.setState(input.state.queryPlanState);
-			this.topOperationsTab.view.setState(input.state.topOperationsState);
-			this.chartTab.view.state = input.state.chartState;
-			this.dynamicModelViewTabs.forEach((dynamicTab: QueryModelViewTab) => {
-				dynamicTab.captureState(input.state.dynamicModelViewTabsState);
-			});
-			let info = this.queryModelService._getQueryInfo(input.uri) || this.queryModelService._getQueryInfo(URI.parse(input.uri).toString(true));
-			if (info?.queryRunner) {
-				this.setQueryRunner(info.queryRunner);
-			} else {
-				let disposable = this.queryModelService.onRunQueryStart(c => {
-					if (URI.parse(c).toString() === URI.parse(input.uri).toString()) {
-						let info = this.queryModelService._getQueryInfo(c);
-						if (info?.queryRunner) {
-							this.setQueryRunner(info.queryRunner);
-						}
-						disposable.dispose();
-					}
+			if (input) {
+				this.resultsTab.view.state = input.state.gridPanelState;
+				this.qpTab.view.setState(input.state.queryPlanState);
+				this.topOperationsTab.view.setState(input.state.topOperationsState);
+				this.chartTab.view.state = input.state.chartState;
+				this.dynamicModelViewTabs.forEach((dynamicTab: QueryModelViewTab) => {
+					dynamicTab.captureState(input.state.dynamicModelViewTabsState);
 				});
-				this.runnerDisposables.add(disposable);
+				let info = this.queryModelService._getQueryInfo(input.uri) || this.queryModelService._getQueryInfo(URI.parse(input.uri).toString(true));
+
+				if (info?.queryRunner?.isDisposed) {
+					this.logService.error(`The query runner for '${input.uri}' has been disposed.`);
+					this.showQueryEditorError();
+					return;
+				}
+
+				if (info?.queryRunner) {
+					this.setQueryRunner(info.queryRunner);
+				} else {
+					let disposable = this.queryModelService.onRunQueryStart(c => {
+						if (URI.parse(c).toString() === URI.parse(input.uri).toString()) {
+							let info = this.queryModelService._getQueryInfo(c);
+							if (info?.queryRunner) {
+								this.setQueryRunner(info.queryRunner);
+							}
+							disposable.dispose();
+						}
+					});
+					this.runnerDisposables.add(disposable);
+				}
 			}
+		} catch (err) {
+			this.logService.error(err);
+			this.showQueryEditorError();
 		}
 	}
 
@@ -420,7 +432,7 @@ export class QueryResultsView extends Disposable {
 		this.dynamicModelViewTabs = [];
 	}
 
-	public dispose() {
+	public override dispose() {
 		this.runnerDisposables.dispose();
 		this.runnerDisposables = new DisposableStore();
 		super.dispose();

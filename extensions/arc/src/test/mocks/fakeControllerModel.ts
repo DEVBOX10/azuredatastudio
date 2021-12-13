@@ -10,9 +10,9 @@ import { AzureArcTreeDataProvider } from '../../ui/tree/azureArcTreeDataProvider
 
 export class FakeControllerModel extends ControllerModel {
 
-	constructor(treeDataProvider?: AzureArcTreeDataProvider, info?: Partial<ControllerInfo>, password?: string) {
-		const _info: ControllerInfo = Object.assign({ id: uuid(), endpoint: '', kubeConfigFilePath: '', kubeClusterContext: '', name: '', namespace: '', username: '', rememberPassword: false, resources: [] }, info);
-		super(treeDataProvider!, _info, password);
+	constructor(treeDataProvider?: AzureArcTreeDataProvider, info?: Partial<ControllerInfo>) {
+		const _info: ControllerInfo = Object.assign({ id: uuid(), endpoint: '', kubeConfigFilePath: '', kubeClusterContext: '', name: '', namespace: '', username: '', rememberPassword: false, resources: [], resourceGroup: '', connectionMode: '', location: '', customLocation: '' }, info);
+		super(treeDataProvider!, _info);
 	}
 
 }

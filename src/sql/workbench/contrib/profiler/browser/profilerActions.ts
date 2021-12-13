@@ -16,7 +16,7 @@ import * as nls from 'vs/nls';
 import { IEditorAction } from 'vs/editor/common/editorCommon';
 import { IEditorService, ACTIVE_GROUP } from 'vs/workbench/services/editor/common/editorService';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
+import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
 
 export class ProfilerConnect extends Action {
 	private static readonly ConnectText = nls.localize('profilerAction.connect', "Connect");
@@ -34,7 +34,7 @@ export class ProfilerConnect extends Action {
 		super(id, label, 'connect');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		this.enabled = false;
 		if (!this._connected) {
 			await this._profilerService.connectSession(input.id);
@@ -71,7 +71,7 @@ export class ProfilerStart extends Action {
 		super(id, label, 'sql start');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		input.data.clear();
 		await this._profilerService.startSession(input.id, input.sessionName);
 	}
@@ -88,7 +88,7 @@ export class ProfilerCreate extends Action {
 		super(id, label, 'add');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		return this._profilerService.launchCreateSessionDialog(input);
 	}
 }
@@ -111,7 +111,7 @@ export class ProfilerPause extends Action {
 		super(id, label, ProfilerPause.PauseCssClass);
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		await this._profilerService.pauseSession(input.id);
 		this.paused = !this._paused;
 		input.state.change({ isPaused: this.paused, isStopped: false, isRunning: !this.paused });
@@ -139,7 +139,7 @@ export class ProfilerStop extends Action {
 		super(id, label, 'sql stop');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		await this._profilerService.stopSession(input.id);
 	}
 }
@@ -150,22 +150,18 @@ export class ProfilerClear extends Action {
 
 	constructor(id: string,
 		label: string,
-		@INotificationService private _notificationService: INotificationService) {
+		@IDialogService private _dialogService: IDialogService) {
 		super(id, label, 'clear-results');
 	}
 
-	async run(input: ProfilerInput): Promise<void> {
-		this._notificationService.prompt(Severity.Warning, nls.localize('profiler.clearDataPrompt', "Are you sure you want to clear the data?"), [
-			{
-				label: nls.localize('profiler.yes', "Yes"),
-				run: () => {
-					input.data.clear();
-				}
-			}, {
-				label: nls.localize('profiler.no', "No"),
-				run: () => { }
-			}
-		]);
+	override async run(input: ProfilerInput): Promise<void> {
+		const result = await this._dialogService.confirm({
+			type: 'question',
+			message: nls.localize('profiler.clearDataPrompt', "Are you sure you want to clear the data?")
+		});
+		if (result.confirmed) {
+			input.data.clear();
+		}
 	}
 }
 
@@ -181,7 +177,7 @@ export class ProfilerAutoScroll extends Action {
 		super(id, label, ProfilerAutoScroll.CheckedCssClass);
 	}
 
-	async run(input: ProfilerInput): Promise<void> {
+	override async run(input: ProfilerInput): Promise<void> {
 		this.checked = !this.checked;
 		this.label = this.checked ? ProfilerAutoScroll.AutoScrollOnText : ProfilerAutoScroll.AutoScrollOffText;
 		this._setClass(this.checked ? ProfilerAutoScroll.CheckedCssClass : '');
@@ -199,7 +195,7 @@ export class ProfilerCollapsablePanelAction extends Action {
 		super(id, label, 'codicon-chevron-down');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		this.collapsed = !this._collapsed;
 		input.state.change({ isPanelCollapsed: this._collapsed });
 	}
@@ -225,7 +221,7 @@ export class ProfilerEditColumns extends Action {
 		super(id, label);
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		await this._profilerService.launchColumnEditor(input);
 	}
 }
@@ -303,7 +299,7 @@ export class ProfilerFilterSession extends Action {
 		super(id, label, 'filterLabel');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
+	public override async run(input: ProfilerInput): Promise<void> {
 		this._profilerService.launchFilterSessionDialog(input);
 	}
 }
@@ -315,22 +311,18 @@ export class ProfilerClearSessionFilter extends Action {
 	constructor(
 		id: string,
 		label: string,
-		@INotificationService private _notificationService: INotificationService
+		@IDialogService private _dialogService: IDialogService
 	) {
 		super(id, label, 'clear-filter');
 	}
 
-	public async run(input: ProfilerInput): Promise<void> {
-		this._notificationService.prompt(Severity.Warning, nls.localize('profiler.clearFilterPrompt', "Are you sure you want to clear the filters?"), [
-			{
-				label: nls.localize('profiler.yes', "Yes"),
-				run: () => {
-					input.clearFilter();
-				}
-			}, {
-				label: nls.localize('profiler.no', "No"),
-				run: () => { }
-			}
-		]);
+	public override async run(input: ProfilerInput): Promise<void> {
+		const result = await this._dialogService.confirm({
+			type: 'question',
+			message: nls.localize('profiler.clearFilterPrompt', "Are you sure you want to clear the filters?")
+		});
+		if (result.confirmed) {
+			input.clearFilter();
+		}
 	}
 }

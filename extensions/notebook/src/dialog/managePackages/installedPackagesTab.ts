@@ -52,9 +52,9 @@ export class InstalledPackagesTab {
 				};
 			});
 			let defaultPackageType = this.dialog.model.getDefaultPackageType();
-			this.packageTypeDropdown = view.modelBuilder.dropDown().withProperties({
+			this.packageTypeDropdown = view.modelBuilder.dropDown().withProps({
 				values: dropdownValues,
-				value: defaultPackageType
+				value: defaultPackageType.providerId
 			}).component();
 			this.dialog.changeProvider(defaultPackageType.providerId);
 			this.packageTypeDropdown.onValueChanged(async () => {
@@ -69,12 +69,12 @@ export class InstalledPackagesTab {
 
 			});
 
-			this.installedPackageCount = view.modelBuilder.text().withProperties({
+			this.installedPackageCount = view.modelBuilder.text().withProps({
 				value: ''
 			}).component();
 
 			this.installedPackagesTable = view.modelBuilder.table()
-				.withProperties({
+				.withProps({
 					columns: [
 						{
 							value: localize('managePackages.pkgNameColumn', "Name"),
@@ -92,7 +92,7 @@ export class InstalledPackagesTab {
 						}
 					],
 					data: [[]],
-					height: '600px',
+					height: '500px',
 					width: '400px'
 				}).component();
 			this.disposables.push(this.installedPackagesTable.onCellAction(async (rowState) => {
@@ -128,14 +128,14 @@ export class InstalledPackagesTab {
 
 			this.installedPackagesLoader = view.modelBuilder.loadingComponent()
 				.withItem(this.formBuilder.component())
-				.withProperties({
+				.withProps({
 					loading: true
 				}).component();
 
 			await view.initializeModel(this.installedPackagesLoader);
 
 			await this.loadInstalledPackagesInfo();
-			this.packageTypeDropdown.focus();
+			await this.packageTypeDropdown.focus();
 		});
 	}
 
@@ -167,7 +167,7 @@ export class InstalledPackagesTab {
 		let location: string;
 		let component: azdata.Component;
 		if (locations && locations.length === 1) {
-			component = view.modelBuilder.text().withProperties({
+			component = view.modelBuilder.text().withProps({
 				value: locations[0].displayName
 			}).component();
 			location = locations[0].name;
@@ -181,7 +181,7 @@ export class InstalledPackagesTab {
 			const currentLocation = await dialog.model.getCurrentLocation();
 			const selectedLocation = dropdownValues.find(x => x.name === currentLocation);
 			location = currentLocation || locations[0].name;
-			let locationDropDown = view.modelBuilder.dropDown().withProperties({
+			let locationDropDown = view.modelBuilder.dropDown().withProps({
 				values: dropdownValues,
 				value: selectedLocation || dropdownValues[0]
 			}).component();
@@ -197,7 +197,7 @@ export class InstalledPackagesTab {
 			});
 			component = locationDropDown;
 		} else {
-			component = view.modelBuilder.text().withProperties({
+			component = view.modelBuilder.text().withProps({
 			}).component();
 		}
 		if (location) {
@@ -252,7 +252,7 @@ export class InstalledPackagesTab {
 			return;
 		}
 
-		this.uninstallPackageButton.updateProperties({ enabled: false });
+		await this.uninstallPackageButton.updateProperties({ enabled: false });
 		let doUninstall = await this.prompter.promptSingle<boolean>(<IQuestion>{
 			type: QuestionTypes.confirm,
 			message: localize('managePackages.confirmUninstall', "Are you sure you want to uninstall the specified packages?"),
@@ -309,6 +309,6 @@ export class InstalledPackagesTab {
 			}
 		}
 
-		this.uninstallPackageButton.updateProperties({ enabled: true });
+		await this.uninstallPackageButton.updateProperties({ enabled: true });
 	}
 }

@@ -13,7 +13,7 @@ export class RadioGroupLoadingComponentBuilder implements azdata.ComponentBuilde
 	private _onValueChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter();
 	private _currentRadioOption!: azdata.RadioButtonComponent;
 	constructor(private _view: azdata.ModelView, private _onNewDisposableCreated: (disposable: vscode.Disposable) => void, private _fieldInfo: FieldInfo) {
-		this._optionsDivContainer = this._view!.modelBuilder.divContainer().withProperties<azdata.DivContainerProperties>({ clickable: false }).component();
+		this._optionsDivContainer = this._view!.modelBuilder.divContainer().withProps({ clickable: false }).component();
 		this._optionsLoadingBuilder = this._view!.modelBuilder.loadingComponent().withItem(this._optionsDivContainer);
 	}
 
@@ -22,11 +22,11 @@ export class RadioGroupLoadingComponentBuilder implements azdata.ComponentBuilde
 	}
 
 	withProperties<U>(properties: U): azdata.ComponentBuilder<azdata.LoadingComponent, azdata.LoadingComponentProperties> {
-		return this._optionsLoadingBuilder.withProperties(properties);
+		return this._optionsLoadingBuilder.withProps(properties);
 	}
 
 	withProps(properties: azdata.LoadingComponentProperties): azdata.ComponentBuilder<azdata.LoadingComponent, azdata.LoadingComponentProperties> {
-		return this._optionsLoadingBuilder.withProperties(properties);
+		return this._optionsLoadingBuilder.withProps(properties);
 	}
 
 	withValidation(validation: (component: azdata.LoadingComponent) => boolean): azdata.ComponentBuilder<azdata.LoadingComponent, azdata.LoadingComponentProperties> {
@@ -47,7 +47,7 @@ export class RadioGroupLoadingComponentBuilder implements azdata.ComponentBuilde
 				const option: azdata.CategoryValue = (typeof op === 'string')
 					? { name: op, displayName: op }
 					: op as azdata.CategoryValue;
-				const radioOption = this._view!.modelBuilder.radioButton().withProperties<azdata.RadioButtonProperties>({
+				const radioOption = this._view!.modelBuilder.radioButton().withProps({
 					label: option.displayName,
 					value: option.name,
 					checked: option.displayName === defaultValue,
@@ -68,7 +68,7 @@ export class RadioGroupLoadingComponentBuilder implements azdata.ComponentBuilde
 			});
 		}
 		catch (e) {
-			const errorLoadingRadioOptionsLabel = this._view!.modelBuilder.text().withProperties({ value: getErrorMessage(e), CSSStyles: { 'color': 'Red' } }).component();
+			const errorLoadingRadioOptionsLabel = this._view!.modelBuilder.text().withProps({ value: getErrorMessage(e), textType: azdata.TextType.Error }).component();
 			this._optionsDivContainer.addItem(errorLoadingRadioOptionsLabel);
 		}
 		this.component().loading = false;

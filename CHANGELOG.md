@@ -1,5 +1,106 @@
 # Change Log
 
+## Version 1.33.1
+* Release date: Nov 4, 2021
+* Release status: General Availability
+
+## Hotfix release
+- Fix for [#16535 Unable to See Saved Connections in Restricted Mode](https://github.com/microsoft/azuredatastudio/issues/17535)
+- Fix for [#17579 Can't type in Notebook code cell after editing text cell](https://github.com/microsoft/azuredatastudio/issues/17579)
+
+    
+
+| Platform																|
+| ---------------------------------------	|
+| [Windows User Installer][win-user]			|
+| [Windows System Installer][win-system]	|
+| [Windows ZIP][win-zip]									|
+| [macOS ZIP][osx-zip]										|
+| [Linux TAR.GZ][linux-zip]								|
+| [Linux RPM][linux-rpm]									|
+| [Linux DEB][linux-deb]									|
+
+[win-user]: https://go.microsoft.com/fwlink/?linkid=2176805
+[win-system]: https://go.microsoft.com/fwlink/?linkid=2175910
+[win-zip]: https://go.microsoft.com/fwlink/?linkid=2176806
+[osx-zip]: https://go.microsoft.com/fwlink/?linkid=2176807
+[linux-zip]: https://go.microsoft.com/fwlink/?linkid=2176505
+[linux-rpm]: https://go.microsoft.com/fwlink/?linkid=2176005
+[linux-deb]: https://go.microsoft.com/fwlink/?linkid=2176006
+
+## Version 1.33.0
+* Release date: October 27, 2021
+* Release status: General Availability
+## What's new in this version
+* New Notebook Features:
+    *  Notebook Views 
+    *  Split cell support 
+    *  Keyboard shortcuts for Markdown Toolbar Cells 
+       * Ctrl/Cmd + B = Bold Text
+       * Ctrl/Cmd + I = Italicize Text
+       * Ctrl/Cmd + U = Underline Text
+       * Ctrl/Cmd + Shift + K = Add Code Block
+       * Ctrl/Cmd + Shift + H = Highlight Text
+    *  Book improvements 
+       * Add a new section
+       * Drag and Drop
+  
+* Extension Updates:
+    * Import
+    * Langpacks
+    * Schema Compare
+    * Sql Database Projects
+
+* Bug Fixes
+    * Notebook linking improvements
+    * Horizontal Scrollbar improvement (when word wrap is off in MD Splitview / MD mode) in Notebooks
+    * Vertical Scrollbar improvement for MD Splitview in Notebooks
+
+## Version 1.32.0
+* Release date: August 18, 2021
+* Release status: General Availability
+* Extension Updates:
+    * Arc/Az CLI extensions - Azure Arc extension now uses Azure CLI instead of Azure Data CLI for deploying and interacting with Azure Arc 
+       instances    
+    *  Langpacks
+    *  SQL Database Projects
+    *  Azure Monitor
+    *  Machine Learning
+
+## Version 1.31.1
+* Release date: July 29, 2021
+* Release status: General Availability
+## Hotfix Release
+- Fix for [#16436 Database Connection Toolbar Missing](https://github.com/microsoft/azuredatastudio/issues/16436)
+
+## Version 1.31.0
+* Release date: July 21, 2021
+* Release status: General Availability
+* New Notebook Features:
+    * WYSIWYG link improvements
+* Extension Updates:
+    * Import
+    * SandDance
+    * SQL Database Projects
+* Bug Fixes
+  * Accessibility bug fixes
+
+## Version 1.30.0
+* Release date: June 17, 2021
+* Release status: General Availability
+* New Notebook Features:
+    * Show book's notebook TOC title in pinned notebooks view
+    * Add new book icon
+    * Update Python to 3.8.10
+* Query Editor Features:
+    * Added filtering/sorting feature for query result grid in query editor and notebook, the feature can be invoked from the column headers. Note that this feature is only           available when you enable the preview features
+    * Added a status bar item to show summary of the selected cells if there are multiple numeric values
+* Extension Updates:
+    * SQL Database Projects
+    * Machine Learning
+* Bug Fixes
+  * Fix WYSIWYG Table cell adding new line in table cell
+
 ## Version 1.29.0
 * Release date: May 19, 2021
 * Release status: General Availability
@@ -587,7 +688,7 @@ The May release is focused on stabilization and bug fixes leading up to the Buil
 
 * Announcing **Redgate SQL Search** extension available in Extension Manager
 * Community Localization available for 10 languages: **German, Spanish, French, Italian, Japanese, Korean, Portuguese, Russian, Simplified Chinese and Traditional Chinese!**
-* Reduced telemetry collection, improved [opt-out](https://github.com/Microsoft/azuredatastudio/wiki/How-to-Disable-Telemetry-Reporting) experience and in-product links to [Privacy Statement](https://privacy.microsoft.com/en-us/privacystatement)
+* Reduced telemetry collection, improved [opt-out](https://github.com/Microsoft/azuredatastudio/wiki/How-to-Disable-Telemetry-Reporting) experience and in-product links to [Privacy Statement](https://privacy.microsoft.com/privacystatement)
 * Extension Manager has improved Marketplace experience to easily discover community extensions
 * SQL Agent extension Jobs and Job History view improvement
 * Updates for **whoisactive** and **Server Reports** extensions
