@@ -7,13 +7,12 @@ import * as vscode from 'vscode';
 import * as azdata from 'azdata';
 import * as path from 'path';
 import * as TypeMoq from 'typemoq';
-import * as mssql from '../../../mssql/src/mssql';
-import * as vscodeMssql from 'vscode-mssql';
+import * as mssql from 'mssql';
+
 
 export interface TestContext {
 	context: vscode.ExtensionContext;
 	dacFxService: TypeMoq.IMock<mssql.IDacFxService>;
-	azureFunctionService: TypeMoq.IMock<vscodeMssql.IAzureFunctionsService>;
 	outputChannel: vscode.OutputChannel;
 }
 
@@ -121,22 +120,6 @@ export class MockDacFxService implements mssql.IDacFxService {
 	public validateStreamingJob(_: string, __: string): Thenable<mssql.ValidateStreamingJobResult> { return Promise.resolve(mockDacFxResult); }
 }
 
-export const mockResultStatus = {
-	success: true,
-	errorMessage: ''
-};
-
-export const mockGetAzureFunctionsResult = {
-	success: true,
-	errorMessage: '',
-	azureFunctions: []
-};
-
-export class MockAzureFunctionService implements vscodeMssql.IAzureFunctionsService {
-	addSqlBinding(_: vscodeMssql.BindingType, __: string, ___: string, ____: string, _____: string): Thenable<vscodeMssql.ResultStatus> { return Promise.resolve(mockResultStatus); }
-	getAzureFunctions(_: string): Thenable<vscodeMssql.GetAzureFunctionsResult> { return Promise.resolve(mockGetAzureFunctionsResult); }
-}
-
 export function createContext(): TestContext {
 	let extensionPath = path.join(__dirname, '..', '..');
 
@@ -169,7 +152,6 @@ export function createContext(): TestContext {
 			extension: undefined as any
 		},
 		dacFxService: TypeMoq.Mock.ofType(MockDacFxService),
-		azureFunctionService: TypeMoq.Mock.ofType(MockAzureFunctionService),
 		outputChannel: {
 			name: '',
 			append: () => { },

@@ -7,7 +7,7 @@ import type * as azdataType from 'azdata';
 import * as vscode from 'vscode';
 import * as constants from '../common/constants';
 import * as newProjectTool from '../tools/newProjectTool';
-import * as mssql from '../../../mssql';
+import * as mssql from 'mssql';
 import * as path from 'path';
 
 import { IconPathHelper } from '../common/iconHelper';
@@ -26,6 +26,7 @@ export class CreateProjectFromDatabaseDialog {
 	public projectNameTextBox: azdataType.InputBoxComponent | undefined;
 	public projectLocationTextBox: azdataType.InputBoxComponent | undefined;
 	public folderStructureDropDown: azdataType.DropDownComponent | undefined;
+	public sdkStyleCheckbox: azdataType.CheckBoxComponent | undefined;
 	private formBuilder: azdataType.FormBuilder | undefined;
 	private connectionId: string | undefined;
 	private toDispose: vscode.Disposable[] = [];
@@ -85,6 +86,22 @@ export class CreateProjectFromDatabaseDialog {
 			const createProjectSettingsFormSection = view.modelBuilder.flexContainer().withLayout({ flexFlow: 'column' }).component();
 			createProjectSettingsFormSection.addItems([folderStructureRow]);
 
+			// could also potentially be radio buttons once there's a term to refer to "legacy" style sqlprojs
+			this.sdkStyleCheckbox = view.modelBuilder.checkBox().withProps({
+				checked: true,
+				label: constants.sdkStyleProject
+			}).component();
+
+			const sdkLearnMore = view.modelBuilder.hyperlink().withProps({
+				label: constants.learnMore,
+				url: constants.sdkLearnMoreUrl
+			}).component();
+
+			const sdkFormComponentGroup = view.modelBuilder.flexContainer()
+				.withLayout({ flexFlow: 'row', alignItems: 'baseline' })
+				.withItems([this.sdkStyleCheckbox, sdkLearnMore], { CSSStyles: { flex: '0 0 auto', 'margin-right': '10px' } })
+				.component();
+
 			this.formBuilder = <azdataType.FormBuilder>view.modelBuilder.formContainer()
 				.withFormItems([
 					{
@@ -108,6 +125,9 @@ export class CreateProjectFromDatabaseDialog {
 						components: [
 							{
 								component: createProjectSettingsFormSection,
+							},
+							{
+								component: sdkFormComponentGroup
 							}
 						]
 					}
@@ -360,7 +380,8 @@ export class CreateProjectFromDatabaseDialog {
 			projName: this.projectNameTextBox!.value!,
 			filePath: this.projectLocationTextBox!.value!,
 			version: '1.0.0.0',
-			extractTarget: mapExtractTargetEnum(<string>this.folderStructureDropDown!.value)
+			extractTarget: mapExtractTargetEnum(<string>this.folderStructureDropDown!.value),
+			sdkStyle: this.sdkStyleCheckbox?.checked!
 		};
 
 		azdataApi!.window.closeDialog(this.dialog);

@@ -36,6 +36,9 @@ import { IExtHostCommands } from 'vs/workbench/api/common/extHostCommands';
 import { ExtHostWorkspace } from 'sql/workbench/api/common/extHostWorkspace';
 import { IExtHostInitDataService } from 'vs/workbench/api/common/extHostInitDataService';
 import { URI } from 'vs/base/common/uri';
+import { ITelemetryEventProperties } from 'sql/platform/telemetry/common/telemetry';
+import { ExtHostAzureAccount } from 'sql/workbench/api/common/extHostAzureAccount';
+import { IExtHostExtensionService } from 'vs/workbench/api/common/extHostExtensionService';
 
 export interface IAzdataExtensionApiFactory {
 	(extension: IExtensionDescription): typeof azdata;
@@ -76,6 +79,7 @@ export function createAdsApiFactory(accessor: ServicesAccessor): IAdsExtensionAp
 
 	// Addressable instances
 	const extHostAccountManagement = rpcProtocol.set(SqlExtHostContext.ExtHostAccountManagement, new ExtHostAccountManagement(rpcProtocol));
+	rpcProtocol.set(SqlExtHostContext.ExtHostAzureAccount, new ExtHostAzureAccount(accessor.get(IExtHostExtensionService)));
 	const extHostConnectionManagement = rpcProtocol.set(SqlExtHostContext.ExtHostConnectionManagement, new ExtHostConnectionManagement(rpcProtocol));
 	const extHostCredentialManagement = rpcProtocol.set(SqlExtHostContext.ExtHostCredentialManagement, new ExtHostCredentialManagement(rpcProtocol));
 	const extHostDataProvider = rpcProtocol.set(SqlExtHostContext.ExtHostDataProtocol, new ExtHostDataProtocol(rpcProtocol, uriTransformer));
@@ -381,6 +385,10 @@ export function createAdsApiFactory(accessor: ServicesAccessor): IAdsExtensionAp
 				return extHostDataProvider.$registerTableDesignerProvider(provider);
 			};
 
+			let registerExecutionPlanProvider = (provider: azdata.executionPlan.ExecutionPlanProvider): vscode.Disposable => {
+				return extHostDataProvider.$registerExecutionPlanProvider(provider);
+			};
+
 			// namespace: dataprotocol
 			const dataprotocol: typeof azdata.dataprotocol = {
 				registerBackupProvider,
@@ -402,6 +410,7 @@ export function createAdsApiFactory(accessor: ServicesAccessor): IAdsExtensionAp
 				registerSqlAssessmentServicesProvider,
 				registerDataGridProvider,
 				registerTableDesignerProvider,
+				registerExecutionPlanProvider: registerExecutionPlanProvider,
 				onDidChangeLanguageFlavor(listener: (e: azdata.DidChangeLanguageFlavorParams) => any, thisArgs?: any, disposables?: extHostTypes.Disposable[]) {
 					return extHostDataProvider.onDidChangeLanguageFlavor(listener, thisArgs, disposables);
 				},
@@ -575,9 +584,11 @@ export function createAdsApiFactory(accessor: ServicesAccessor): IAdsExtensionAp
 				TableForeignKeyProperty: sqlExtHostTypes.designers.TableForeignKeyProperty,
 				ForeignKeyColumnMappingProperty: sqlExtHostTypes.designers.ForeignKeyColumnMappingProperty,
 				TableCheckConstraintProperty: sqlExtHostTypes.designers.TableCheckConstraintProperty,
+				TableIndexProperty: sqlExtHostTypes.designers.TableIndexProperty,
+				TableIndexColumnSpecificationProperty: sqlExtHostTypes.designers.TableIndexColumnSpecificationProperty,
 				DesignerEditType: sqlExtHostTypes.designers.DesignerEditType,
-				openTableDesigner(providerId, tableInfo: azdata.designers.TableInfo): Promise<void> {
-					return extHostDataProvider.$openTableDesigner(providerId, tableInfo);
+				openTableDesigner(providerId, tableInfo: azdata.designers.TableInfo, telemetryInfo?: ITelemetryEventProperties): Promise<void> {
+					return extHostDataProvider.$openTableDesigner(providerId, tableInfo, telemetryInfo);
 				}
 			};
 

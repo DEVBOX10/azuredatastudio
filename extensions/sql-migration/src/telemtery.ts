@@ -19,13 +19,16 @@ export enum TelemetryViews {
 	MigrationCutoverDialog = 'MigrationCutoverDialog',
 	MigrationStatusDialog = 'MigrationStatusDialog',
 	MigrationWizardAccountSelectionPage = 'MigrationWizardAccountSelectionPage',
+	MigrationWizardTaSkuRecommendationPage = 'MigrationWizardTaSkuRecommendationPage',
 	MigrationWizardTargetSelectionPage = 'MigrationWizardTargetSelectionPage',
 	MigrationWizardIntegrationRuntimePage = 'MigrationWizardIntegrationRuntimePage',
 	MigrationWizardSummaryPage = 'MigrationWizardSummaryPage',
 	MigrationWizardController = 'MigrationWizardController',
 	StartMigrationService = 'StartMigrationSerivce',
 	SqlMigrationWizard = 'SqlMigrationWizard',
-	MigrationLocalStorage = 'MigrationLocalStorage'
+	MigrationLocalStorage = 'MigrationLocalStorage',
+	SkuRecommendationWizard = 'SkuRecommendationWizard',
+	DataCollectionWizard = 'GetAzureRecommendationDialog'
 }
 
 export enum TelemetryAction {
@@ -44,6 +47,12 @@ export enum TelemetryAction {
 	Next = 'next',
 	Done = 'done',
 	Cancel = 'cancel',
+	OnPageLeave = 'OnPageLeave',
+	GetMISkuRecommendation = 'GetMISkuRecommendation',
+	GetVMSkuRecommendation = 'GetVMSkuRecommendation',
+	GetInstanceRequirements = 'GetInstanceRequirements',
+	StartDataCollection = 'StartDataCollection',
+	StopDataCollection = 'StopDataCollection'
 }
 
 export function logError(telemetryView: TelemetryViews, err: string, error: any): void {

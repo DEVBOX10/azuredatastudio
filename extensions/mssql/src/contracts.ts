@@ -7,7 +7,7 @@ import { NotificationType, RequestType } from 'vscode-languageclient';
 import { ITelemetryEventProperties, ITelemetryEventMeasures } from './telemetry';
 import * as azdata from 'azdata';
 import { ConnectParams } from 'dataprotocol-client/lib/protocol';
-import * as mssql from './mssql';
+import * as mssql from 'mssql';
 
 // ------------------------------- < Telemetry Sent Event > ------------------------------------
 
@@ -1038,6 +1038,50 @@ export namespace GetSqlMigrationAssessmentItemsRequest {
 	export const type = new RequestType<SqlMigrationAssessmentParams, mssql.AssessmentResult, void, void>('migration/getassessments');
 }
 
+export interface SqlMigrationSkuRecommendationsParams {
+	dataFolder: string;
+	perfQueryIntervalInSec: number;
+	targetPlatforms: string[];
+	targetSqlInstance: string;
+	targetPercentile: number;
+	scalingFactor: number;
+	startTime: string;
+	endTime: string;
+	includePreviewSkus: boolean;
+	databaseAllowList: string[];
+}
+
+export namespace GetSqlMigrationSkuRecommendationsRequest {
+	export const type = new RequestType<SqlMigrationSkuRecommendationsParams, mssql.SkuRecommendationResult, void, void>('migration/getskurecommendations');
+}
+
+export interface SqlMigrationStartPerfDataCollectionParams {
+	ownerUri: string,
+	dataFolder: string,
+	perfQueryIntervalInSec: number,
+	staticQueryIntervalInSec: number,
+	numberOfIterations: number
+}
+
+export namespace SqlMigrationStartPerfDataCollectionRequest {
+	export const type = new RequestType<SqlMigrationStartPerfDataCollectionParams, mssql.StartPerfDataCollectionResult, void, void>('migration/startperfdatacollection');
+}
+
+export interface SqlMigrationStopPerfDataCollectionParams {
+}
+
+export namespace SqlMigrationStopPerfDataCollectionRequest {
+	export const type = new RequestType<SqlMigrationStopPerfDataCollectionParams, mssql.StopPerfDataCollectionResult, void, void>('migration/stopperfdatacollection');
+}
+
+export interface SqlMigrationRefreshPerfDataCollectionParams {
+	lastRefreshTime: Date
+}
+
+export namespace SqlMigrationRefreshPerfDataCollectionRequest {
+	export const type = new RequestType<SqlMigrationRefreshPerfDataCollectionParams, mssql.RefreshPerfDataCollectionResult, void, void>('migration/refreshperfdatacollection');
+}
+
 // ------------------------------- <Sql Migration> -----------------------------
 
 // ------------------------------- < Table Designer > ------------------------------------
@@ -1052,11 +1096,11 @@ export namespace InitializeTableDesignerRequest {
 }
 
 export namespace ProcessTableDesignerEditRequest {
-	export const type = new RequestType<TableDesignerEditRequestParams, azdata.designers.DesignerEditResult, void, void>('tabledesigner/processedit');
+	export const type = new RequestType<TableDesignerEditRequestParams, azdata.designers.DesignerEditResult<azdata.designers.TableDesignerView>, void, void>('tabledesigner/processedit');
 }
 
 export namespace PublishTableDesignerChangesRequest {
-	export const type = new RequestType<azdata.designers.TableInfo, void, void, void>('tabledesigner/save');
+	export const type = new RequestType<azdata.designers.TableInfo, azdata.designers.PublishChangesResult, void, void>('tabledesigner/publish');
 }
 
 export namespace TableDesignerGenerateScriptRequest {
@@ -1064,9 +1108,31 @@ export namespace TableDesignerGenerateScriptRequest {
 }
 
 export namespace TableDesignerGenerateChangePreviewReportRequest {
-	export const type = new RequestType<azdata.designers.TableInfo, string, void, void>('tabledesigner/report');
+	export const type = new RequestType<azdata.designers.TableInfo, azdata.designers.GeneratePreviewReportResult, void, void>('tabledesigner/generatepreviewreport');
 }
 export namespace DisposeTableDesignerRequest {
 	export const type = new RequestType<azdata.designers.TableInfo, void, void, void>('tabledesigner/dispose');
 }
 // ------------------------------- < Table Designer > ------------------------------------
+
+
+// ------------------------------- < Execution Plan > ------------------------------------
+
+export interface GetExecutionPlanParams {
+	graphInfo: azdata.executionPlan.ExecutionPlanGraphInfo,
+}
+
+export namespace GetExecutionPlanRequest {
+	export const type = new RequestType<GetExecutionPlanParams, azdata.executionPlan.GetExecutionPlanResult, void, void>('queryExecutionPlan/getExecutionPlan');
+}
+
+export interface ExecutionPlanComparisonParams {
+	firstExecutionPlanGraphInfo: azdata.executionPlan.ExecutionPlanGraphInfo;
+	secondExecutionPlanGraphInfo: azdata.executionPlan.ExecutionPlanGraphInfo;
+}
+
+export namespace ExecutionPlanComparisonRequest {
+	export const type = new RequestType<ExecutionPlanComparisonParams, azdata.executionPlan.ExecutionPlanComparisonResult, void, void>('queryExecutionPlan/compareExecutionPlanGraph');
+}
+
+// ------------------------------- < Execution Plan > ------------------------------------

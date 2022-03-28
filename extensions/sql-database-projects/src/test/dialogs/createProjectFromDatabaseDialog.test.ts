@@ -5,7 +5,7 @@
 
 import * as should from 'should';
 import * as azdata from 'azdata';
-import * as mssql from '../../../../mssql';
+import * as mssql from 'mssql';
 import * as sinon from 'sinon';
 import { CreateProjectFromDatabaseDialog } from '../../dialogs/createProjectFromDatabaseDialog';
 import { mockConnectionProfile } from '../testContext';
@@ -94,13 +94,14 @@ describe('Create Project From Database Dialog', () => {
 
 		let model: ImportDataModel;
 
-		const expectedImportDataModel: ImportDataModel  = {
+		const expectedImportDataModel: ImportDataModel = {
 			connectionUri: stubUri,
 			database: 'My Database',
 			projName: 'testProject',
 			filePath: 'testLocation',
 			version: '1.0.0.0',
-			extractTarget: mssql.ExtractTarget.schemaObjectType
+			extractTarget: mssql.ExtractTarget.schemaObjectType,
+			sdkStyle: true
 		};
 
 		dialog.createProjectFromDatabaseCallback = (m) => { model = m; };

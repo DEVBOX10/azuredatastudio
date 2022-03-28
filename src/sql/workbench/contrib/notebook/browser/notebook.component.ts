@@ -55,6 +55,9 @@ import { MaskedLabeledMenuItemActionItem } from 'sql/platform/actions/browser/me
 import { IActionViewItem } from 'vs/base/browser/ui/actionbar/actionbar';
 import { Emitter } from 'vs/base/common/event';
 import { RedoCommand, UndoCommand } from 'vs/editor/browser/editorExtensions';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { debounce } from 'vs/base/common/decorators';
 
 export const NOTEBOOK_SELECTOR: string = 'notebook-component';
 const PRIORITY = 105;
@@ -75,7 +78,6 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 	@Input() _views: NotebookViewsExtension;
 
 	protected _actionBar: Taskbar;
-	protected isLoading: boolean;
 	private _modelReadyDeferred = new Deferred<NotebookModel>();
 	private _trustedAction: TrustedAction;
 	private _runAllCellsAction: RunAllCellsAction;
@@ -109,7 +111,6 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 		@Inject(IConfigurationService) private _configurationService: IConfigurationService
 	) {
 		super();
-		this.isLoading = true;
 		this.doubleClickEditEnabled = this._configurationService.getValue('notebook.enableDoubleClickEdit');
 		this._register(this._configurationService.onDidChangeConfiguration(e => {
 			this.previewFeaturesEnabled = this._configurationService.getValue('workbench.enablePreviewFeatures');
@@ -134,6 +135,55 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 	}
 
 	ngOnInit() {
+		// We currently have to hook this onto window because the Notebook component currently doesn't support having document focus
+		// on its elements (we have a "virtual" focus that is updated as users click or navigate through cells). So some of the keyboard
+		// events we care about are fired when the document focus is on something else - typically the root window.
+		this._register(DOM.addDisposableListener(window, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
+			// For DownArrow, UpArrow, Enter, Escape (unselecting active cell) - Make sure that the current active element is an ancestor - this is to prevent us from handling events when the focus is
+			// on some other dialog or part of the app.
+			// For Escape (exiting edit mode)- the focused element is the div.notebook-preview or textarea.inputarea of the cell, so we need to make sure that it is a descendant of the current active cell
+			//  on the current active editor.
+			const activeCellElement = this.container.nativeElement.querySelector(`.editor-group-container.active .notebook-cell.active`);
+			let handled = false;
+			if (DOM.isAncestor(this.container.nativeElement, document.activeElement) && this.isActive() && this.model.activeCell) {
+				const event = new StandardKeyboardEvent(e);
+				if (!this.model.activeCell?.isEditMode) {
+					if (event.keyCode === KeyCode.DownArrow) {
+						let next = (this.findCellIndex(this.model.activeCell) + 1) % this.cells.length;
+
+						this.navigateToCell(this.cells[next]);
+						handled = true;
+					} else if (event.keyCode === KeyCode.UpArrow) {
+						let index = this.findCellIndex(this.model.activeCell);
+						if (index === 0) {
+							index = this.cells.length;
+						}
+						this.navigateToCell(this.cells[--index]);
+						handled = true;
+					}
+					else if (event.keyCode === KeyCode.Enter) {
+						this.toggleEditMode();
+						handled = true;
+					}
+					else if (event.keyCode === KeyCode.Escape) {
+						// unselects active cell and removes the focus from code cells
+						this.unselectActiveCell();
+						(document.activeElement as HTMLElement).blur();
+						handled = true;
+					}
+				}
+			} else if (DOM.isAncestor(document.activeElement, activeCellElement) && this.isActive() && this.model.activeCell) {
+				const event = new StandardKeyboardEvent(e);
+				if (event.keyCode === KeyCode.Escape) {
+					// first time hitting escape removes the cursor from code cell and changes toolbar in text cells and changes edit mode to false
+					this.toggleEditMode();
+					handled = true;
+				}
+			}
+			if (handled) {
+				DOM.EventHelper.stop(e);
+			}
+		}));
 		this._register(this.themeService.onDidColorThemeChange(this.updateTheme, this));
 		this.updateTheme(this.themeService.getColorTheme());
 		this.initActionBar();
@@ -238,20 +288,54 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 		toolbarEl.style.borderBottomColor = theme.getColor(themeColors.SIDE_BAR_BACKGROUND, true).toString();
 	}
 
-	public selectCell(cell: ICellModel, event?: Event) {
-		if (event) {
-			event.stopPropagation();
-		}
+	@debounce(20)
+	public navigateToCell(cell: ICellModel) {
+		this.selectCell(cell);
+		this.scrollToActiveCell();
+	}
+
+	public selectCell(cell: ICellModel) {
 		if (!this.model.activeCell || this.model.activeCell.id !== cell.id) {
 			this.model.updateActiveCell(cell);
 			this.detectChanges();
 		}
 	}
 
+	private scrollToActiveCell(): void {
+		const activeCellElement = document.querySelector(`.editor-group-container.active .notebook-cell.active`);
+		activeCellElement.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+	}
+
+	private toggleEditMode(): void {
+		let selectedCell: TextCellComponent | CodeCellComponent = undefined;
+		if (this.model.activeCell.cellType !== CellTypes.Code) {
+			selectedCell = this.textCells.find(c => c.cellModel.id === this.activeCellId);
+		} else {
+			selectedCell = this.codeCells.find(c => c.cellModel.id === this.activeCellId);
+		}
+		selectedCell.toggleEditMode();
+		this.setActiveCellEditActionMode(selectedCell.cellModel.isEditMode);
+	}
+
 	//Saves scrollTop value on scroll change
 	public scrollHandler(event: Event) {
 		this._scrollTop = (<HTMLElement>event.srcElement).scrollTop;
 		this.model.onScroll.fire();
+	}
+
+	public clickOffCell(event?: MouseEvent) {
+		event?.stopPropagation();
+		this.unselectActiveCell();
+	}
+
+	public clickOnCell(cell: ICellModel, event?: MouseEvent) {
+		event?.stopPropagation();
+		if (!this.model.activeCell || this.model.activeCell.id !== cell.id) {
+			this.selectCell(cell);
+			if (cell.cellType === CellTypes.Code) {
+				cell.isEditMode = true;
+			}
+		}
 	}
 
 	public unselectActiveCell() {
@@ -261,14 +345,16 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 
 	// Handles double click to edit icon change
 	// See textcell.component.ts for changing edit behavior
-	public enableActiveCellIconOnDoubleClick() {
+	public enableActiveCellEditIconOnDoubleClick() {
 		if (this.doubleClickEditEnabled) {
-			const toolbarComponent = (<CellToolbarComponent>this.cellToolbar.first);
-			const toolbarEditCellAction = toolbarComponent.getEditCellAction();
-			if (!toolbarEditCellAction.editMode) {
-				toolbarEditCellAction.editMode = !toolbarEditCellAction.editMode;
-			}
+			this.setActiveCellEditActionMode(true);
 		}
+	}
+
+	public setActiveCellEditActionMode(editMode: boolean) {
+		const toolbarComponent = (<CellToolbarComponent>this.cellToolbar.first);
+		const toolbarEditCellAction = toolbarComponent.getEditCellAction();
+		toolbarEditCellAction.editMode = editMode;
 	}
 
 	// Add cell based on cell type
@@ -348,17 +434,11 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 					}
 				} else {
 					this.setViewInErrorState(localize('displayFailed', "Could not display contents: {0}", getErrorMessage(error)));
-					this.setLoading(false);
 					this._modelReadyDeferred.reject(error);
 					this.notebookService.addNotebookEditor(this);
 				}
 			}
 		}
-	}
-
-	private setLoading(isLoading: boolean): void {
-		this.isLoading = isLoading;
-		this.detectChanges();
 	}
 
 	private async registerModel(): Promise<void> {
@@ -370,7 +450,6 @@ export class NotebookComponent extends AngularDisposable implements OnInit, OnDe
 		this._register(this._model.layoutChanged(() => this.detectChanges()));
 		this._register(this.model.onScroll.event(() => this._onScroll.fire()));
 
-		this.setLoading(false);
 		// Check if URI fragment is present; if it is, navigate to section by default
 		this.navigateToSectionIfURIFragmentExists();
 		this.updateToolbarComponents();

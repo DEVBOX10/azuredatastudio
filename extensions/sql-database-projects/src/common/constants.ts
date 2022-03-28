@@ -32,6 +32,10 @@ export const edgeSqlDatabaseProjectTypeId = 'SqlDbEdgeProj';
 export const edgeProjectTypeDisplayName = localize('edgeProjectTypeDisplayName', "SQL Edge");
 export const edgeProjectTypeDescription = localize('edgeProjectTypeDescription', "Start with the core pieces to develop and publish schemas for SQL Edge");
 
+export const emptySqlDatabaseSdkProjectTypeId = 'EmptySqlDbSdkProj';
+export const emptySdkProjectTypeDisplayName = localize('emptySdkProjectTypeDisplayName', "SQL Database (SDK)");
+export const emptySdkProjectTypeDescription = localize('emptySdkProjectTypeDescription', "Develop and publish schemas for SQL databases with Microsoft.Build.Sql (preview), starting from an empty SDK-style project.");
+
 // Dashboard
 export const addItemAction = localize('addItemAction', "Add Item");
 export const schemaCompareAction = localize('schemaCompareAction', "Schema Compare");
@@ -77,6 +81,7 @@ export const noString = localize('noString', "No");
 export const noStringDefault = localize('noStringDefault', "No (default)");
 export const okString = localize('okString', "Ok");
 export const selectString = localize('selectString', "Select");
+export const selectFileString = localize('selectFileString', "Select File");
 export const dacpacFiles = localize('dacpacFiles', "dacpac Files");
 export const publishSettingsFiles = localize('publishSettingsFiles', "Publish Settings File");
 export const file = localize('file', "File");
@@ -87,6 +92,8 @@ export const schemaObjectType = localize('schemaObjectType', "Schema/Object Type
 export const defaultProjectNameStarter = localize('defaultProjectNameStarter', "DatabaseProject");
 export const location = localize('location', "Location");
 export const reloadProject = localize('reloadProject', "Would you like to reload your database project?");
+export const learnMore = localize('learnMore', "Learn More");
+export const sdkLearnMoreUrl = 'https://github.com/microsoft/DacFx/tree/main/src/Microsoft.Build.Sql';
 export function newObjectNamePrompt(objectType: string) { return localize('newObjectNamePrompt', 'New {0} name:', objectType); }
 export function deleteConfirmation(toDelete: string) { return localize('deleteConfirmation', "Are you sure you want to delete {0}?", toDelete); }
 export function deleteConfirmationContents(toDelete: string) { return localize('deleteConfirmationContents', "Are you sure you want to delete {0} and all of its contents?", toDelete); }
@@ -153,7 +160,7 @@ export const valueCannotBeEmpty = localize('valueCannotBeEmpty', "Value cannot b
 export const dockerImageLabelPrefix = 'source=sqldbproject';
 export const dockerImageNamePrefix = 'sqldbproject';
 
-//
+// Publish to Container
 export const eulaAgreementTemplate = localize({ key: 'eulaAgreementTemplate', comment: ['The placeholders are contents of the line and should not be translated.'] }, "I accept the {0}.");
 export function eulaAgreementText(name: string) { return localize({ key: 'eulaAgreementText', comment: ['The placeholders are contents of the line and should not be translated.'] }, "I accept the {0}.", name); }
 export const eulaAgreementTitle = localize('eulaAgreementTitle', "Microsoft SQL Server License Agreement");
@@ -184,13 +191,13 @@ export const cleaningDockerImagesMessage = localize('cleaningDockerImagesMessage
 export const dockerImageMessage = localize('dockerImageMessage', "Docker Image:");
 export const dockerImageEulaMessage = localize('dockerImageEulaMessage', "License Agreement:");
 export const creatingDeploymentSettingsMessage = localize('creatingDeploymentSettingsMessage', "Creating deployment settings ...");
-export const runningDockerMessage = localize('runningDockerMessage', "Building and running the docker container ...");
+export const runningDockerMessage = localize('runningDockerMessage', "Running the docker container ...");
 export function dockerNotRunningError(error: string) { return localize('dockerNotRunningError', "Failed to verify docker. Please make sure docker is installed and running. Error: '{0}'", error || ''); }
 export const dockerContainerNotRunningErrorMessage = localize('dockerContainerNotRunningErrorMessage', "Docker container is not running");
 export const dockerContainerFailedToRunErrorMessage = localize('dockerContainerFailedToRunErrorMessage', "Failed to run the docker container");
 export const connectingToSqlServerOnDockerMessage = localize('connectingToSqlServerOnDockerMessage', "Connecting to SQL Server on Docker");
 export const deployProjectFailedMessage = localize('deployProjectFailedMessage', "Failed to open a connection to the deployed database'");
-export const containerAlreadyExistForProject = localize('containerAlreadyExistForProject', "Other servers on container already exist for the project. Do you want to delete them?");
+export const containerAlreadyExistForProject = localize('containerAlreadyExistForProject', "Containers already exist for this project. Do you want to delete them before deploying a new one?");
 export const checkoutOutputMessage = localize('checkoutOutputMessage', "Check output pane for more details");
 export function taskFailedError(taskName: string, err: string): string { return localize('taskFailedError.error', "Failed to complete task '{0}'. Error: {1}", taskName, err); }
 export function publishToContainerFailed(errorMessage: string) { return localize('publishToContainerFailed', "Failed to publish to container. {0}", errorMessage); }
@@ -251,6 +258,7 @@ export const folderStructureLabel = localize('folderStructureLabel', "Folder str
 export const WorkspaceFileExtension = '.code-workspace';
 export const browseEllipsisWithIcon = `$(folder) ${localize('browseEllipsis', "Browse...")}`;
 export const selectProjectLocation = localize('selectProjectLocation', "Select project location");
+export const sdkStyleProject = localize('sdkStyleProject', 'SDK-style project (Preview)');
 export const ProjectParentDirectoryNotExistError = (location: string): string => { return localize('dataworkspace.projectParentDirectoryNotExistError', "The selected project location '{0}' does not exist or is not a directory.", location); };
 export const ProjectDirectoryAlreadyExistError = (projectName: string, location: string): string => { return localize('dataworkspace.projectDirectoryAlreadyExistError', "There is already a directory named '{0}' in the selected location: '{1}'.", projectName, location); };
 
@@ -265,6 +273,7 @@ export const updateAction = localize('updateAction', "Update action");
 export const compareActionRadioButtonLabel = localize('compareActionRadiButtonLabel', "View changes in Schema Compare");
 export const updateActionRadioButtonLabel = localize('updateActionRadiButtonLabel', "Apply all changes");
 export const actionLabel = localize('actionLabel', "Action");
+export const applyConfirmation: string = localize('applyConfirmation', "Are you sure you want to update the target project?");
 
 // Update project from database
 
@@ -501,8 +510,6 @@ export function differentDbDifferentServerExampleUsage(server: string, db: strin
 
 // Target platforms
 export const targetPlatformToVersion: Map<string, string> = new Map<string, string>([
-	[SqlTargetPlatform.sqlServer2005, '90'],
-	[SqlTargetPlatform.sqlServer2008, '100'],
 	[SqlTargetPlatform.sqlServer2012, '110'],
 	[SqlTargetPlatform.sqlServer2014, '120'],
 	[SqlTargetPlatform.sqlServer2016, '130'],
@@ -526,36 +533,3 @@ export const defaultDSP = targetPlatformToVersion.get(defaultTargetPlatform)!;
 export function getTargetPlatformFromVersion(version: string): string {
 	return Array.from(targetPlatformToVersion.keys()).filter(k => targetPlatformToVersion.get(k) === version)[0];
 }
-
-// Insert SQL binding
-export const hostFileName = 'host.json';
-export const sqlExtensionPackageName = 'Microsoft.Azure.WebJobs.Extensions.Sql';
-export const placeHolderObject = '[dbo].[table1]';
-export const sqlBindingsHelpLink = 'https://github.com/Azure/azure-functions-sql-extension/blob/main/README.md';
-
-export const input = localize('input', "Input");
-export const output = localize('output', "Output");
-export const selectBindingType = localize('selectBindingType', "Select type of binding");
-export const selectAzureFunction = localize('selectAzureFunction', "Select an Azure function in the current file to add SQL binding to");
-export const sqlTableOrViewToQuery = localize('sqlTableOrViewToQuery', "SQL table or view to query");
-export const sqlTableToUpsert = localize('sqlTableToUpsert', "SQL table to upsert into");
-export const connectionStringSetting = localize('connectionStringSetting', "Connection string setting name");
-export const selectSetting = localize('selectSetting', "Select SQL connection string setting from local.settings.json");
-export const connectionStringSettingPlaceholder = localize('connectionStringSettingPlaceholder', "Connection string setting specified in \"local.settings.json\"");
-export const noAzureFunctionsInFile = localize('noAzureFunctionsInFile', "No Azure functions in the current active file");
-export const noAzureFunctionsProjectsInWorkspace = localize('noAzureFunctionsProjectsInWorkspace', "No Azure functions projects found in the workspace");
-export const addPackage = localize('addPackage', "Add Package");
-export const createNewLocalAppSetting = localize('createNewLocalAppSetting', 'Create new local app setting');
-export const createNewLocalAppSettingWithIcon = `$(add) ${createNewLocalAppSetting}`;
-export const sqlConnectionStringSetting = 'SqlConnectionString';
-export const valueMustNotBeEmpty = localize('valueMustNotBeEmpty', "Value must not be empty");
-export const enterConnectionStringSettingName = localize('enterConnectionStringSettingName', "Enter connection string setting name");
-export const enterConnectionString = localize('enterConnectionString', "Enter connection string");
-export const saveChangesInFile = localize('saveChangesInFile', "There are unsaved changes in the current file. Save now?");
-export const save = localize('save', "Save");
-export function settingAlreadyExists(settingName: string) { return localize('SettingAlreadyExists', 'Local app setting \'{0}\' already exists. Overwrite?', settingName); }
-export function failedToParse(errorMessage: string) { return localize('failedToParse', 'Failed to parse "{0}": {1}.', azureFunctionLocalSettingsFileName, errorMessage); }
-export function jsonParseError(error: string, line: number, column: number) { return localize('jsonParseError', '{0} near line "{1}", column "{2}"', error, line, column); }
-export const moreInformation = localize('moreInformation', "More Information");
-export const addPackageReferenceMessage = localize('addPackageReferenceMessage', 'To use SQL bindings, ensure your Azure Functions project has a reference to {0}', sqlExtensionPackageName);
-export const addSqlBindingPackageError = localize('addSqlBindingPackageError', 'Error adding Sql Binding extension package to project');

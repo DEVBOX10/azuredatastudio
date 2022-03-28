@@ -7,7 +7,7 @@
   "preview": false,
   "engines": {
     "vscode": "^1.25.0",
-    "azdata": ">=1.13.0"
+    "azdata": ">=1.35.0"
   },
   "license": "https://raw.githubusercontent.com/Microsoft/azuredatastudio/main/LICENSE.txt",
   "icon": "images/extension.png",
@@ -108,7 +108,7 @@
     "mocha-multi-reporters": "^1.1.7",
     "should": "^13.2.1",
     "typemoq": "^2.1.0",
-    "vscodetestcover": "^1.1.0",
+    "@microsoft/vscodetestcover": "^1.2.0",
     "sinon": "^9.0.2"
   },
   "__metadata": {

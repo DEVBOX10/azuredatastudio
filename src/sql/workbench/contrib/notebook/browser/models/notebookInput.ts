@@ -37,8 +37,13 @@ import { INotebookInput } from 'sql/workbench/services/notebook/browser/interfac
 import { EditorModel } from 'vs/workbench/common/editor/editorModel';
 import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 import { LocalContentManager } from 'sql/workbench/services/notebook/common/localContentManager';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { Extensions as LanguageAssociationExtensions, ILanguageAssociationRegistry } from 'sql/workbench/services/languageAssociation/common/languageAssociation';
+import { NotebookLanguage } from 'sql/workbench/common/constants';
+import { DotnetInteractiveLabel, DotnetInteractiveJupyterLabelPrefix, DotnetInteractiveJupyterLanguagePrefix, DotnetInteractiveLanguagePrefix } from 'sql/workbench/api/common/notebooks/notebookUtils';
 
 export type ModeViewSaveHandler = (handle: number) => Thenable<boolean>;
+const languageAssociationRegistry = Registry.as<ILanguageAssociationRegistry>(LanguageAssociationExtensions.LanguageAssociations);
 
 export class NotebookEditorModel extends EditorModel {
 	private _dirty: boolean;
@@ -322,14 +327,16 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 		await this.updateModel();
 		let input = await this.textInput.save(groupId, options);
 		await this.setTrustForNewEditor(input);
-		return input;
+		const langAssociation = languageAssociationRegistry.getAssociationForLanguage(NotebookLanguage.Ipynb);
+		return langAssociation.convertInput(input);
 	}
 
 	override async saveAs(group: number, options?: ITextFileSaveOptions): Promise<IEditorInput | undefined> {
 		await this.updateModel();
 		let input = await this.textInput.saveAs(group, options);
 		await this.setTrustForNewEditor(input);
-		return input;
+		const langAssociation = languageAssociationRegistry.getAssociationForLanguage(NotebookLanguage.Ipynb);
+		return langAssociation.convertInput(input);
 	}
 
 	private async setTrustForNewEditor(newInput: IEditorInput | undefined): Promise<void> {
@@ -345,7 +352,8 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 				connectionProviderIds: kernel.connectionProviderIds,
 				name: kernel.name,
 				displayName: kernel.displayName,
-				notebookProvider: kernel.notebookProvider
+				notebookProvider: kernel.notebookProvider,
+				supportedLanguages: kernel.supportedLanguages
 			});
 		});
 	}
@@ -439,7 +447,11 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 
 	private async assignProviders(): Promise<void> {
 		await this.extensionService.whenInstalledExtensionsRegistered();
-		let providerIds: string[] = getProvidersForFileName(this._title, this.notebookService);
+		let mode: string;
+		if (this._textInput instanceof UntitledTextEditorInput) {
+			mode = this._textInput.model.getMode();
+		}
+		let providerIds: string[] = getProvidersForFileName(this._title, this.notebookService, mode);
 		if (providerIds && providerIds.length > 0) {
 			this._providerId = providerIds.filter(provider => provider !== DEFAULT_NOTEBOOK_PROVIDER)[0];
 			this._providers = providerIds;
@@ -534,6 +546,26 @@ export class NotebookEditorContentLoader implements IContentLoader {
 
 	async loadContent(): Promise<azdata.nb.INotebookContents> {
 		let notebookEditorModel = await this.notebookInput.resolve();
-		return this.contentManager.deserializeNotebook(notebookEditorModel.contentString);
+		let notebookContents = await this.contentManager.deserializeNotebook(notebookEditorModel.contentString);
+
+		// Special case .NET Interactive kernel spec to handle inconsistencies between notebook providers and jupyter kernel specs
+		if (notebookContents.metadata?.kernelspec?.display_name?.startsWith(DotnetInteractiveJupyterLabelPrefix)) {
+			notebookContents.metadata.kernelspec.oldDisplayName = notebookContents.metadata.kernelspec.display_name;
+			notebookContents.metadata.kernelspec.display_name = DotnetInteractiveLabel;
+
+			let kernelName = notebookContents.metadata.kernelspec.name;
+			let baseLanguageName = kernelName.replace(DotnetInteractiveJupyterLanguagePrefix, '');
+			if (baseLanguageName === 'powershell') {
+				baseLanguageName = 'pwsh';
+			}
+			let languageName = `${DotnetInteractiveLanguagePrefix}${baseLanguageName}`;
+
+			notebookContents.metadata.kernelspec.oldLanguage = notebookContents.metadata.kernelspec.language;
+			notebookContents.metadata.kernelspec.language = languageName;
+
+			notebookContents.metadata.language_info.oldName = notebookContents.metadata.language_info.name;
+			notebookContents.metadata.language_info.name = languageName;
+		}
+		return notebookContents;
 	}
 }

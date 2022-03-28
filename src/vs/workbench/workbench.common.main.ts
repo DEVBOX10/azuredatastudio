@@ -213,6 +213,8 @@ import { DataGridProviderService } from 'sql/workbench/services/dataGridProvider
 import { IDataGridProviderService } from 'sql/workbench/services/dataGridProvider/common/dataGridProviderService';
 import { ITableDesignerService } from 'sql/workbench/services/tableDesigner/common/interface';
 import { TableDesignerService } from 'sql/workbench/services/tableDesigner/browser/tableDesignerService';
+import { IExecutionPlanService } from 'sql/workbench/services/executionPlan/common/interfaces';
+import { ExecutionPlanService } from 'sql/workbench/services/executionPlan/common/executionPlanService';
 
 registerSingleton(IDashboardService, DashboardService);
 registerSingleton(IDashboardViewService, DashboardViewService);
@@ -253,7 +255,7 @@ registerSingleton(IOEShimService, OEShimService);
 registerSingleton(IAssessmentService, AssessmentService);
 registerSingleton(IDataGridProviderService, DataGridProviderService);
 registerSingleton(ITableDesignerService, TableDesignerService);
-
+registerSingleton(IExecutionPlanService, ExecutionPlanService);
 //#endregion
 
 
@@ -527,6 +529,9 @@ import 'sql/workbench/contrib/resourceDeployment/browser/resourceDeployment.cont
 // Extension
 import 'sql/workbench/contrib/extensions/browser/extensions.contribution';
 
+// TSGOps ads light image
+import 'sql/workbench/contrib/tsgops/browser/tsgops.contribution';
+
 // Azure
 import 'sql/workbench/contrib/azure/browser/azure.contribution';
 
@@ -535,5 +540,8 @@ import 'sql/workbench/contrib/charts/browser/charts.contribution';
 
 // table designer
 import 'sql/workbench/contrib/tableDesigner/browser/tableDesigner.contribution';
+
+// execution plan
+import 'sql/workbench/contrib/executionPlan/browser/executionPlanContribution';
 
 //#endregion

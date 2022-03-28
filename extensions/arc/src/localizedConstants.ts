@@ -8,9 +8,9 @@ import { getErrorMessage } from './common/utils';
 const localize = nls.loadMessageBundle();
 
 export const arcDeploymentDeprecation = localize('arc.arcDeploymentDeprecation', "The Arc Deployment extension has been replaced by the Arc extension and has been uninstalled.");
-export function arcControllerDashboard(name: string): string { return localize('arc.controllerDashboard', "Azure Arc Data Controller Dashboard (Preview) - {0}", name); }
-export function miaaDashboard(name: string): string { return localize('arc.miaaDashboard', "SQL managed instance - Azure Arc Dashboard (Preview) - {0}", name); }
-export function postgresDashboard(name: string): string { return localize('arc.postgresDashboard', "PostgreSQL Hyperscale - Azure Arc Dashboard (Preview) - {0}", name); }
+export function arcControllerDashboard(name: string): string { return localize('arc.controllerDashboard', "Azure Arc Data Controller Dashboard - {0}", name); }
+export function miaaDashboard(name: string): string { return localize('arc.miaaDashboard', "SQL managed instance - Azure Arc Dashboard - {0}", name); }
+export function postgresDashboard(name: string): string { return localize('arc.postgresDashboard', "PostgreSQL Hyperscale - Azure Arc Dashboard - {0}", name); }
 
 export const dataControllersType = localize('arc.dataControllersType', "Azure Arc Data Controller");
 export const pgSqlType = localize('arc.pgSqlType', "PostgreSQL Hyperscale - Azure Arc");
@@ -334,3 +334,4 @@ export const userCancelledError = localize('arc.userCancelledError', "User cance
 export const clusterContextConfigNoLongerValid = (configFile: string, clusterContext: string, error: any) => localize('clusterContextConfigNoLongerValid', "The cluster context information specified by config file: {0} and cluster context: {1} is no longer valid. Error is:\n\t{2}\n Do you want to update this information?", configFile, clusterContext, getErrorMessage(error));
 export const invalidConfigPath = localize('arc.invalidConfigPath', "Invalid config path");
 export const loadingClusterContextsError = (error: any): string => localize('arc.loadingClusterContextsError', "Error loading cluster contexts. {0}", getErrorMessage(error));
+export function errorListingLogAnalyticsWorkspaces(error: any): string { return localize('arc.errorListingLogAnalyticsWorkspaces', "Error listing Log Analytics workspaces {0}", getErrorMessage(error, true)); }
