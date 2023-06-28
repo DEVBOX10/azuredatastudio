@@ -19,6 +19,9 @@ import * as DOM from 'vs/base/browser/dom';
 import { ILogService } from 'vs/platform/log/common/log';
 import { IColorTheme, ICssStyleCollector, registerThemingParticipant } from 'vs/platform/theme/common/themeService';
 import { errorForeground } from 'vs/platform/theme/common/colorRegistry';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { RequiredIndicatorClassName } from 'sql/base/browser/ui/label/label';
 
 export enum TextType {
 	Normal = 'Normal',
@@ -32,7 +35,7 @@ const errorTextClass = 'error-text';
 @Component({
 	selector: 'modelview-text',
 	template: `
-	<div *ngIf="showList;else noList" [style.display]="display" [style.width]="getWidth()" [style.height]="getHeight()" [title]="title" [attr.role]="ariaRole" [attr.aria-hidden]="ariaHidden" [ngStyle]="this.CSSStyles">
+	<div *ngIf="showList;else noList" [style.display]="display" [style.width]="getWidth()" [style.height]="getHeight()" [title]="title" [attr.role]="ariaRole" [attr.aria-hidden]="ariaHidden" [ngStyle]="this.CSSStyles" [attr.aria-live]="ariaLive">
 		<div *ngIf="isUnOrderedList;else orderedlist">
 			<ul style="padding-left:0px">
 				<li *ngFor="let v of value">{{v}}</li>
@@ -46,15 +49,14 @@ const errorTextClass = 'error-text';
 	</div>
 	<ng-template #noList>
 		<div *ngIf="showDiv;else noDiv" style="display:flex;flex-flow:row;align-items:center;" [style.width]="getWidth()" [style.height]="getHeight()">
-			<p [title]="title" [ngStyle]="this.CSSStyles" [attr.role]="ariaRole" [attr.aria-hidden]="ariaHidden"></p>
+			<p [title]="title" [ngStyle]="this.CSSStyles" [attr.role]="ariaRole" [attr.aria-hidden]="ariaHidden" [attr.aria-live]="ariaLive"></p>
 			<div #textContainer id="textContainer"></div>
-			<span *ngIf="requiredIndicator" style="color:red;margin-left:5px;">*</span>
-			<div *ngIf="description" tabindex="0" class="modelview-text-tooltip" [attr.aria-label]="description" role="img">
+			<div *ngIf="description" tabindex="0" class="modelview-text-tooltip" [attr.aria-label]="description" role="img" (mouseenter)="showTooltip($event)" (focus)="showTooltip($event)" (keydown)="onDescriptionKeyDown($event)">
 				<div class="modelview-text-tooltip-content" [innerHTML]="description"></div>
 			</div>
 		</div>
 		<ng-template #noDiv>
-			<div #textContainer id="textContainer" [style.display]="display" [style.width]="getWidth()" [style.height]="getHeight()" [title]="title" [attr.role]="ariaRole" [attr.aria-hidden]="ariaHidden" [ngStyle]="this.CSSStyles"></div>
+			<div #textContainer id="textContainer" [style.display]="display" [style.width]="getWidth()" [style.height]="getHeight()" [title]="title" [attr.role]="ariaRole" [attr.aria-hidden]="ariaHidden" [attr.aria-live]="ariaLive" [ngStyle]="this.CSSStyles"></div>
 		</ng-template>
 	</ng-template>`
 })
@@ -158,14 +160,20 @@ export default class TextComponent extends TitledComponent<azdata.TextComponentP
 		if (typeof this.value !== 'string') {
 			return;
 		}
-		DOM.clearNode((<HTMLElement>this.textContainer.nativeElement));
+		const textContainerElement = <HTMLElement>this.textContainer.nativeElement;
+		DOM.clearNode((textContainerElement));
+		if (this.requiredIndicator) {
+			textContainerElement.classList.add(RequiredIndicatorClassName);
+		} else {
+			textContainerElement.classList.remove(RequiredIndicatorClassName);
+		}
 		const links = this.getPropertyOrDefault<azdata.LinkArea[]>((props) => props.links, []);
 		// The text may contain link placeholders so go through and create those and insert them as needed now
 		let text = this.value;
 		for (let i: number = 0; i < links.length; i++) {
 			const placeholderIndex = text.indexOf(`{${i}}`);
 			if (placeholderIndex < 0) {
-				this.logService.warn(`Could not find placeholder text {${i}} in text ${this.value}`);
+				this.logService.warn(`Could not find placeholder text {${i}} in text '${this.value}'. Link: ${JSON.stringify(links[i])}`);
 				// Just continue on so we at least show the rest of the text if just one was missed or something
 				continue;
 			}
@@ -175,15 +183,17 @@ export default class TextComponent extends TitledComponent<azdata.TextComponentP
 			if (curText && typeof text === 'string') {
 				const textElement = this.createTextElement();
 				textElement.innerText = text.slice(0, placeholderIndex);
-				(<HTMLElement>this.textContainer.nativeElement).appendChild(textElement);
+				textContainerElement.appendChild(textElement);
 			}
 
 			// Now insert the link element
 			const link = links[i];
-			const linkElement = this._register(this.instantiationService.createInstance(Link, {
+			const linkElement = this._register(this.instantiationService.createInstance(Link,
+				textContainerElement, {
 				label: link.text,
 				href: link.url
 			}, undefined));
+
 			if (link.accessibilityInformation) {
 				linkElement.el.setAttribute('aria-label', link.accessibilityInformation.label);
 				if (link.accessibilityInformation.role) {
@@ -191,7 +201,7 @@ export default class TextComponent extends TitledComponent<azdata.TextComponentP
 				}
 			}
 
-			(<HTMLElement>this.textContainer.nativeElement).appendChild(linkElement.el);
+			textContainerElement.appendChild(linkElement.el);
 
 			// And finally update the text to remove the text up through the placeholder we just added
 			text = text.slice(placeholderIndex + 3);
@@ -201,12 +211,16 @@ export default class TextComponent extends TitledComponent<azdata.TextComponentP
 		if (text && typeof text === 'string') {
 			const textElement = this.createTextElement();
 			textElement.innerText = text;
-			(<HTMLElement>this.textContainer.nativeElement).appendChild(textElement);
+			textContainerElement.appendChild(textElement);
 		}
 	}
 
 	public get showDiv(): boolean {
 		return this.requiredIndicator || !!this.description;
+	}
+
+	public get ariaLive(): string | undefined {
+		return this.getPropertyOrDefault<string | undefined>((props) => props.ariaLive, undefined);
 	}
 
 	/**
@@ -225,6 +239,29 @@ export default class TextComponent extends TitledComponent<azdata.TextComponentP
 		element.style.fontSize = this.CSSStyles['font-size']?.toString();
 		element.style.fontWeight = this.CSSStyles['font-weight']?.toString();
 		return element;
+	}
+
+	public showTooltip(e: Event): void {
+		const descriptionDiv = <HTMLElement>e.target;
+		const tooltip = <HTMLElement>(descriptionDiv.querySelector('.modelview-text-tooltip-content'));
+		tooltip.style.display = '';
+	}
+
+	public onDescriptionKeyDown(e: Event): void {
+		if (e instanceof KeyboardEvent) {
+			let event = new StandardKeyboardEvent(e);
+			const descriptionDiv = <HTMLElement>e.target;
+			const tooltip = <HTMLElement>(descriptionDiv.querySelector('.modelview-text-tooltip-content'));
+			if (event.equals(KeyCode.Escape)) {
+				tooltip.style.display = 'none';
+				event.stopPropagation();
+				event.preventDefault();
+			} else if (event.equals(KeyCode.Enter)) {
+				tooltip.style.display = '';
+				event.stopPropagation();
+				event.preventDefault();
+			}
+		}
 	}
 }
 

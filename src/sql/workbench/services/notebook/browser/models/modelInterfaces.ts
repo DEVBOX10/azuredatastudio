@@ -6,7 +6,7 @@
 // This code is based on @jupyterlab/packages/apputils/src/clientsession.tsx
 
 import { nb } from 'azdata';
-import { Event } from 'vs/base/common/event';
+import { Emitter, Event } from 'vs/base/common/event';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { URI } from 'vs/base/common/uri';
 import { INotificationService } from 'vs/platform/notification/common/notification';
@@ -19,7 +19,6 @@ import { IStandardKernelWithProvider } from 'sql/workbench/services/notebook/bro
 import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
 import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilitiesService';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
-import { IModelContentChangedEvent } from 'vs/editor/common/model/textModelEvents';
 import type { FutureInternal } from 'sql/workbench/services/notebook/browser/interfaces';
 import { ICellValue, ResultSetSummary } from 'sql/workbench/services/query/common/query';
 import { QueryResultId } from 'sql/workbench/services/notebook/browser/models/cell';
@@ -27,6 +26,7 @@ import { IPosition } from 'vs/editor/common/core/position';
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import { ITelemetryEventProperties } from 'sql/platform/telemetry/common/telemetry';
 import { INotebookEditOperation } from 'sql/workbench/api/common/sqlExtHostTypes';
+import { IModelContentChangedEvent } from 'vs/editor/common/textModelEvents';
 
 
 export enum ViewMode {
@@ -56,36 +56,6 @@ export interface IClientSessionOptions {
  */
 export interface IClientSession extends IDisposable {
 	/**
-	 * A signal emitted when the session is shut down.
-	 */
-	readonly terminated: Event<void>;
-
-	/**
-	 * A signal emitted when the kernel changes.
-	 */
-	readonly kernelChanged: Event<nb.IKernelChangedArgs>;
-
-	/**
-	 * A signal emitted when the kernel status changes.
-	 */
-	readonly statusChanged: Event<nb.ISession>;
-
-	/**
-	 * A signal emitted for a kernel messages.
-	 */
-	readonly iopubMessage: Event<nb.IMessage>;
-
-	/**
-	 * A signal emitted for an unhandled kernel message.
-	 */
-	readonly unhandledMessage: Event<nb.IMessage>;
-
-	/**
-	 * A signal emitted when a session property changes.
-	 */
-	readonly propertyChanged: Event<'path' | 'name' | 'type'>;
-
-	/**
 	 * The current kernel associated with the document.
 	 */
 	readonly kernel: nb.IKernel | undefined;
@@ -94,16 +64,6 @@ export interface IClientSession extends IDisposable {
 	 * The current path associated with the client session.
 	 */
 	readonly notebookUri: URI;
-
-	/**
-	 * The current name associated with the client session.
-	 */
-	readonly name: string;
-
-	/**
-	 * The type of the client session.
-	 */
-	readonly type: string;
 
 	/**
 	 * The current status of the client session.
@@ -133,11 +93,6 @@ export interface IClientSession extends IDisposable {
 	 * A promise that is fulfilled when the session completes a kernel change.
 	 */
 	readonly kernelChangeCompleted: Promise<void>;
-
-	/**
-	 * The display name of the kernel.
-	 */
-	readonly kernelDisplayName: string;
 
 	readonly cachedKernelSpec: nb.IKernelSpec | undefined;
 
@@ -172,45 +127,16 @@ export interface IClientSession extends IDisposable {
 	shutdown(): Promise<void>;
 
 	/**
-	 * Select a kernel for the session.
-	 */
-	selectKernel(): Promise<void>;
-
-	/**
 	 * Restart the session.
 	 *
-	 * @returns A promise that resolves with whether the kernel has restarted.
+	 * @returns A promise that resolves when the kernel has restarted.
 	 *
 	 * #### Notes
-	 * If there is a running kernel, present a dialog.
-	 * If there is no kernel, we start a kernel with the last run
-	 * kernel name and resolves with `true`. If no kernel has been started,
-	 * this is a no-op, and resolves with `false`.
+	 * If there is an existing kernel, restart it and resolve.
+	 * If no kernel has been started, this is a no-op, and resolves.
+	 * Reject on error.
 	 */
-	restart(): Promise<boolean>;
-
-	/**
-	 * Change the session path.
-	 *
-	 * @param path - The new session path.
-	 *
-	 * @returns A promise that resolves when the session has renamed.
-	 *
-	 * #### Notes
-	 * This uses the Jupyter REST API, and the response is validated.
-	 * The promise is fulfilled on a valid response and rejected otherwise.
-	 */
-	setPath(path: string): Promise<void>;
-
-	/**
-	 * Change the session name.
-	 */
-	setName(name: string): Promise<void>;
-
-	/**
-	 * Change the session type.
-	 */
-	setType(type: string): Promise<void>;
+	restart(): Promise<void>;
 
 	/**
 	 * Updates the connection
@@ -272,12 +198,6 @@ export interface INotebookModel {
 	 * Fired on notifications that notebook components should be re-laid out.
 	 */
 	readonly layoutChanged: Event<void>;
-
-	/**
-	 * Event fired on first initialization of the kernels and
-	 * on subsequent change events
-	 */
-	readonly kernelsChanged: Event<nb.IKernel>;
 
 	/**
 	 * Default kernel
@@ -500,6 +420,7 @@ export interface ITableUpdatedEvent {
 export interface ICellModel {
 	cellUri: URI;
 	id: string;
+	cellLabel: string;
 	readonly language: string;
 	readonly displayLanguage: string;
 	readonly cellGuid: string;
@@ -534,7 +455,9 @@ export interface ICellModel {
 	readonly onLanguageChanged: Event<string>;
 	readonly onCollapseStateChanged: Event<boolean>;
 	readonly onParameterStateChanged: Event<boolean>;
-	readonly onCellModeChanged: Event<boolean>;
+	readonly onCellEditModeChanged: Event<boolean>;
+	readonly onCellPreviewUpdated: Event<void>;
+	readonly cellPreviewUpdated: Emitter<void>;
 	modelContentChangedEvent: IModelContentChangedEvent;
 	isEditMode: boolean;
 	showPreview: boolean;
@@ -554,6 +477,13 @@ export interface ICellModel {
 	 * Returns the name of the attachment added to metadata.
 	 */
 	addAttachment(mimeType: string, base64Encoding: string, name: string): string;
+	/**
+	 * Updates the current cell attachments with the attachments provided.
+	 * If no attachments are passed in then it cleans up the current cell attachments and removes any ones that aren't being currently used in the specified source string.
+	 * @param source The new source string to check for attachments being used
+	 * @param attachments (Optional) The new attachments for the cell
+	 */
+	updateAttachmentsFromSource(source: string, attachments?: nb.ICellAttachments): void;
 	richTextCursorPosition: ICaretPosition;
 	markdownCursorPosition: IPosition;
 	/**
@@ -615,6 +545,7 @@ export interface INotebookModelOptions {
 	notificationService: INotificationService;
 	connectionService: IConnectionManagementService;
 	capabilitiesService: ICapabilitiesService;
+	getInputLanguageMode: () => string;
 	editorLoadedTimestamp?: number;
 }
 

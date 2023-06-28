@@ -9,8 +9,9 @@ import { FuzzyScore } from 'vs/base/common/filters';
 import { IMarkdownString } from 'vs/base/common/htmlContent';
 import { Iterable } from 'vs/base/common/iterator';
 import { IDisposable } from 'vs/base/common/lifecycle';
-import { MarshalledId } from 'vs/base/common/marshalling';
-import { InternalTestItem, ITestItemContext, TestResultState } from 'vs/workbench/contrib/testing/common/testCollection';
+import { MarshalledId } from 'vs/base/common/marshallingIds';
+import { ISerializedTestTreeCollapseState } from 'vs/workbench/contrib/testing/browser/explorerProjections/testingViewState';
+import { InternalTestItem, ITestItemContext, TestResultState } from 'vs/workbench/contrib/testing/common/testTypes';
 
 /**
  * Describes a rendering of tests in the explorer view. Different
@@ -24,6 +25,11 @@ export interface ITestTreeProjection extends IDisposable {
 	 * Event that fires when the projection changes.
 	 */
 	onUpdate: Event<void>;
+
+	/**
+	 * State to use for applying default collapse state of items.
+	 */
+	lastState: ISerializedTestTreeCollapseState;
 
 	/**
 	 * Fired when an element in the tree is expanded.
@@ -115,6 +121,10 @@ export class TestItemTreeElement implements IActionableTestTreeElement {
 		return this.test.item.description;
 	}
 
+	public get sortText() {
+		return this.test.item.sortText;
+	}
+
 	/**
 	 * Whether the node's test result is 'retired' -- from an outdated test run.
 	 */
@@ -159,11 +169,11 @@ export class TestItemTreeElement implements IActionableTestTreeElement {
 
 		const context: ITestItemContext = {
 			$mid: MarshalledId.TestItemContext,
-			tests: [this.test],
+			tests: [InternalTestItem.serialize(this.test)],
 		};
 
 		for (let p = this.parent; p && p.depth > 0; p = p.parent) {
-			context.tests.unshift(p.test);
+			context.tests.unshift(InternalTestItem.serialize(p.test));
 		}
 
 		return context;

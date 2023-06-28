@@ -3,7 +3,7 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IRevertOptions, GroupIdentifier, IEditorInput, EditorInputCapabilities, IUntypedEditorInput } from 'vs/workbench/common/editor';
+import { IRevertOptions, GroupIdentifier, EditorInputCapabilities, IUntypedEditorInput, isEditorInputWithOptionsAndGroup, DEFAULT_EDITOR_ASSOCIATION } from 'vs/workbench/common/editor';
 import { Emitter, Event } from 'vs/base/common/event';
 import { URI } from 'vs/base/common/uri';
 import * as resources from 'vs/base/common/resources';
@@ -23,11 +23,9 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import { NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
 import { Deferred } from 'sql/base/common/promise';
 import { NotebookTextFileModel } from 'sql/workbench/contrib/notebook/browser/models/notebookTextFileModel';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
 import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResourceEditorModel';
 import { UntitledTextEditorModel, IUntitledTextEditorModel } from 'vs/workbench/services/untitled/common/untitledTextEditorModel';
 import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
-import { AbstractResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorInput';
 import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
 import { BinaryEditorModel } from 'vs/workbench/common/editor/binaryEditorModel';
 import { NotebookFindModel } from 'sql/workbench/contrib/notebook/browser/find/notebookFindModel';
@@ -40,7 +38,11 @@ import { LocalContentManager } from 'sql/workbench/services/notebook/common/loca
 import { Registry } from 'vs/platform/registry/common/platform';
 import { Extensions as LanguageAssociationExtensions, ILanguageAssociationRegistry } from 'sql/workbench/services/languageAssociation/common/languageAssociation';
 import { NotebookLanguage } from 'sql/workbench/common/constants';
-import { DotnetInteractiveLabel, DotnetInteractiveJupyterLabelPrefix, DotnetInteractiveJupyterLanguagePrefix, DotnetInteractiveLanguagePrefix } from 'sql/workbench/api/common/notebooks/notebookUtils';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
+import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService';
+import { isEqual } from 'vs/base/common/resources';
+import { NotebookEditor } from 'sql/workbench/contrib/notebook/browser/notebookEditor';
+import { IAttachedView } from 'vs/editor/common/model';
 
 export type ModeViewSaveHandler = (handle: number) => Thenable<boolean>;
 const languageAssociationRegistry = Registry.as<ILanguageAssociationRegistry>(LanguageAssociationExtensions.LanguageAssociations);
@@ -77,6 +79,7 @@ export class NotebookEditorModel extends EditorModel {
 				}, err => undefined);
 			}
 		}));
+		this._register(this.textEditorModel);
 		if (this.textEditorModel instanceof UntitledTextEditorModel) {
 			this._register(this.textEditorModel.onDidChangeDirty(e => {
 				let dirty = this.textEditorModel instanceof TextResourceEditorModel ? false : this.textEditorModel.isDirty();
@@ -215,13 +218,14 @@ export class NotebookEditorModel extends EditorModel {
 	}
 }
 
-type TextInput = AbstractResourceEditorInput | UntitledTextEditorInput | FileEditorInput;
+type TextInput = UntitledTextEditorInput | FileEditorInput;
 
 export abstract class NotebookInput extends EditorInput implements INotebookInput {
 	private _providerId: string;
 	private _providers: string[];
 	private _standardKernels: IStandardKernelWithProvider[];
 	private _connectionProfile: IConnectionProfile;
+	private _notebookContents: azdata.nb.INotebookContents;
 	private _defaultKernel: azdata.nb.IKernelSpec;
 	public hasBootstrapped = false;
 	// Holds the HTML content for the editor when the editor discards this input and loads another
@@ -236,7 +240,7 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 	private _modelResolveInProgress: boolean = false;
 	private _modelResolved: Deferred<void> = new Deferred<void>();
 	private _containerResolved: Deferred<void> = new Deferred<void>();
-
+	private _attachedView: IAttachedView;
 	private _notebookFindModel: NotebookFindModel;
 
 	constructor(private _title: string,
@@ -246,7 +250,8 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 		@ITextModelService private textModelService: ITextModelService,
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@INotebookService private notebookService: INotebookService,
-		@IExtensionService private extensionService: IExtensionService
+		@IExtensionService private extensionService: IExtensionService,
+		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
 	) {
 		super();
 		this._standardKernels = [];
@@ -254,7 +259,16 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 		this._notebookEditorOpenedTimestamp = Date.now();
 		if (this._textInput) {
 			this.hookDirtyListener(this._textInput.onDidChangeDirty, () => this._onDidChangeDirty.fire());
+			this._register(this._textInput);
 		}
+	}
+
+	public override get editorId(): string {
+		return NotebookEditor.ID;
+	}
+
+	public get languageMode(): string {
+		return this._textInput.getLanguageId();
 	}
 
 	public get textInput(): TextInput {
@@ -283,7 +297,7 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 	public get contentLoader(): IContentLoader {
 		if (!this._contentLoader) {
 			let contentManager = this.instantiationService.createInstance(LocalContentManager);
-			this._contentLoader = this.instantiationService.createInstance(NotebookEditorContentLoader, this, contentManager);
+			this._contentLoader = this.instantiationService.createInstance(NotebookEditorContentLoader, this, contentManager, this._notebookContents);
 		}
 		return this._contentLoader;
 	}
@@ -319,27 +333,56 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 		return this._connectionProfile;
 	}
 
+	public setNotebookContents(value: azdata.nb.INotebookContents) {
+		this._notebookContents = value;
+		(this.contentLoader as NotebookEditorContentLoader).notebookContents = value;
+	}
+
 	public get standardKernels(): IStandardKernelWithProvider[] {
 		return this._standardKernels;
 	}
 
-	override async save(groupId: number, options?: ITextFileSaveOptions): Promise<IEditorInput | undefined> {
+	override async save(groupId: number, options?: ITextFileSaveOptions): Promise<EditorInput | undefined> {
 		await this.updateModel();
-		let input = await this.textInput.save(groupId, options);
-		await this.setTrustForNewEditor(input);
+		let untypedInput = await this.textInput.save(groupId, options);
+		let editorInput = await this.createEditorInput(untypedInput, groupId, false);
+		await this.setTrustForNewEditor(editorInput);
 		const langAssociation = languageAssociationRegistry.getAssociationForLanguage(NotebookLanguage.Ipynb);
-		return langAssociation.convertInput(input);
+		return langAssociation.convertInput(editorInput);
 	}
 
-	override async saveAs(group: number, options?: ITextFileSaveOptions): Promise<IEditorInput | undefined> {
+	override async saveAs(group: number, options?: ITextFileSaveOptions): Promise<EditorInput | undefined> {
 		await this.updateModel();
-		let input = await this.textInput.saveAs(group, options);
-		await this.setTrustForNewEditor(input);
+		let untypedInput = await this.textInput.saveAs(group, options);
+		let editorInput = await this.createEditorInput(untypedInput, group, true);
+		await this.setTrustForNewEditor(editorInput);
 		const langAssociation = languageAssociationRegistry.getAssociationForLanguage(NotebookLanguage.Ipynb);
-		return langAssociation.convertInput(input);
+		return langAssociation.convertInput(editorInput);
 	}
 
-	private async setTrustForNewEditor(newInput: IEditorInput | undefined): Promise<void> {
+	private async createEditorInput(untypedEditor: IUntypedEditorInput | undefined, group: GroupIdentifier, saveAs: boolean): Promise<EditorInput | undefined> {
+		// If this save operation results in a new editor, either
+		// because it was saved to disk (e.g. from untitled) or
+		// through an explicit "Save As", make sure to replace it.
+		if (!untypedEditor) {
+			return undefined; // if we have an undefined input, then the save was cancelled, so do nothing here
+		}
+
+		if ('resource' in untypedEditor) {
+			let target = untypedEditor.resource;
+			if (target.scheme !== this.textInput.resource.scheme || (saveAs && !isEqual(target, this.textInput.preferredResource))
+			) {
+				const editor = await this.editorResolverService.resolveEditor({ resource: target, options: { override: DEFAULT_EDITOR_ASSOCIATION.id } }, group);
+				if (isEditorInputWithOptionsAndGroup(editor)) {
+					return editor.editor;
+				}
+			}
+		}
+
+		return this.textInput;
+	}
+
+	private async setTrustForNewEditor(newInput: EditorInput | undefined): Promise<void> {
 		let model = this._model.getNotebookModel();
 		if (model?.trustedMode && newInput && newInput.resource !== this.resource) {
 			await this.notebookService.serializeNotebookStateChange(newInput.resource, NotebookChangeType.Saved, undefined, true);
@@ -403,18 +446,19 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 			let textOrUntitledEditorModel: ITextFileEditorModel | IUntitledTextEditorModel | TextResourceEditorModel;
 			if (this.resource.scheme === Schemas.untitled) {
 				if (this._untitledEditorModel) {
-					this._untitledEditorModel.textEditorModel.onBeforeAttached();
+					this._attachedView = this._untitledEditorModel.textEditorModel.onBeforeAttached();
 					textOrUntitledEditorModel = this._untitledEditorModel;
 				} else {
 					let resolvedInput = await this._textInput.resolve();
 					if (!(resolvedInput instanceof BinaryEditorModel)) {
-						(resolvedInput as ITextEditorModel).textEditorModel.onBeforeAttached();
+						this._attachedView = (resolvedInput as ITextEditorModel).textEditorModel.onBeforeAttached();
 					}
 					textOrUntitledEditorModel = resolvedInput as TextFileEditorModel | UntitledTextEditorModel | TextResourceEditorModel;
 				}
 			} else {
 				const textEditorModelReference = await this.textModelService.createModelReference(this.resource);
-				textEditorModelReference.object.textEditorModel.onBeforeAttached();
+				this._register(textEditorModelReference);
+				this._attachedView = textEditorModelReference.object.textEditorModel.onBeforeAttached();
 				await textEditorModelReference.object.resolve();
 				textOrUntitledEditorModel = textEditorModelReference.object as TextFileEditorModel | TextResourceEditorModel;
 			}
@@ -447,11 +491,11 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 
 	private async assignProviders(): Promise<void> {
 		await this.extensionService.whenInstalledExtensionsRegistered();
-		let mode: string;
+		let languageId: string | undefined = undefined;
 		if (this._textInput instanceof UntitledTextEditorInput) {
-			mode = this._textInput.model.getMode();
+			languageId = this._textInput.model.getLanguageId();
 		}
-		let providerIds: string[] = getProvidersForFileName(this._title, this.notebookService, mode);
+		let providerIds: string[] = getProvidersForFileName(this._title, this.notebookService, languageId);
 		if (providerIds && providerIds.length > 0) {
 			this._providerId = providerIds.filter(provider => provider !== DEFAULT_NOTEBOOK_PROVIDER)[0];
 			this._providers = providerIds;
@@ -461,13 +505,13 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 				this._standardKernels.push(...standardKernels);
 			}
 			let serializationProvider = await this.notebookService.getOrCreateSerializationManager(this._providerId, this._resource);
-			this._contentLoader = this.instantiationService.createInstance(NotebookEditorContentLoader, this, serializationProvider.contentManager);
+			this._contentLoader = this.instantiationService.createInstance(NotebookEditorContentLoader, this, serializationProvider.contentManager, this._notebookContents);
 		}
 	}
 
 	public override dispose(): void {
-		if (this._model && this._model.editorModel && this._model.editorModel.textEditorModel) {
-			this._model.editorModel.textEditorModel.onBeforeDetached();
+		if (this._model && this._model.editorModel && this._model.editorModel.textEditorModel && this._attachedView) {
+			this._model.editorModel.textEditorModel.onBeforeDetached(this._attachedView);
 		}
 		this._disposeContainer();
 		super.dispose();
@@ -525,7 +569,7 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 		return this._model.updateModel();
 	}
 
-	public override matches(otherInput: IEditorInput | IUntypedEditorInput): boolean {
+	public override matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
 		if (otherInput instanceof NotebookInput) {
 			return this.textInput.matches(otherInput.textInput);
 		} else {
@@ -541,31 +585,19 @@ export abstract class NotebookInput extends EditorInput implements INotebookInpu
 export class NotebookEditorContentLoader implements IContentLoader {
 	constructor(
 		private notebookInput: NotebookInput,
-		private contentManager: azdata.nb.ContentManager) {
+		private contentManager: azdata.nb.ContentManager,
+		public notebookContents: azdata.nb.INotebookContents | undefined) {
 	}
 
 	async loadContent(): Promise<azdata.nb.INotebookContents> {
-		let notebookEditorModel = await this.notebookInput.resolve();
-		let notebookContents = await this.contentManager.deserializeNotebook(notebookEditorModel.contentString);
-
-		// Special case .NET Interactive kernel spec to handle inconsistencies between notebook providers and jupyter kernel specs
-		if (notebookContents.metadata?.kernelspec?.display_name?.startsWith(DotnetInteractiveJupyterLabelPrefix)) {
-			notebookContents.metadata.kernelspec.oldDisplayName = notebookContents.metadata.kernelspec.display_name;
-			notebookContents.metadata.kernelspec.display_name = DotnetInteractiveLabel;
-
-			let kernelName = notebookContents.metadata.kernelspec.name;
-			let baseLanguageName = kernelName.replace(DotnetInteractiveJupyterLanguagePrefix, '');
-			if (baseLanguageName === 'powershell') {
-				baseLanguageName = 'pwsh';
-			}
-			let languageName = `${DotnetInteractiveLanguagePrefix}${baseLanguageName}`;
-
-			notebookContents.metadata.kernelspec.oldLanguage = notebookContents.metadata.kernelspec.language;
-			notebookContents.metadata.kernelspec.language = languageName;
-
-			notebookContents.metadata.language_info.oldName = notebookContents.metadata.language_info.name;
-			notebookContents.metadata.language_info.name = languageName;
+		let notebookContents: azdata.nb.INotebookContents;
+		if (this.notebookContents) {
+			notebookContents = this.notebookContents;
+		} else {
+			let notebookEditorModel = await this.notebookInput.resolve();
+			notebookContents = await this.contentManager.deserializeNotebook(notebookEditorModel.contentString);
 		}
+
 		return notebookContents;
 	}
 }

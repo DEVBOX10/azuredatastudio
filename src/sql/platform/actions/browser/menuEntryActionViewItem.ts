@@ -6,12 +6,15 @@
 import { asCSSUrl, createCSSRule } from 'vs/base/browser/dom';
 import { IdGenerator } from 'vs/base/common/idGenerator';
 import { IDisposable, toDisposable, dispose } from 'vs/base/common/lifecycle';
-import { ICommandAction, MenuItemAction } from 'vs/platform/actions/common/actions';
+import { MenuItemAction } from 'vs/platform/actions/common/actions';
+import { ICommandAction } from 'vs/platform/action/common/action';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { INotificationService } from 'vs/platform/notification/common/notification';
-import { ThemeIcon } from 'vs/platform/theme/common/themeService';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { MenuEntryActionViewItem } from 'vs/platform/actions/browser/menuEntryActionViewItem';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { ThemeIcon } from 'vs/base/common/themables';
 
 const ids = new IdGenerator('menu-item-action-item-icon-');
 
@@ -31,11 +34,13 @@ export class LabeledMenuItemActionItem extends MenuEntryActionViewItem {
 		@IKeybindingService labeledkeybindingService: IKeybindingService,
 		@INotificationService _notificationService: INotificationService,
 		@IContextKeyService _contextKeyService: IContextKeyService,
+		@IThemeService _themeService: IThemeService,
+		@IContextMenuService _contextMenuService: IContextMenuService
 	) {
-		super(_action, undefined, labeledkeybindingService, _notificationService, _contextKeyService);
+		super(_action, undefined, labeledkeybindingService, _notificationService, _contextKeyService, _themeService, _contextMenuService);
 	}
 
-	override updateLabel(): void {
+	protected override updateLabel(): void {
 		if (this.label) {
 			this.label.innerText = this._commandAction.label;
 		}
@@ -60,7 +65,7 @@ export class LabeledMenuItemActionItem extends MenuEntryActionViewItem {
 					iconClass = ICON_PATH_TO_CSS_RULES.get(iconPathMapKey)!;
 				} else {
 					iconClass = ids.nextId();
-					createCSSRule(`.codicon.${iconClass}`, `background-image: ${asCSSUrl(item.icon.light || item.icon.dark)} !important`);
+					createCSSRule(`.codicon.${iconClass}, .hc-light .codicon.${iconClass}`, `background-image: ${asCSSUrl(item.icon.light || item.icon.dark)} !important`);
 					createCSSRule(`.vs-dark .codicon.${iconClass}, .hc-black .codicon.${iconClass}`, `background-image: ${asCSSUrl(item.icon.dark)} !important`);
 					ICON_PATH_TO_CSS_RULES.set(iconPathMapKey, iconClass);
 				}
@@ -103,12 +108,14 @@ export class MaskedLabeledMenuItemActionItem extends MenuEntryActionViewItem {
 		action: MenuItemAction,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@INotificationService notificationService: INotificationService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
+		@IThemeService _themeService: IThemeService,
+		@IContextMenuService _contextMenuService: IContextMenuService
 	) {
-		super(action, undefined, keybindingService, notificationService, contextKeyService);
+		super(action, undefined, keybindingService, notificationService, contextKeyService, _themeService, _contextMenuService);
 	}
 
-	override updateLabel(): void {
+	protected override updateLabel(): void {
 		if (this.label) {
 			this.label.innerText = this._commandAction.label;
 		}

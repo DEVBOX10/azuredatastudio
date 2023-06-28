@@ -6,7 +6,7 @@ This guide is meant to provide details on what this extension does and how other
 
 This extension provides a way for other extension authors to contribute types to the Resource Deployment Wizard which allows users to create and deploy resources such as servers.
 
-This wizard is launched by either running the `Deployment: New Deployment...` command from the command palette or by clicking the `...` on the `Connections` pane and selecting `New Deployment...`
+This wizard is launched by either running the `Deployment: New Deployment...` command from the command palette or by clicking `File` on the menu bar and selecting `New Deployment...`
 
 ## How to Contribute a new Type
 
@@ -116,8 +116,6 @@ See [NotebookWizardInfo](https://github.com/microsoft/azuredatastudio/blob/main/
 
 ### WizardInfoBase
 
-`type` - **OPTIONAL** This is an internal type only used for BDC deployment wizards. Any other deployment providers can leave it out.
-
 `doneAction`
 
 `scriptAction` - **OPTIONAL**
@@ -202,7 +200,7 @@ This defines the set of options for this field to display. There are a number of
 
 * String array (`string[]`) - A static list of values that will be shown as a dropdown. Default value selected is defined as `FieldInfo.defaultValue`.
 
-* CategoryValue array (`azdata.CategoryValue[]`) - A static list of CategoryValue objects that will be shown as a dropdown. Each value will define a display name separate from its value - use this for values you want to display differently to the user (such as names for an Azure region).
+* CategoryValue array (`azdata.CategoryValue[]`) - A static list of CategoryValue objects that will be shown as a dropdown. Each value will define a display name separate from its value - use this for values you want to display differently to the user (such as names for an Azure region). If you use a CategoryValue array as your options, ensure you set the defaultValue to the CategoryValue's displayName rather than the name.
 
 * [OptionsInfo](#optionsinfo) - An object allowing more control over the option values.
 
@@ -220,7 +218,7 @@ This object defines a set of options for a field, similar to the arrays that can
 `source` - OPTIONAL If set defines the [Options Source Provider](#options-source-provider) to use for populating the options dynamically.
 
 ### Dynamic Options
-This enables you to dynamically change what options for a field are displayed to the user based on a previous selection they made. 
+This enables you to dynamically change what options for a field are displayed to the user based on a previous selection they made.
 For example, if a user selects "Cookies" over "Cakes" in the first field, the second field will show options ["Chocolate chip", "Snickerdoodle"] instead of ["Red velvet", "Cheesecake", "Black forest"], and vice versa.
 
 **NOTE** This is currently only enabled for radio buttons. This works with [CategoryValue](#fieldinfo) values as well.

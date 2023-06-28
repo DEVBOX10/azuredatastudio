@@ -3,43 +3,29 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
 import { Event } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { IContextKeyService, IContextKey, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext } from 'vs/platform/contextkey/common/contextkeys';
-import { ActiveEditorContext, EditorsVisibleContext, TextCompareEditorVisibleContext, TextCompareEditorActiveContext, ActiveEditorGroupEmptyContext, MultipleEditorGroupsContext, TEXT_DIFF_EDITOR_ID, SplitEditorsVertically, InEditorZenModeContext, IsCenteredLayoutContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorReadonlyContext, EditorAreaVisibleContext, ActiveEditorAvailableEditorIdsContext, EditorInputCapabilities, ActiveEditorCanRevertContext, ActiveEditorGroupLockedContext } from 'vs/workbench/common/editor';
-import { trackFocus, addDisposableListener, EventType, WebFileSystemAccess } from 'vs/base/browser/dom';
+import { IContextKeyService, IContextKey, setConstant as setConstantContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { InputFocusedContext, IsMacContext, IsLinuxContext, IsWindowsContext, IsWebContext, IsMacNativeContext, IsDevelopmentContext, IsIOSContext, ProductQualityContext, IsMobileContext } from 'vs/platform/contextkey/common/contextkeys';
+import { SplitEditorsVertically, InEditorZenModeContext, ActiveEditorCanRevertContext, ActiveEditorGroupLockedContext, ActiveEditorCanSplitInGroupContext, SideBySideEditorActiveContext, AuxiliaryBarVisibleContext, SideBarVisibleContext, PanelAlignmentContext, PanelMaximizedContext, PanelVisibleContext, ActiveEditorContext, EditorsVisibleContext, TextCompareEditorVisibleContext, TextCompareEditorActiveContext, ActiveEditorGroupEmptyContext, MultipleEditorGroupsContext, EmbedderIdentifierContext, EditorTabsVisibleContext, IsCenteredLayoutContext, ActiveEditorGroupIndexContext, ActiveEditorGroupLastContext, ActiveEditorReadonlyContext, EditorAreaVisibleContext, ActiveEditorAvailableEditorIdsContext, DirtyWorkingCopiesContext, EmptyWorkspaceSupportContext, EnterMultiRootWorkspaceSupportContext, HasWebFileSystemAccess, IsFullscreenContext, OpenFolderWorkspaceSupportContext, RemoteNameContext, VirtualWorkspaceContext, WorkbenchStateContext, WorkspaceFolderCountContext, PanelPositionContext, TemporaryWorkspaceContext, ActiveEditorCanToggleReadonlyContext } from 'vs/workbench/common/contextkeys';
+import { TEXT_DIFF_EDITOR_ID, EditorInputCapabilities, SIDE_BY_SIDE_EDITOR_ID, DEFAULT_EDITOR_ASSOCIATION, EditorResourceAccessor, SideBySideEditor } from 'vs/workbench/common/editor';
+import { trackFocus, addDisposableListener, EventType } from 'vs/base/browser/dom';
 import { preferredSideBySideGroupDirection, GroupDirection, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { WorkbenchState, IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { SideBarVisibleContext } from 'vs/workbench/common/viewlet';
+import { WorkbenchState, IWorkspaceContextService, isTemporaryWorkspace } from 'vs/platform/workspace/common/workspace';
 import { IWorkbenchLayoutService, Parts, positionToString } from 'vs/workbench/services/layout/browser/layoutService';
-import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
-import { PanelMaximizedContext, PanelPositionContext, PanelVisibleContext } from 'vs/workbench/common/panel';
-import { getRemoteName, getVirtualWorkspaceScheme } from 'vs/platform/remote/common/remoteHosts';
+import { getRemoteName } from 'vs/platform/remote/common/remoteHosts';
+import { getVirtualWorkspaceScheme } from 'vs/platform/workspace/common/virtualWorkspace';
 import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService';
 import { isNative } from 'vs/base/common/platform';
 import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService';
-
-export const WorkbenchStateContext = new RawContextKey<string>('workbenchState', undefined, { type: 'string', description: localize('workbenchState', "The kind of workspace opened in the window, either 'empty' (no workspace), 'folder' (single folder) or 'workspace' (multi-root workspace)") });
-export const WorkspaceFolderCountContext = new RawContextKey<number>('workspaceFolderCount', 0, localize('workspaceFolderCount', "The number of root folders in the workspace"));
-
-export const OpenFolderWorkspaceSupportContext = new RawContextKey<boolean>('openFolderWorkspaceSupport', true, true);
-export const EnterMultiRootWorkspaceSupportContext = new RawContextKey<boolean>('enterMultiRootWorkspaceSupport', true, true);
-export const EmptyWorkspaceSupportContext = new RawContextKey<boolean>('emptyWorkspaceSupport', true, true);
-
-export const DirtyWorkingCopiesContext = new RawContextKey<boolean>('dirtyWorkingCopies', false, localize('dirtyWorkingCopies', "Whether there are any dirty working copies"));
-
-export const RemoteNameContext = new RawContextKey<string>('remoteName', '', localize('remoteName', "The name of the remote the window is connected to or an empty string if not connected to any remote"));
-export const VirtualWorkspaceContext = new RawContextKey<string>('virtualWorkspace', '', localize('virtualWorkspace', "The scheme of the current workspace if is from a virtual file system or an empty string."));
-
-export const IsFullscreenContext = new RawContextKey<boolean>('isFullscreen', false, localize('isFullscreen', "Whether the window is in fullscreen mode"));
-
-// Support for FileSystemAccess web APIs (https://wicg.github.io/file-system-access)
-export const HasWebFileSystemAccess = new RawContextKey<boolean>('hasWebFileSystemAccess', false, true);
+import { IPaneCompositePartService } from 'vs/workbench/services/panecomposite/browser/panecomposite';
+import { Schemas } from 'vs/base/common/network';
+import { WebFileSystemAccess } from 'vs/platform/files/browser/webFileSystemAccess';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { FileSystemProviderCapabilities, IFileService } from 'vs/platform/files/common/files';
 
 export class WorkbenchContextKeysHandler extends Disposable {
 	private inputFocusedContext: IContextKey<boolean>;
@@ -47,9 +33,12 @@ export class WorkbenchContextKeysHandler extends Disposable {
 	private dirtyWorkingCopiesContext: IContextKey<boolean>;
 
 	private activeEditorContext: IContextKey<string | null>;
-	private activeEditorIsReadonly: IContextKey<boolean>;
 	private activeEditorCanRevert: IContextKey<boolean>;
+	private activeEditorCanSplitInGroup: IContextKey<boolean>;
 	private activeEditorAvailableEditorIds: IContextKey<string>;
+
+	private activeEditorIsReadonly: IContextKey<boolean>;
+	private activeEditorCanToggleReadonly: IContextKey<boolean>;
 
 	private activeEditorGroupEmpty: IContextKey<boolean>;
 	private activeEditorGroupIndex: IContextKey<number>;
@@ -58,8 +47,11 @@ export class WorkbenchContextKeysHandler extends Disposable {
 	private multipleEditorGroupsContext: IContextKey<boolean>;
 
 	private editorsVisibleContext: IContextKey<boolean>;
+
 	private textCompareEditorVisibleContext: IContextKey<boolean>;
 	private textCompareEditorActiveContext: IContextKey<boolean>;
+
+	private sideBySideEditorActiveContext: IContextKey<boolean>;
 	private splitEditorsVerticallyContext: IContextKey<boolean>;
 
 	private workbenchStateContext: IContextKey<string>;
@@ -70,6 +62,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
 	private emptyWorkspaceSupportContext: IContextKey<boolean>;
 
 	private virtualWorkspaceContext: IContextKey<string>;
+	private temporaryWorkspaceContext: IContextKey<boolean>;
 
 	private inZenModeContext: IContextKey<boolean>;
 	private isFullscreenContext: IContextKey<boolean>;
@@ -78,19 +71,24 @@ export class WorkbenchContextKeysHandler extends Disposable {
 	private editorAreaVisibleContext: IContextKey<boolean>;
 	private panelPositionContext: IContextKey<string>;
 	private panelVisibleContext: IContextKey<boolean>;
+	private panelAlignmentContext: IContextKey<string>;
 	private panelMaximizedContext: IContextKey<boolean>;
+	private auxiliaryBarVisibleContext: IContextKey<boolean>;
+	private editorTabsVisibleContext: IContextKey<boolean>;
 
 	constructor(
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IProductService private readonly productService: IProductService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
 		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IViewletService private readonly viewletService: IViewletService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService
+		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
+		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
+		@IFileService private readonly fileService: IFileService
 	) {
 		super();
 
@@ -102,26 +100,37 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		IsWebContext.bindTo(this.contextKeyService);
 		IsMacNativeContext.bindTo(this.contextKeyService);
 		IsIOSContext.bindTo(this.contextKeyService);
+		IsMobileContext.bindTo(this.contextKeyService);
 
 		RemoteNameContext.bindTo(this.contextKeyService).set(getRemoteName(this.environmentService.remoteAuthority) || '');
 
 		this.virtualWorkspaceContext = VirtualWorkspaceContext.bindTo(this.contextKeyService);
-		this.updateVirtualWorkspaceContextKey();
+		this.temporaryWorkspaceContext = TemporaryWorkspaceContext.bindTo(this.contextKeyService);
+		this.updateWorkspaceContextKeys();
 
 		// Capabilities
 		HasWebFileSystemAccess.bindTo(this.contextKeyService).set(WebFileSystemAccess.supported(window));
 
 		// Development
-		IsDevelopmentContext.bindTo(this.contextKeyService).set(!this.environmentService.isBuilt || this.environmentService.isExtensionDevelopment);
+		const isDevelopment = !this.environmentService.isBuilt || this.environmentService.isExtensionDevelopment;
+		IsDevelopmentContext.bindTo(this.contextKeyService).set(isDevelopment);
+		setConstantContextKey(IsDevelopmentContext.key, isDevelopment);
+
+		// Product Service
+		ProductQualityContext.bindTo(this.contextKeyService).set(this.productService.quality || '');
+		EmbedderIdentifierContext.bindTo(this.contextKeyService).set(productService.embedderIdentifier);
 
 		// Editors
 		this.activeEditorContext = ActiveEditorContext.bindTo(this.contextKeyService);
 		this.activeEditorIsReadonly = ActiveEditorReadonlyContext.bindTo(this.contextKeyService);
+		this.activeEditorCanToggleReadonly = ActiveEditorCanToggleReadonlyContext.bindTo(this.contextKeyService);
 		this.activeEditorCanRevert = ActiveEditorCanRevertContext.bindTo(this.contextKeyService);
+		this.activeEditorCanSplitInGroup = ActiveEditorCanSplitInGroupContext.bindTo(this.contextKeyService);
 		this.activeEditorAvailableEditorIds = ActiveEditorAvailableEditorIdsContext.bindTo(this.contextKeyService);
 		this.editorsVisibleContext = EditorsVisibleContext.bindTo(this.contextKeyService);
 		this.textCompareEditorVisibleContext = TextCompareEditorVisibleContext.bindTo(this.contextKeyService);
 		this.textCompareEditorActiveContext = TextCompareEditorActiveContext.bindTo(this.contextKeyService);
+		this.sideBySideEditorActiveContext = SideBySideEditorActiveContext.bindTo(this.contextKeyService);
 		this.activeEditorGroupEmpty = ActiveEditorGroupEmptyContext.bindTo(this.contextKeyService);
 		this.activeEditorGroupIndex = ActiveEditorGroupIndexContext.bindTo(this.contextKeyService);
 		this.activeEditorGroupLast = ActiveEditorGroupLastContext.bindTo(this.contextKeyService);
@@ -158,7 +167,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		this.emptyWorkspaceSupportContext.set(isNative || typeof this.environmentService.remoteAuthority === 'string');
 
 		// Entering a multi root workspace support: support for entering a multi-root
-		// workspace (e.g. "Open Workspace...", "Duplicate Workspace", "Save Workspace")
+		// workspace (e.g. "Open Workspace from File...", "Duplicate Workspace", "Save Workspace")
 		// is driven by the ability to resolve a workspace configuration file (*.code-workspace)
 		// with a built-in file system provider.
 		// This condition is met:
@@ -182,6 +191,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
 
 		// Editor Area
 		this.editorAreaVisibleContext = EditorAreaVisibleContext.bindTo(this.contextKeyService);
+		this.editorTabsVisibleContext = EditorTabsVisibleContext.bindTo(this.contextKeyService);
 
 		// Sidebar
 		this.sideBarVisibleContext = SideBarVisibleContext.bindTo(this.contextKeyService);
@@ -193,12 +203,21 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		this.panelVisibleContext.set(this.layoutService.isVisible(Parts.PANEL_PART));
 		this.panelMaximizedContext = PanelMaximizedContext.bindTo(this.contextKeyService);
 		this.panelMaximizedContext.set(this.layoutService.isPanelMaximized());
+		this.panelAlignmentContext = PanelAlignmentContext.bindTo(this.contextKeyService);
+		this.panelAlignmentContext.set(this.layoutService.getPanelAlignment());
+
+		// Auxiliary Bar
+		this.auxiliaryBarVisibleContext = AuxiliaryBarVisibleContext.bindTo(this.contextKeyService);
+		this.auxiliaryBarVisibleContext.set(this.layoutService.isVisible(Parts.AUXILIARYBAR_PART));
 
 		this.registerListeners();
 	}
 
 	private registerListeners(): void {
-		this.editorGroupService.whenReady.then(() => this.updateEditorContextKeys());
+		this.editorGroupService.whenReady.then(() => {
+			this.updateEditorAreaContextKeys();
+			this.updateEditorContextKeys();
+		});
 
 		this._register(this.editorService.onDidActiveEditorChange(() => this.updateEditorContextKeys()));
 		this._register(this.editorService.onDidVisibleEditorsChange(() => this.updateEditorContextKeys()));
@@ -210,12 +229,14 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		this._register(this.editorGroupService.onDidChangeActiveGroup(() => this.updateEditorGroupContextKeys()));
 		this._register(this.editorGroupService.onDidChangeGroupLocked(() => this.updateEditorGroupContextKeys()));
 
+		this._register(this.editorGroupService.onDidChangeEditorPartOptions(() => this.updateEditorAreaContextKeys()));
+
 		this._register(addDisposableListener(window, EventType.FOCUS_IN, () => this.updateInputContextKeys(), true));
 
 		this._register(this.contextService.onDidChangeWorkbenchState(() => this.updateWorkbenchStateContextKey()));
 		this._register(this.contextService.onDidChangeWorkspaceFolders(() => {
 			this.updateWorkspaceFolderCountContextKey();
-			this.updateVirtualWorkspaceContextKey();
+			this.updateWorkspaceContextKeys();
 		}));
 
 		this._register(this.configurationService.onDidChangeConfiguration(e => {
@@ -229,16 +250,23 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		this._register(this.layoutService.onDidChangeCenteredLayout(centered => this.isCenteredLayoutContext.set(centered)));
 		this._register(this.layoutService.onDidChangePanelPosition(position => this.panelPositionContext.set(position)));
 
-		this._register(this.viewletService.onDidViewletClose(() => this.updateSideBarContextKeys()));
-		this._register(this.viewletService.onDidViewletOpen(() => this.updateSideBarContextKeys()));
+		this._register(this.layoutService.onDidChangePanelAlignment(alignment => this.panelAlignmentContext.set(alignment)));
+
+		this._register(this.paneCompositeService.onDidPaneCompositeClose(() => this.updateSideBarContextKeys()));
+		this._register(this.paneCompositeService.onDidPaneCompositeOpen(() => this.updateSideBarContextKeys()));
 
 		this._register(this.layoutService.onDidChangePartVisibility(() => {
 			this.editorAreaVisibleContext.set(this.layoutService.isVisible(Parts.EDITOR_PART));
 			this.panelVisibleContext.set(this.layoutService.isVisible(Parts.PANEL_PART));
 			this.panelMaximizedContext.set(this.layoutService.isPanelMaximized());
+			this.auxiliaryBarVisibleContext.set(this.layoutService.isVisible(Parts.AUXILIARYBAR_PART));
 		}));
 
 		this._register(this.workingCopyService.onDidChangeDirty(workingCopy => this.dirtyWorkingCopiesContext.set(workingCopy.isDirty() || this.workingCopyService.hasDirty)));
+	}
+
+	private updateEditorAreaContextKeys(): void {
+		this.editorTabsVisibleContext.set(!!this.editorGroupService.partOptions.showTabs);
 	}
 
 	private updateEditorContextKeys(): void {
@@ -247,6 +275,8 @@ export class WorkbenchContextKeysHandler extends Disposable {
 
 		this.textCompareEditorActiveContext.set(activeEditorPane?.getId() === TEXT_DIFF_EDITOR_ID);
 		this.textCompareEditorVisibleContext.set(visibleEditorPanes.some(editorPane => editorPane.getId() === TEXT_DIFF_EDITOR_ID));
+
+		this.sideBySideEditorActiveContext.set(activeEditorPane?.getId() === SIDE_BY_SIDE_EDITOR_ID);
 
 		if (visibleEditorPanes.length > 0) {
 			this.editorsVisibleContext.set(true);
@@ -264,16 +294,28 @@ export class WorkbenchContextKeysHandler extends Disposable {
 
 		if (activeEditorPane) {
 			this.activeEditorContext.set(activeEditorPane.getId());
-			this.activeEditorIsReadonly.set(activeEditorPane.input.hasCapability(EditorInputCapabilities.Readonly));
 			this.activeEditorCanRevert.set(!activeEditorPane.input.hasCapability(EditorInputCapabilities.Untitled));
+			this.activeEditorCanSplitInGroup.set(activeEditorPane.input.hasCapability(EditorInputCapabilities.CanSplitInGroup));
 
 			const activeEditorResource = activeEditorPane.input.resource;
-			const editors = activeEditorResource ? this.editorResolverService.getEditorIds(activeEditorResource) : [];
-			this.activeEditorAvailableEditorIds.set(editors.join(','));
+			const editors = activeEditorResource ? this.editorResolverService.getEditors(activeEditorResource).map(editor => editor.id) : [];
+			if (activeEditorResource?.scheme === Schemas.untitled && activeEditorPane.input.editorId !== DEFAULT_EDITOR_ASSOCIATION.id) {
+				// Non text editor untitled files cannot be easily serialized between extensions
+				// so instead we disable this context key to prevent common commands that act on the active editor
+				this.activeEditorAvailableEditorIds.set('');
+			} else {
+				this.activeEditorAvailableEditorIds.set(editors.join(','));
+			}
+
+			this.activeEditorIsReadonly.set(activeEditorPane.input.hasCapability(EditorInputCapabilities.Readonly));
+			const primaryEditorResource = EditorResourceAccessor.getOriginalUri(activeEditorPane.input, { supportSideBySide: SideBySideEditor.PRIMARY });
+			this.activeEditorCanToggleReadonly.set(!!primaryEditorResource && this.fileService.hasProvider(primaryEditorResource) && !this.fileService.hasCapability(primaryEditorResource, FileSystemProviderCapabilities.Readonly));
 		} else {
 			this.activeEditorContext.reset();
 			this.activeEditorIsReadonly.reset();
+			this.activeEditorCanToggleReadonly.reset();
 			this.activeEditorCanRevert.reset();
+			this.activeEditorCanSplitInGroup.reset();
 			this.activeEditorAvailableEditorIds.reset();
 		}
 	}
@@ -336,7 +378,8 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		this.sideBarVisibleContext.set(this.layoutService.isVisible(Parts.SIDEBAR_PART));
 	}
 
-	private updateVirtualWorkspaceContextKey(): void {
+	private updateWorkspaceContextKeys(): void {
 		this.virtualWorkspaceContext.set(getVirtualWorkspaceScheme(this.contextService.getWorkspace()) || '');
+		this.temporaryWorkspaceContext.set(isTemporaryWorkspace(this.contextService.getWorkspace()));
 	}
 }

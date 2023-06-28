@@ -8,7 +8,6 @@ import * as sinon from 'sinon';
 import { ITestInstantiationService, TestEditorService } from 'vs/workbench/test/browser/workbenchTestServices';
 import { URI } from 'vs/base/common/uri';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IEditorInput } from 'vs/workbench/common/editor';
 import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
 import { workbenchInstantiationService } from 'sql/workbench/test/workbenchTestServices';
 import { QueryEditorLanguageAssociation } from 'sql/workbench/contrib/query/browser/queryEditorFactory';
@@ -27,6 +26,7 @@ import { IQueryEditorService } from 'sql/workbench/services/queryEditor/common/q
 import { QueryResultsInput } from 'sql/workbench/common/editor/query/queryResultsInput';
 import { extUri } from 'vs/base/common/resources';
 import { IResourceEditorInputIdentifier } from 'vs/platform/editor/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 
 suite('Query Input Factory', () => {
 	let instantiationService: ITestInstantiationService;
@@ -187,14 +187,14 @@ suite('Query Input Factory', () => {
 		const newsqlEditorStub = sinon.stub(queryeditorservice, 'newSqlEditor').callsFake(() => {
 			const untitledInput = instantiationService.createInstance(UntitledTextEditorInput, untitledService.create());
 			const queryResultsInput: QueryResultsInput = instantiationService.createInstance(QueryResultsInput, untitledInput.resource.toString());
-			let queryInput = instantiationService.createInstance(UntitledQueryEditorInput, '', untitledInput, queryResultsInput);
+			let queryInput = instantiationService.createInstance(UntitledQueryEditorInput, '', untitledInput, queryResultsInput, undefined);
 			return Promise.resolve(queryInput);
 		});
 		const input = instantiationService.createInstance(UntitledTextEditorInput, untitledService.create());
 		const response = queryEditorLanguageAssociation.convertInput(input);
 		assert(isThenable(response));
 		await response;
-		assert(newsqlEditorStub.calledWithExactly({ resource: undefined, open: false, initalContent: '' }));
+		assert(newsqlEditorStub.calledWithExactly({ resource: undefined, open: false, initialContent: '' }));
 		assert(connectionManagementService.numberConnects === 1, 'Async convert input should have called connect only once for one URI');
 	});
 
@@ -319,13 +319,13 @@ suite('Query Input Factory', () => {
 		const newsqlEditorStub = sinon.stub(queryeditorservice, 'newSqlEditor').callsFake(() => {
 			const untitledInput = instantiationService.createInstance(UntitledTextEditorInput, untitledService.create());
 			const queryResultsInput: QueryResultsInput = instantiationService.createInstance(QueryResultsInput, untitledInput.resource.toString());
-			let queryInput = instantiationService.createInstance(UntitledQueryEditorInput, '', untitledInput, queryResultsInput);
+			let queryInput = instantiationService.createInstance(UntitledQueryEditorInput, '', untitledInput, queryResultsInput, undefined);
 			return Promise.resolve(queryInput);
 		});
 		const response = queryEditorLanguageAssociation.convertInput(input);
 		assert(isThenable(response));
 		await response;
-		assert(newsqlEditorStub.calledWithExactly({ resource: input.resource, open: false, initalContent: '' }));
+		assert(newsqlEditorStub.calledWithExactly({ resource: input.resource, open: false, initialContent: '' }));
 	});
 
 });
@@ -337,8 +337,8 @@ class ServiceAccessor {
 }
 
 class MockEditorService extends TestEditorService {
-	private __activeEditor: IEditorInput | undefined = undefined;
-	public override get activeEditor(): IEditorInput | undefined {
+	private __activeEditor: EditorInput | undefined = undefined;
+	public override get activeEditor(): EditorInput | undefined {
 		return this.__activeEditor;
 	}
 
@@ -349,7 +349,7 @@ class MockEditorService extends TestEditorService {
 			const accessor = workbenchinstantiationService.createInstance(ServiceAccessor);
 			const service = accessor.untitledTextEditorService;
 			const untitledInput = instantiationService.createInstance(UntitledTextEditorInput, service.create({ associatedResource: URI.file('/test/file') }));
-			this.__activeEditor = instantiationService.createInstance(UntitledQueryEditorInput, '', untitledInput, undefined);
+			this.__activeEditor = instantiationService.createInstance(UntitledQueryEditorInput, '', untitledInput, undefined, undefined);
 		}
 	}
 }

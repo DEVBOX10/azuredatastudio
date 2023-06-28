@@ -40,7 +40,9 @@ suite('SQL Drag And Drop Controller tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
+		serverCapabilities: undefined,
 		getOptionsKey: undefined!,
+		getOptionKeyIdNames: undefined!,
 		matches: undefined!,
 		providerName: mssqlProviderName,
 		options: {},
@@ -58,7 +60,9 @@ suite('SQL Drag And Drop Controller tests', () => {
 		savePassword: true,
 		groupFullName: 'g2/g2-2',
 		groupId: 'group id',
+		serverCapabilities: undefined,
 		getOptionsKey: undefined!,
+		getOptionKeyIdNames: undefined!,
 		matches: undefined!,
 		providerName: pgsqlProviderName,
 		options: {},
@@ -72,7 +76,7 @@ suite('SQL Drag And Drop Controller tests', () => {
 	let connectionProfileGroupId = new ConnectionProfileGroup('name', undefined, 'd936bb32-422b-49c3-963f-ae9532d63dc5', 'color', 'description');
 	connectionProfileGroupId.addConnections([connectionProfileId_pgsql]);
 	let connectionProfileGroupArray = [connectionProfileGroupId];
-	let treeNode = new TreeNode('Column', 'label', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
+	let treeNode = new TreeNode('Column', '', 'label', undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
 	let treeNodeArray = [treeNode];
 
 	setup(() => {

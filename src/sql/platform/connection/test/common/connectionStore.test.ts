@@ -15,7 +15,7 @@ import { TestCredentialsService } from 'sql/platform/credentials/test/common/tes
 import { TestCapabilitiesService } from 'sql/platform/capabilities/test/common/testCapabilitiesService';
 import { deepClone, deepFreeze } from 'vs/base/common/objects';
 import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration';
-import { mssqlProviderName } from 'sql/platform/connection/common/constants';
+import { AuthenticationType, mssqlProviderName } from 'sql/platform/connection/common/constants';
 import { ConnectionProviderProperties } from 'sql/platform/capabilities/common/capabilitiesService';
 import { InMemoryStorageService } from 'vs/platform/storage/common/storage';
 import { generateUuid } from 'vs/base/common/uuid';
@@ -25,13 +25,15 @@ suite('ConnectionStore', () => {
 		connectionName: 'new name',
 		serverName: 'namedServer',
 		databaseName: 'bcd',
-		authenticationType: 'SqlLogin',
+		authenticationType: AuthenticationType.SqlLogin,
 		userName: 'cde', // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="Mock value, never actually used to connect")]
 		password: generateUuid(),
 		savePassword: true,
 		groupId: '',
 		groupFullName: '',
+		serverCapabilities: undefined,
 		getOptionsKey: undefined!,
+		getOptionKeyIdNames: undefined!,
 		matches: () => false,
 		providerName: mssqlProviderName,
 		options: {},
@@ -214,7 +216,7 @@ suite('ConnectionStore', () => {
 			credentialsService, capabilitiesService);
 		const integratedCred = Object.assign({}, defaultNamedProfile, {
 			serverName: defaultNamedProfile.serverName + 'Integrated',
-			authenticationType: 'Integrated',
+			authenticationType: AuthenticationType.Integrated,
 			userName: '',
 			password: ''
 		});

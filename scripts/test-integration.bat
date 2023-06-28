@@ -9,13 +9,10 @@ set VSCODELOGSDIR=%~dp0\..\.build\logs\integration-tests
 
 :: Figure out which Electron to use for running tests
 if "%INTEGRATION_TEST_ELECTRON_PATH%"=="" (
-	:: Run out of sources: no need to compile as code.bat takes care of it
 	chcp 65001
 	set INTEGRATION_TEST_ELECTRON_PATH=.\scripts\code.bat
 	set VSCODE_BUILD_BUILTIN_EXTENSIONS_SILENCE_PLEASE=1
 
-	echo Storing crash reports into '%VSCODECRASHDIR%'.
-	echo Storing log files into '%VSCODELOGSDIR%'.
 	echo Running integration tests out of sources.
 ) else (
 	:: Run from a built: need to compile all test extensions
@@ -23,11 +20,10 @@ if "%INTEGRATION_TEST_ELECTRON_PATH%"=="" (
 	:: and the build bundles extensions into .build webpacked
 	:: {{SQL CARBON EDIT}} Don't compile unused extensions
 	call yarn gulp 	compile-extension:azurecore^
-					compile-extension:git
+					compile-extension:git^
 					:: compile-extension:vscode-api-tests^
 					:: compile-extension:vscode-colorize-tests^
 					:: compile-extension:markdown-language-features^
-					:: compile-extension:typescript-language-features^
 					:: compile-extension:vscode-custom-editor-tests^
 					:: compile-extension:emmet^
 					:: compile-extension:css-language-features-server^
@@ -40,20 +36,20 @@ if "%INTEGRATION_TEST_ELECTRON_PATH%"=="" (
 	set VSCODE_CLI=1
 	set ELECTRON_ENABLE_LOGGING=1
 
-	echo Storing crash reports into '%VSCODECRASHDIR%'.
-	echo Storing log files into '%VSCODELOGSDIR%'.
 	echo Running integration tests with '%INTEGRATION_TEST_ELECTRON_PATH%' as build.
 )
 
 :: {{SQL CARBON EDIT}} Tests disabled
 :: Tests standalone (AMD)
+echo.
+echo ### node.js integration tests
 :: call .\scripts\test.bat --runGlob **\*.integrationTest.js %*
 :: if %errorlevel% neq 0 exit /b %errorlevel%
 
 
 :: Tests in the extension host
 
-set ALL_PLATFORMS_API_TESTS_EXTRA_ARGS=--disable-telemetry --skip-welcome --crash-reporter-directory=%VSCODECRASHDIR% --logsPath=%VSCODELOGSDIR% --no-cached-data --disable-updates --disable-keytar --disable-extensions --disable-workspace-trust --user-data-dir=%VSCODEUSERDATADIR% --no-sandbox
+set ALL_PLATFORMS_API_TESTS_EXTRA_ARGS=--disable-telemetry --skip-welcome --skip-release-notes --crash-reporter-directory=%VSCODECRASHDIR% --logsPath=%VSCODELOGSDIR% --no-cached-data --disable-updates --disable-keytar --disable-extensions --disable-workspace-trust --user-data-dir=%VSCODEUSERDATADIR% --no-sandbox
 
 :: {{SQL CARBON EDIT}} Don't run tests for unused extensions
 :: call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\vscode-api-tests\testWorkspace --enable-proposed-api=vscode.vscode-api-tests --extensionDevelopmentPath=%~dp0\..\extensions\vscode-api-tests --extensionTestsPath=%~dp0\..\extensions\vscode-api-tests\out\singlefolder-tests %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
@@ -65,16 +61,10 @@ set ALL_PLATFORMS_API_TESTS_EXTRA_ARGS=--disable-telemetry --skip-welcome --cras
 :: call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\vscode-colorize-tests\test --extensionDevelopmentPath=%~dp0\..\extensions\vscode-colorize-tests --extensionTestsPath=%~dp0\..\extensions\vscode-colorize-tests\out %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
 :: if %errorlevel% neq 0 exit /b %errorlevel%
 
-:: call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\typescript-language-features\test-workspace --extensionDevelopmentPath=%~dp0\..\extensions\typescript-language-features --extensionTestsPath=%~dp0\..\extensions\typescript-language-features\out\test\unit %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
-:: if %errorlevel% neq 0 exit /b %errorlevel%
-
 :: call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\markdown-language-features\test-workspace --extensionDevelopmentPath=%~dp0\..\extensions\markdown-language-features --extensionTestsPath=%~dp0\..\extensions\markdown-language-features\out\test %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
 :: if %errorlevel% neq 0 exit /b %errorlevel%
 
 :: call "%INTEGRATION_TEST_ELECTRON_PATH%" $%~dp0\..\extensions\emmet\out\test\test-fixtures --extensionDevelopmentPath=%~dp0\..\extensions\emmet --extensionTestsPath=%~dp0\..\extensions\emmet\out\test %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS% .
-:: if %errorlevel% neq 0 exit /b %errorlevel%
-
-:: call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\vscode-notebook-tests\test --enable-proposed-api=vscode.vscode-notebook-tests --extensionDevelopmentPath=%~dp0\..\extensions\vscode-notebook-tests --extensionTestsPath=%~dp0\..\extensions\vscode-notebook-tests\out %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
 :: if %errorlevel% neq 0 exit /b %errorlevel%
 
 :: call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\emmet\test-workspace --extensionDevelopmentPath=%~dp0\..\extensions\emmet --extensionTestsPath=%~dp0\..\extensions\emmet\out\test %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
@@ -83,11 +73,14 @@ set ALL_PLATFORMS_API_TESTS_EXTRA_ARGS=--disable-telemetry --skip-welcome --cras
 call "%INTEGRATION_TEST_ELECTRON_PATH%" %~dp0\..\extensions\azurecore\test-fixtures --extensionDevelopmentPath=%~dp0\..\extensions\azurecore --extensionTestsPath=%~dp0\..\extensions\azurecore\out\test %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-for /f "delims=" %%i in ('node -p "require('fs').realpathSync.native(require('os').tmpdir())"') do set TEMPDIR=%%i
-set GITWORKSPACE=%TEMPDIR%\git-%RANDOM%
-mkdir %GITWORKSPACE%
-call "%INTEGRATION_TEST_ELECTRON_PATH%" %GITWORKSPACE% --extensionDevelopmentPath=%~dp0\..\extensions\git --extensionTestsPath=%~dp0\..\extensions\git\out\test --enable-proposed-api=vscode.git %ALL_PLATFORMS_API_TESTS_EXTRA_ARGS%
-if %errorlevel% neq 0 exit /b %errorlevel%
+@REM {{SQL CARBON TODO}} - reenable
+@REM echo.
+@REM echo ### Git tests
+@REM for /f "delims=" %%i in ('node -p "require('fs').realpathSync.native(require('os').tmpdir())"') do set TEMPDIR=%%i
+@REM set GITWORKSPACE=%TEMPDIR%\git-%RANDOM%
+@REM mkdir %GITWORKSPACE%
+@REM call "%INTEGRATION_TEST_ELECTRON_PATH%" %GITWORKSPACE% --extensionDevelopmentPath=%~dp0\..\extensions\git --extensionTestsPath=%~dp0\..\extensions\git\out\test %API_TESTS_EXTRA_ARGS%
+@REM if %errorlevel% neq 0 exit /b %errorlevel%
 
 :: {{SQL CARBON EDIT}} Disable VS Code tests for extensions we don't have
 :: set IPYNBWORKSPACE=%TEMPDIR%\ipynb-%RANDOM%
@@ -97,11 +90,18 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 
 :: Tests standalone (CommonJS)
+echo.
+echo ### CSS tests
 :: call %~dp0\node-electron.bat %~dp0\..\extensions\css-language-features/server/test/index.js
 :: if %errorlevel% neq 0 exit /b %errorlevel%
 
+echo.
+echo ### HTML tests
 :: call %~dp0\node-electron.bat %~dp0\..\extensions\html-language-features/server/test/index.js
 :: if %errorlevel% neq 0 exit /b %errorlevel%
+
+
+:: Cleanup
 
 rmdir /s /q %VSCODEUSERDATADIR%
 

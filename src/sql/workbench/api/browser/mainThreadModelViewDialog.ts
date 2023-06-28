@@ -4,22 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { extHostNamedCustomer } from 'vs/workbench/api/common/extHostCustomers';
-import { IExtHostContext } from 'vs/workbench/api/common/extHost.protocol';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-import { MainThreadModelViewDialogShape, SqlMainContext, ExtHostModelViewDialogShape, SqlExtHostContext } from 'sql/workbench/api/common/sqlExtHost.protocol';
+import { MainThreadModelViewDialogShape, ExtHostModelViewDialogShape } from 'sql/workbench/api/common/sqlExtHost.protocol';
 import { Dialog, DialogTab, DialogButton, WizardPage, Wizard } from 'sql/workbench/services/dialog/common/dialogTypes';
 import { CustomDialogService, DefaultWizardOptions, DefaultDialogOptions } from 'sql/workbench/services/dialog/browser/customDialogService';
-import { IModelViewDialogDetails, IModelViewTabDetails, IModelViewButtonDetails, IModelViewWizardPageDetails, IModelViewWizardDetails } from 'sql/workbench/api/common/sqlExtHostTypes';
+import { IModelViewDialogDetails, IModelViewTabDetails, IModelViewButtonDetails, IModelViewWizardPageDetails, IModelViewWizardDetails, IErrorDialogOptions } from 'sql/workbench/api/common/sqlExtHostTypes';
 import { ModelViewInput, ModelViewInputModel, ModeViewSaveHandler } from 'sql/workbench/browser/modelComponents/modelViewInput';
 
 import * as vscode from 'vscode';
 import * as azdata from 'azdata';
 import { TelemetryView, TelemetryAction } from 'sql/platform/telemetry/common/telemetryKeys';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
-import { IEditorInput, IEditorPane } from 'vs/workbench/common/editor';
+import { IEditorPane } from 'vs/workbench/common/editor';
 import { Disposable } from 'vs/base/common/lifecycle';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { SqlExtHostContext, SqlMainContext } from 'vs/workbench/api/common/extHost.protocol';
 
 @extHostNamedCustomer(SqlMainContext.MainThreadModelViewDialog)
 export class MainThreadModelViewDialog extends Disposable implements MainThreadModelViewDialogShape {
@@ -31,7 +32,7 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 	private readonly _wizardPageHandles = new Map<WizardPage, number>();
 	private readonly _wizards = new Map<number, Wizard>();
 	private readonly _editorInputModels = new Map<number, ModelViewInputModel>();
-	private readonly _editors = new Map<number, { pane: IEditorPane, input: IEditorInput }>();
+	private readonly _editors = new Map<number, { pane: IEditorPane, input: EditorInput }>();
 	private _dialogService: CustomDialogService;
 
 	constructor(
@@ -112,6 +113,10 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 		return Promise.resolve();
 	}
 
+	public $openCustomErrorDialog(options: IErrorDialogOptions): Promise<string | undefined> {
+		return this._dialogService.openCustomErrorDialog(options);
+	}
+
 	public $setDialogDetails(handle: number, details: IModelViewDialogDetails): Thenable<void> {
 		let dialog = this._dialogs.get(handle);
 		if (!dialog) {
@@ -143,6 +148,9 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 			dialog.customButtons = details.customButtons.map(buttonHandle => this.getButton(buttonHandle));
 		}
 		dialog.message = details.message;
+		dialog.loading = details.loading;
+		dialog.loadingText = dialog.loadingText;
+		dialog.loadingCompletedText = dialog.loadingCompletedText;
 
 		return Promise.resolve();
 	}
@@ -222,7 +230,9 @@ export class MainThreadModelViewDialog extends Disposable implements MainThreadM
 			wizard.customButtons = details.customButtons.map(buttonHandle => this.getButton(buttonHandle));
 		}
 		wizard.message = details.message;
-
+		wizard.loading = details.loading;
+		wizard.loadingText = details.loadingText;
+		wizard.loadingCompletedText = details.loadingCompletedText;
 		return Promise.resolve();
 	}
 

@@ -1,5 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="src/sql/base/browser/ui/editableDropdown/browser/dropdown" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="editableDropdown.errorValidate">
+        <source xml:lang="en">Must be an option from the list</source>
+        <target state="translated">Doit être une option de la liste</target>
+      </trans-unit>
+      <trans-unit id="selectBox">
+        <source xml:lang="en">Select Box</source>
+        <target state="translated">Zone de sélection</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/base/browser/ui/loadingSpinner/loadingSpinner" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="loadingCompletedMessage">
@@ -88,6 +100,14 @@
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/base/browser/ui/table/plugins/contextMenuColumn.plugin" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="table.showActions">
+        <source xml:lang="en">Show Actions</source>
+        <target state="translated">Afficher les actions</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/base/browser/ui/table/plugins/headerFilter.plugin" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="headerFilter.cancel">
@@ -126,6 +146,14 @@
         <source xml:lang="en">Sort Descending</source>
         <target state="translated">Tri décroissant</target>
       </trans-unit>
+      <trans-unit id="tableFilter.blankStringDisplayText">
+        <source xml:lang="en">(Blanks)</source>
+        <target state="translated">(Vides)</target>
+      </trans-unit>
+      <trans-unit id="tableFilter.nullDisplayText">
+        <source xml:lang="en">(NULL)</source>
+        <target state="translated">(NULL)</target>
+      </trans-unit>
       <trans-unit id="tableFilter.selectedCount">
         <source xml:lang="en">{0} Selected</source>
         <note>This tells the user how many items are selected in the list</note>
@@ -151,6 +179,22 @@
       <trans-unit id="rowDetailView.loadError">
         <source xml:lang="en">Loading Error...</source>
         <target state="translated">Chargement de l'erreur...</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/base/browser/ui/table/table" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="table.resizeColumn">
+        <source xml:lang="en">Provide new column width</source>
+        <target state="translated">Fournir une nouvelle largeur de colonne</target>
+      </trans-unit>
+      <trans-unit id="table.resizeColumn.invalid">
+        <source xml:lang="en">Invalid column width</source>
+        <target state="translated">Largeur de colonne non valides</target>
+      </trans-unit>
+      <trans-unit id="table.resizeColumn.negativeSize">
+        <source xml:lang="en">Size cannot be 0 or negative</source>
+        <target state="translated">La taille ne peut pas être 0 ou négative.</target>
       </trans-unit>
     </body>
   </file>
@@ -180,9 +224,25 @@
         <source xml:lang="en">In order to use Azure Data Studio in {0}, Azure Data Studio needs to restart.</source>
         <target state="translated">Pour utiliser Azure Data Studio dans {0}, Azure Data Studio doit redémarrer.</target>
       </trans-unit>
+      <trans-unit id="appName">
+        <source xml:lang="en">`${appName}`: e.g. Azure Data Studio.</source>
+        <target state="translated">`${appName} : par exemple, Azure Data Studio.</target>
+      </trans-unit>
       <trans-unit id="azuredatastudio">
         <source xml:lang="en">Azure Data Studio</source>
         <target state="translated">Azure Data Studio</target>
+      </trans-unit>
+      <trans-unit id="azuredatastudio.download">
+        <source xml:lang="en">Download</source>
+        <target state="translated">Télécharger</target>
+      </trans-unit>
+      <trans-unit id="azuredatastudio.downloadTooltip">
+        <source xml:lang="en">Download this extension from an external source</source>
+        <target state="translated">Télécharger cette extension à partir d’une source externe</target>
+      </trans-unit>
+      <trans-unit id="azuredatastudio.installTooltip">
+        <source xml:lang="en">Install this extension</source>
+        <target state="translated">Installer cette extension</target>
       </trans-unit>
       <trans-unit id="connectionDialogBrowseTree.context">
         <source xml:lang="en">The connection dialog's browse tree context menu</source>
@@ -225,8 +285,8 @@
         <target state="translated">Définit la stratégie de sécurité pour le téléchargement des extensions.</target>
       </trans-unit>
       <trans-unit id="incompatible">
-        <source xml:lang="en">Unable to install extension '{0}' as it is not compatible with Azure Data Studio '{1}'.</source>
-        <target state="translated">Impossible d'installer l'extension '{0}', car elle n'est pas compatible avec Azure Data Studio '{1}'.</target>
+        <source xml:lang="en">Unable to install version '{0}' of extension '{1}' as it is not compatible with Azure Data Studio '{2}'. Update to Azure Data Studio {3} to install the extension.</source>
+        <target state="translated">Impossible d’installer la version '{0}' de l’extension '{1}', car elle n’est pas compatible avec Azure Data Studio '{2}'. Mettez à jour vers Azure Data Studio {3} pour installer l’extension.</target>
       </trans-unit>
       <trans-unit id="installExtensionCompletedAndReloadRequired">
         <source xml:lang="en">Installing extension {0} is completed. Please reload Azure Data Studio to enable it.</source>
@@ -235,6 +295,11 @@
       <trans-unit id="maxMemoryForLargeFilesMB">
         <source xml:lang="en">Controls the memory available to Azure Data Studio after restart when trying to open large files. Same effect as specifying `--max-memory=NEWSIZE` on the command line.</source>
         <target state="translated">Contrôle la mémoire disponible pour Azure Data Studio après le redémarrage en cas de tentative d'ouverture de fichiers volumineux. Même effet que de spécifier '--max-memory=NEWSIZE' sur la ligne de commande.</target>
+      </trans-unit>
+      <trans-unit id="miNewDeployment">
+        <source xml:lang="en">New &amp;&amp;Deployment...</source>
+        <note>&amp;&amp; denotes a mnemonic</note>
+        <target state="translated">Nouveau &amp;&amp;déploiement...</target>
       </trans-unit>
       <trans-unit id="miNewNotebook">
         <source xml:lang="en">&amp;&amp;New Notebook</source>
@@ -259,9 +324,93 @@
         <source xml:lang="en">The notebook cell title menu</source>
         <target state="translated">Menu titre de la cellule du bloc-notes</target>
       </trans-unit>
-      <trans-unit id="notebook.cellToolbarLocation.compatibilityDescription">
-        <source xml:lang="en">Where the cell toolbar should be shown, or whether it should be hidden. Note: This setting is only enabled for extension compatibility purposes, and so does not affect anything.</source>
-        <target state="translated">Où la barre d'outils de la cellule doit être affichée ou si elle doit être masquée. Remarque : Ce paramètre n'est activé qu'à des fins de compatibilité d'extension et n'affecte donc rien.</target>
+      <trans-unit id="notebook.cellToolbarLocation.description">
+        <source xml:lang="en">Where the cell toolbar should be shown, or whether it should be hidden. (for VS Code Notebooks only)</source>
+        <target state="translated">Indique si la barre d’outils de la cellule doit être affichée, ou si elle doit être masquée. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.cellToolbarVisibility.description">
+        <source xml:lang="en">Whether the cell toolbar should appear on hover or click. (for VS Code Notebooks only)</source>
+        <target state="translated">Indique si la barre d’outils de cellule doit apparaître au pointage ou cliquer. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.compactView.description">
+        <source xml:lang="en">Control whether the notebook editor should be rendered in a compact form. For example, when turned on, it will decrease the left margin width. (for VS Code Notebooks only)</source>
+        <target state="translated">Détermine si l’éditeur de notebook doit être rendu dans un format compact. Par exemple, lorsqu’il est activé, il diminue la largeur de la marge de gauche. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.consolidatedOutputButton.description">
+        <source xml:lang="en">Control whether outputs action should be rendered in the output toolbar. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle si les actions de sortie doivent être rendues dans la barre d’outils de sortie. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.consolidatedRunButton.description">
+        <source xml:lang="en">Control whether extra actions are shown in a dropdown next to the run button. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle si des actions supplémentaires sont affichées dans une liste déroulante à côté du bouton Exécuter. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.diff.enablePreview.description">
+        <source xml:lang="en">Whether to use the enhanced text diff editor for notebook. (for VS Code Notebooks only)</source>
+        <target state="translated">Indique s’il faut utiliser l’éditeur de différences de texte amélioré pour le notebook. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.displayOrder.description">
+        <source xml:lang="en">Priority list for output mime types. (for VS Code Notebooks only)</source>
+        <target state="translated">Liste de priorités pour les types mime de sortie. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.dragAndDrop.description">
+        <source xml:lang="en">Control whether the notebook editor should allow moving cells through drag and drop. (for VS Code Notebooks only)</source>
+        <target state="translated">Détermine si l’éditeur de notebooks doit autoriser les cellules à déplacer des cellules par glisser-déplacer. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.editorOptions.experimentalCustomization">
+        <source xml:lang="en">Settings for code editors used in notebooks. This can be used to customize most editor.* settings. (for VS Code Notebooks only)</source>
+        <target state="translated">Paramètres des éditeurs de code utilisés dans notebook. Ils peuvent être utilisés pour personnaliser la plupart des paramètres editor.* (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.focusIndicator.description">
+        <source xml:lang="en">Controls where the focus indicator is rendered, either along the cell borders or on the left gutter. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle le rendu de l’indicateur de focus sur les bordures de cellule ou sur la reliure gauche. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.globalToolbar.description">
+        <source xml:lang="en">Control whether to render a global toolbar inside the notebook editor. (for VS Code Notebooks only)</source>
+        <target state="translated">Détermine si une barre d’outils globale doit être rendue dans l’éditeur de notebook. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.globalToolbarShowLabel">
+        <source xml:lang="en">Control whether the actions on the notebook toolbar should render label or not. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle si les actions de la barre d’outils du notebook doivent afficher l’étiquette ou non. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.insertToolbarPosition.description">
+        <source xml:lang="en">Control where the insert cell actions should appear. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôlez l’emplacement où les actions d’insertion de cellule doivent apparaître. (pour les blocs-notes VS Code uniquement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.interactiveWindow.collapseCodeCells">
+        <source xml:lang="en">Controls whether code cells in the interactive window are collapsed by default. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle si les cellules de code de la fenêtre interactive sont réduites par défaut. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.markup.fontSize">
+        <source xml:lang="en">Controls the font size in pixels of rendered markup in notebooks. When set to `0`, 120% of `#editor.fontSize#` is used. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle la taille de police en pixels du balisage rendu dans les notebooks. Quand la valeur est `0`, 120 % de `#editor.fontSize#` est utilisé.</target>
+      </trans-unit>
+      <trans-unit id="notebook.outputFontFamily">
+        <source xml:lang="en">The font family for the output text for notebook cells. When set to empty, the `#editor.fontFamily#` is used. (for VS Code Notebooks only)</source>
+        <target state="translated">Famille de polices du texte de sortie pour les cellules de notebook. Quand la valeur est vide, `#editor.fontFamily#` est utilisé. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.outputFontSize">
+        <source xml:lang="en">Font size for the output text for notebook cells. When set to 0 `#editor.fontSize#` is used. (for VS Code Notebooks only)</source>
+        <target state="translated">Taille de police du texte de sortie pour les cellules de notebook. Quand la valeur 0 `#editor.fontSize#` est utilisée.(pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.outputLineHeight">
+        <source xml:lang="en">Line height of the output text for notebook cells.
+ - Values between 0 and 8 will be used as a multiplier with the font size.
+ - Values greater than or equal to 8 will be used as effective values. (for VS Code Notebooks only)</source>
+        <target state="translated">Hauteur de ligne du texte de sortie pour les cellules du notebook.
+– Valeurs comprises entre 0 et 8 sont utilisées comme multiplicateur avec la taille de police.
+– Valeurs supérieures ou égales à 8 seront utilisées comme valeurs effectives.</target>
+      </trans-unit>
+      <trans-unit id="notebook.showCellStatusbar.description">
+        <source xml:lang="en">Whether the cell status bar should be shown. (for VS Code Notebooks only)</source>
+        <target state="translated">Indique si la barre d’état de la cellule doit être affichée. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.showFoldingControls.description">
+        <source xml:lang="en">Controls when the Markdown header folding arrow is shown. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôle l’affichage de la flèche pliante d’en-tête Markdown. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
+      <trans-unit id="notebook.textOutputLineLimit">
+        <source xml:lang="en">Control how many lines of text in a text output is rendered. (for VS Code Notebooks only)</source>
+        <target state="translated">Contrôlez le nombre de lignes de texte qui sont rendues dans une sortie texte. (pour VS Code Notebooks seulement)</target>
       </trans-unit>
       <trans-unit id="notebook.title">
         <source xml:lang="en">The notebook title menu</source>
@@ -271,9 +420,21 @@
         <source xml:lang="en">The notebook toolbar menu</source>
         <target state="translated">Menu de la barre d’outils du bloc-notes</target>
       </trans-unit>
+      <trans-unit id="notebook.undoRedoPerCell.description">
+        <source xml:lang="en">Whether to use separate undo/redo stack for each cell. (for VS Code Notebooks only)</source>
+        <target state="translated">Indique s’il faut utiliser une pile d’annulation/restauration par progression distincte pour chaque cellule. (pour VS Code Notebooks seulement)</target>
+      </trans-unit>
       <trans-unit id="objectExplorer.context">
         <source xml:lang="en">The object explorer item context menu</source>
         <target state="translated">Menu contextuel de l’élément de l’Explorateur d’objets</target>
+      </trans-unit>
+      <trans-unit id="openDefaultSettingsJson">
+        <source xml:lang="en">open the default settings JSON</source>
+        <target state="translated">ouvrir le JSON des paramètres par défaut</target>
+      </trans-unit>
+      <trans-unit id="openDefaultSettingsJson.capitalized">
+        <source xml:lang="en">Open Default Settings (JSON)</source>
+        <target state="translated">Ouvrir les paramètres par défaut (JSON)</target>
       </trans-unit>
       <trans-unit id="postDisableTooltip">
         <source xml:lang="en">Please reload Azure Data Studio to disable this extension.</source>
@@ -303,9 +464,99 @@
         <source xml:lang="en">Show Release Notes after an update. The Release Notes are opened in a new web browser window.</source>
         <target state="translated">Afficher les notes de publication après une mise à jour. Les notes de publication sont ouvertes dans une nouvelle fenêtre de navigateur web.</target>
       </trans-unit>
+      <trans-unit id="sql.versionMismatch">
+        <source xml:lang="en">Extension is not compatible with Azure Data Studio {0}. Extension requires: {1}.</source>
+        <target state="translated">L'extension n'est pas compatible avec Azure Data Studio {0}. L'extension nécessite {1}.</target>
+      </trans-unit>
+      <trans-unit id="sql.versionMismatchVsCode">
+        <source xml:lang="en">Extension is not compatible with Azure Data Studio {0}. Extension requires a newer VS Code Engine Version {1}, which is newer than what is currently supported ({2}).</source>
+        <target state="translated">L’extension n’est pas compatible avec Azure Data Studio {0}. L’extension nécessite un {1} de version du moteur VS Code plus récent que celui actuellement pris en charge ({2}).</target>
+      </trans-unit>
+      <trans-unit id="sql.versionSyntax">
+        <source xml:lang="en">Could not parse `{0}` value {1}. Please use, for example: ^1.22.0, ^1.22.x, etc.</source>
+        <target state="translated">Impossible d'analyser la valeur `{0}` {1}. Veuillez utiliser, par exemple : ^1.22.0, ^1.22.x, ...</target>
+      </trans-unit>
       <trans-unit id="sql.watcherExclude">
         <source xml:lang="en">Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths, i.e. prefix with `**/` or the full path to match properly and suffix with `/**` to match files within a path (for example `**/build/output/**` or `/Users/name/workspaces/project/build/output/**`). Changing this setting requires a restart. When you experience Azure Data Studio consuming lots of CPU time on startup, you can exclude large folders to reduce the initial load.</source>
         <target state="translated">Configurez les modèles Glob des chemins d’accès aux fichiers à exclure de la surveillance des fichiers. Les modèles doivent correspondre à des chemins absolus, à savoir le préfixe « **/ » ou le chemin complet pour une correspondance appropriée et le suffixe « /** » pour la correspondance avec les fichiers à l’intérieur d’un chemin (par exemple, « /build/output/** » ou « /Users/name/workspaces/project/build/output/** »). Le changement de ce paramètre nécessite un redémarrage. Si vous constatez qu’Azure Data Studio consomme beaucoup de temps processeur au démarrage, vous pouvez exclure les dossiers volumineux pour réduire la charge initiale.</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.allowChords">
+        <source xml:lang="en">Whether or not to allow chord keybindings in the terminal. Note that when this is true and the keystroke results in a chord it will bypass `#terminal.integrated.commandsToSkipShell#`, setting this to false is particularly useful when you want ctrl+k to go to your shell (not Azure Data Studio).</source>
+        <target state="translated">Indique si les combinaisons de touches avec pression simultanée doivent être autorisées dans le terminal. Quand la valeur est true et que la frappe donne lieu à une pression simultanée, #terminal.integrated.commandsToSkipShell# est contourné. Si la valeur est false, cela vous permet d'envoyer ctrl+k vers votre interpréteur de commandes (et non Azure Data Studio).</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.autoReplies">
+        <source xml:lang="en">A set of messages that when encountered in the terminal will be automatically responded to. Provided the message is specific enough, this can help automate away common responses.
+
+Remarks:
+
+- Use {0} to automatically respond to the terminate batch job prompt on Windows.
+- The message includes escape sequences so the reply might not happen with styled text.
+- Each reply can only happen once every second.
+- Use {1} in the reply to mean the enter key.
+- To unset a default key, set the value to null.
+- Restart Azured Data Studio if new don't apply.</source>
+        <target state="translated">Ensemble de messages qui, lorsqu’ils sont rencontrés dans le terminal, feront l’objet d’une réponse automatique. À condition que le message soit suffisamment spécifique, cela peut aider à automatiser les réponses courantes.
+
+Remarques :
+
+– Utilisez {0} pour répondre automatiquement à l’invite de fin de traitement par lots sur Windows.
+– Le message inclut des séquences d’échappement afin que la réponse ne se produise pas avec du texte avec style.
+– Chaque réponse ne peut se produire qu’une fois par seconde.
+– Utilisez {1} dans la réponse pour indiquer la clé Entrée.
+– Pour annuler la définition d’une clé par défaut, définissez la valeur sur nul.
+– Redémarrez Azure Data Studio si le nouveau ne s’applique pas.</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.commandsToSkipShell">
+        <source xml:lang="en">A set of command IDs whose keybindings will not be sent to the shell but instead always be handled by Azure Data Studio. This allows keybindings that would normally be consumed by the shell to act instead the same as when the terminal is not focused, for example `Ctrl+P` to launch Quick Open.
+
+&amp;nbsp;
+
+Many commands are skipped by default. To override a default and pass that command's keybinding to the shell instead, add the command prefixed with the `-` character. For example add `-workbench.action.quickOpen` to allow `Ctrl+P` to reach the shell.
+
+&amp;nbsp;
+
+The following list of default skipped commands is truncated when viewed in Settings Editor. To see the full list, {1} and search for the first command from the list below.
+
+&amp;nbsp;
+
+Default Skipped Commands:
+
+{0}</source>
+        <target state="translated">Ensemble d’ID de commandes dont les combinaisons de touches ne sont pas envoyées à l’interpréteur de commandes mais sont toujours prises en charge par Azure Data Studio. Cela permet aux combinaisons de touches qui sont normalement consommées par l’interpréteur de commandes de produire le même résultat que dans une situation où le terminal n’a pas le focus, par exemple `Ctrl+P` pour lancer Quick Open.
+
+&amp;nbsp;
+
+De nombreuses commandes sont ignorées par défaut. Pour remplacer une valeur par défaut et passer la combinaison de touches de cette commande à l’interpréteur de commandes, ajoutez la commande précédée du caractère `-`. Par exemple, ajoutez `-workbench.action.quickOpen` pour autoriser la combinaison `Ctrl+P` à atteindre l’interpréteur de commandes.
+
+&amp;nbsp;
+
+La liste suivante des commandes ignorées par défaut est tronquée quand elle est affichée dans l’Éditeur de paramètres. Pour voir la liste complète, {1} puis recherchez la première commande dans la liste ci-dessous.
+
+&amp;nbsp;
+
+Commandes ignorées par défaut :
+
+{0}</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.detectLocale">
+        <source xml:lang="en">Controls whether to detect and set the `$LANG` environment variable to a UTF-8 compliant option since Azure Data Studio's terminal only supports UTF-8 encoded data coming from the shell.</source>
+        <target state="translated">Détermine s'il est nécessaire de détecter la variable d'environnement `$LANG` et de lui affecter une option conforme à UTF-8 dans la mesure où le terminal d’Azure Data Studio prend uniquement en charge les données encodées au format UTF-8 provenant de l'interpréteur de commandes.</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.env.linux">
+        <source xml:lang="en">Object with environment variables that will be added to the Azure Data Studio process to be used by the terminal on Linux. Set to `null` to delete the environment variable.</source>
+        <target state="translated">Objet et variables d'environnement ajoutés au processus d’Azure Data Studio pour être utilisés par le terminal sur Linux. Affectez la valeur « nul » pour supprimer la variable d'environnement.</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.env.osx">
+        <source xml:lang="en">Object with environment variables that will be added to the Azure Data Studio process to be used by the terminal on macOS. Set to `null` to delete the environment variable.</source>
+        <target state="translated">Objet et variables d'environnement ajoutés au processus d’Azure Data Studio pour être utilisés par le terminal sur macOS. Affectez la valeur « nul » pour supprimer la variable d'environnement.</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.env.windows">
+        <source xml:lang="en">Object with environment variables that will be added to the Azure Data Studio process to be used by the terminal on Windows. Set to `null` to delete the environment variable.</source>
+        <target state="translated">Objet et variables d'environnement ajoutés au processus d’Azure Data Studio pour être utilisés par le terminal sur Windows. Affectez la valeur « nul » pour supprimer la variable d'environnement.</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.inheritEnv">
+        <source xml:lang="en">Whether new shells should inherit their environment from Azure Data Studio, which may source a login shell to ensure $PATH and other development variables are initialized. This has no effect on Windows.</source>
+        <target state="translated">Indique si les nouveaux interpréteurs de commandes doivent hériter leur environnement d’Azure Data Studio, qui peut se procurer un interpréteur de connexion pour garantir l’initialisation de $PATH et d’autres variables de développement. Cela n’a aucun effet sur Windows.</target>
       </trans-unit>
       <trans-unit id="uninstallExtensionComplete">
         <source xml:lang="en">Please reload Azure Data Studio to complete the uninstallation of the extension {0}.</source>
@@ -315,13 +566,9 @@
         <source xml:lang="en">Would you like to change Azure Data Studio's UI language to {0} and restart?</source>
         <target state="translated">Souhaitez-vous changer la langue de l’interface d’Azure Data Studio en {0} et redémarrer ?</target>
       </trans-unit>
-      <trans-unit id="vscodeFunctionalityNotSupportedError">
-        <source xml:lang="en">This VS Code functionality is not supported in Azure Data Studio.</source>
-        <target state="translated">Cette fonctionnalité VS Code n’est pas prise en charge dans Azure Data Studio.</target>
-      </trans-unit>
-      <trans-unit id="vscodeInvalidArgumentsError">
-        <source xml:lang="en">Invalid arguments</source>
-        <target state="translated">Arguments non valides</target>
+      <trans-unit id="vscodeNotebooksNotSupportedError">
+        <source xml:lang="en">VS Code notebook extensions are not supported in Azure Data Studio.</source>
+        <target state="translated">Les extensions de notebook VS Code ne sont pas prises en charge dans Azure Data Studio.</target>
       </trans-unit>
       <trans-unit id="watermark.newNotebook">
         <source xml:lang="en">New Notebook</source>
@@ -341,15 +588,11 @@
       </trans-unit>
     </body>
   </file>
-  <file original="src/sql/base/parts/editableDropdown/browser/dropdown" source-language="en" datatype="plaintext" target-language="fr">
+  <file original="src/sql/base/parts/tree/browser/treeDefaults" source-language="en" datatype="plaintext" target-language="fr">
     <body>
-      <trans-unit id="editableDropdown.errorValidate">
-        <source xml:lang="en">Must be an option from the list</source>
-        <target state="translated">Doit être une option de la liste</target>
-      </trans-unit>
-      <trans-unit id="selectBox">
-        <source xml:lang="en">Select Box</source>
-        <target state="translated">Zone de sélection</target>
+      <trans-unit id="collapse all">
+        <source xml:lang="en">Collapse All</source>
+        <target state="translated">Tout réduire</target>
       </trans-unit>
     </body>
   </file>
@@ -421,6 +664,18 @@
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/platform/connection/common/providerConnectionInfo" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="connection.unsupported">
+        <source xml:lang="en">Unsupported connection</source>
+        <target state="translated">Connexion non prise en charge</target>
+      </trans-unit>
+      <trans-unit id="loading">
+        <source xml:lang="en">Loading...</source>
+        <target state="translated">Chargement...</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/platform/dashboard/browser/insightRegistry" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="schema.dashboardWidgets.InsightsRegistry">
@@ -447,6 +702,10 @@
   </file>
   <file original="src/sql/platform/serialization/common/serializationService" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="missingSerializationProviderError">
+        <source xml:lang="en">Could not find a serialization provider with the specified ID '{0}'</source>
+        <target state="translated">Impossible de trouver un fournisseur de sérialisation avec l’ID spécifié « {0} »</target>
+      </trans-unit>
       <trans-unit id="noSerializationProvider">
         <source xml:lang="en">Cannot serialize data as no provider has been registered</source>
         <target state="translated">Impossible de sérialiser les données, car aucun fournisseur n'est inscrit</target>
@@ -463,13 +722,13 @@
   </file>
   <file original="src/sql/platform/theme/common/colorRegistry" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="buttonDropdo0wnBoxShadow">
+        <source xml:lang="en">The button dropdown box shadow color</source>
+        <target state="translated">Couleur de l'ombre de la zone déroulante du bouton</target>
+      </trans-unit>
       <trans-unit id="buttonDropdownBackgroundHover">
         <source xml:lang="en">The button dropdown background hover color</source>
         <target state="translated">Couleur de pointage de l'arrière-plan de la liste déroulante du bouton</target>
-      </trans-unit>
-      <trans-unit id="buttonDropdownBoxShadow">
-        <source xml:lang="en">The button dropdown box shadow color</source>
-        <target state="translated">Couleur de l'ombre de la zone déroulante du bouton</target>
       </trans-unit>
       <trans-unit id="calloutDialogBodyBackground">
         <source xml:lang="en">Callout dialog body background.</source>
@@ -646,6 +905,10 @@
       <trans-unit id="notebookFindRangeHighlight">
         <source xml:lang="en">Color of the range limiting the search. The color must not be opaque so as not to hide underlying decorations.</source>
         <target state="translated">Couleur de la plage limitant la recherche. La couleur ne doit pas être opaque pour ne pas masquer les ornements sous-jacents.</target>
+      </trans-unit>
+      <trans-unit id="queryEditorNullBackground">
+        <source xml:lang="en">The background color for null values in the query editor results grid. To disable the background color, you can use a transparent color like {0}.</source>
+        <target state="translated">La couleur d'arrière-plan des valeurs nulles dans la grille de résultats de l'éditeur de requête. Pour désactiver la couleur de fond, vous pouvez utiliser une couleur transparente comme {0}.</target>
       </trans-unit>
       <trans-unit id="tileBorder">
         <source xml:lang="en">The border color of tiles</source>
@@ -841,14 +1104,6 @@
       </trans-unit>
     </body>
   </file>
-  <file original="src/sql/workbench/api/common/notebooks/vscodeExecuteProvider" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="errorStartBeforeReady">
-        <source xml:lang="en">Cannot start a session, the manager is not yet initialized</source>
-        <target state="translated">Impossible de démarrer une session, le gestionnaire n'est pas encore initialisé</target>
-      </trans-unit>
-    </body>
-  </file>
   <file original="src/sql/workbench/browser/actions" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="clearSavedAccounts">
@@ -891,10 +1146,22 @@
         <source xml:lang="en">Show connect dialog on startup</source>
         <target state="translated">Afficher la boîte de dialogue de connexion au démarrage</target>
       </trans-unit>
+      <trans-unit id="useVSCodeNotebooks">
+        <source xml:lang="en">(Preview) Use VS Code notebooks as the default notebook experience. Note: Azure Data Studio will need to be restarted to enable this setting.</source>
+        <target state="translated">(Préversion) Utilisez VS Code notebooks comme expérience de notebook par défaut. Note : Azure Data Studio devra redémarrer pour activer ce paramètre.</target>
+      </trans-unit>
+      <trans-unit id="useVSCodeNotebooksTitle">
+        <source xml:lang="en">Use VS Code notebooks</source>
+        <target state="translated">Utiliser VS Code notebooks</target>
+      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/browser/designer/designer" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="designer.actions">
+        <source xml:lang="en">More Actions</source>
+        <target state="translated">Plus d'actions</target>
+      </trans-unit>
       <trans-unit id="designer.defaultRemoveRowConfirmationMessage">
         <source xml:lang="en">Are you sure you want to remove the row?</source>
         <target state="translated">Voulez-vous vraiment supprimer la ligne ?</target>
@@ -902,6 +1169,14 @@
       <trans-unit id="designer.generalGroupName">
         <source xml:lang="en">General</source>
         <target state="translated">Général</target>
+      </trans-unit>
+      <trans-unit id="designer.issueCountAlert">
+        <source xml:lang="en">{0} validation issues found.</source>
+        <target state="translated">{0} problèmes de validation trouvés</target>
+      </trans-unit>
+      <trans-unit id="designer.issuesTabTitle">
+        <source xml:lang="en">Issues ({0})</source>
+        <target state="translated">Problèmes ({0})</target>
       </trans-unit>
       <trans-unit id="designer.loadingDesigner">
         <source xml:lang="en">Loading designer...</source>
@@ -911,9 +1186,9 @@
         <source xml:lang="en">Designer is loaded</source>
         <target state="translated">Le concepteur est chargé</target>
       </trans-unit>
-      <trans-unit id="designer.newRowText">
-        <source xml:lang="en">Add New</source>
-        <target state="translated">Ajouter nouveau</target>
+      <trans-unit id="designer.moveRowText">
+        <source xml:lang="en">Move</source>
+        <target state="translated">Déplacer</target>
       </trans-unit>
       <trans-unit id="designer.processing">
         <source xml:lang="en">Processing...</source>
@@ -943,9 +1218,25 @@
         <source xml:lang="en">Remove</source>
         <target state="translated">Supprimer</target>
       </trans-unit>
-      <trans-unit id="tableDesigner.unknownComponentType">
+      <trans-unit id="designer.scriptTabTitle">
+        <source xml:lang="en">Scripts</source>
+        <target state="translated">Scripts</target>
+      </trans-unit>
+      <trans-unit id="designer.unknownComponentType">
         <source xml:lang="en">The component type: {0} is not supported</source>
         <target state="translated">Le type de composant : {0} n’est pas pris en charge.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/browser/designer/designerIssuesTabPanelView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="designer.IssueListAriaLabel">
+        <source xml:lang="en">Issues</source>
+        <target state="translated">Problèmes</target>
+      </trans-unit>
+      <trans-unit id="designer.moreInfoLink">
+        <source xml:lang="en">More information</source>
+        <target state="translated">Plus d'informations</target>
       </trans-unit>
     </body>
   </file>
@@ -967,6 +1258,42 @@
       <trans-unit id="designer.textEditorAriaLabel">
         <source xml:lang="en">Designer text editor.</source>
         <target state="translated">Éditeur de texte de concepteur.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/browser/designer/tableActions" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="designer.addColumnAction">
+        <source xml:lang="en">Add New</source>
+        <target state="translated">Ajouter nouveau</target>
+      </trans-unit>
+      <trans-unit id="designer.insertAfterSelectedColumn">
+        <source xml:lang="en">Insert After</source>
+        <target state="translated">Insérer après</target>
+      </trans-unit>
+      <trans-unit id="designer.insertBeforeSelectedRow">
+        <source xml:lang="en">Insert Before</source>
+        <target state="translated">Insérer avant</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowDownAction">
+        <source xml:lang="en">Move Down</source>
+        <target state="translated">Descendre</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowDownButtonAriaLabel">
+        <source xml:lang="en">Move selected row down one position</source>
+        <target state="translated">Déplacer la ligne sélectionnée d'une position vers le bas</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowUpAction">
+        <source xml:lang="en">Move Up</source>
+        <target state="translated">Monter</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowUpButtonAriaLabel">
+        <source xml:lang="en">Move selected row up one position</source>
+        <target state="translated">Déplacer la ligne sélectionnée d’une position vers le haut</target>
+      </trans-unit>
+      <trans-unit id="designer.newRowButtonAriaLabel">
+        <source xml:lang="en">Add new row to '{0}' table</source>
+        <target state="translated">Ajouter une nouvelle ligne à '{0}' table</target>
       </trans-unit>
     </body>
   </file>
@@ -1020,10 +1347,6 @@
         <source xml:lang="en">The operation cannot be performed while another operation is in progress.</source>
         <target state="translated">L'opération ne peut pas être effectuée pendant qu'une autre opération est en cours.</target>
       </trans-unit>
-      <trans-unit id="tableDesigner.newTable">
-        <source xml:lang="en">New Table</source>
-        <target state="translated">Nouvelle table</target>
-      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/browser/modal/modal" source-language="en" datatype="plaintext" target-language="fr">
@@ -1076,6 +1399,14 @@
   </file>
   <file original="src/sql/workbench/browser/modal/optionsDialogHelper" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="boolean.false">
+        <source xml:lang="en">False</source>
+        <target state="translated">False</target>
+      </trans-unit>
+      <trans-unit id="boolean.true">
+        <source xml:lang="en">True</source>
+        <target state="translated">True</target>
+      </trans-unit>
       <trans-unit id="optionsDialog.defaultGroupName">
         <source xml:lang="en">General</source>
         <target state="translated">Général</target>
@@ -1232,10 +1563,6 @@
         <source xml:lang="en">No script was returned when scripting as {0} on object {1}</source>
         <target state="translated">Aucun script n'a été retourné pendant la création du script {0} sur l'objet {1}</target>
       </trans-unit>
-      <trans-unit id="scriptSelectNotFound">
-        <source xml:lang="en">No script was returned when calling select script on object </source>
-        <target state="translated">Aucun script n'a été retourné pendant l'appel du script sélectionné sur l'objet </target>
-      </trans-unit>
       <trans-unit id="scriptingFailed">
         <source xml:lang="en">Scripting Failed</source>
         <target state="translated">Échec des scripts</target>
@@ -1244,9 +1571,25 @@
         <source xml:lang="en">Select</source>
         <target state="translated">Sélectionner</target>
       </trans-unit>
+      <trans-unit id="selectScriptForEditNotGeneratedError">
+        <source xml:lang="en">Failed to generate script for Edit Data editor.</source>
+        <target state="translated">Échec de la génération du script pour Modifier l’éditeur de données.</target>
+      </trans-unit>
+      <trans-unit id="selectScriptNotGeneratedError">
+        <source xml:lang="en">Failed to generate select script for the selected object.</source>
+        <target state="translated">Échec de la génération du script de sélection pour l’objet sélectionné.</target>
+      </trans-unit>
       <trans-unit id="updateOperationName">
         <source xml:lang="en">Update</source>
         <target state="translated">Mettre à jour</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/common/constants" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="notebookMultipleRequestsError">
+        <source xml:lang="en">Cannot execute code cell. Another cell is currently being executed.</source>
+        <target state="translated">Impossible d’exécuter la cellule de code. Une autre cellule est en cours d’exécution.</target>
       </trans-unit>
     </body>
   </file>
@@ -1489,8 +1832,12 @@
   <file original="src/sql/workbench/contrib/backup/browser/backup.component" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="addFile">
-        <source xml:lang="en">Add a file</source>
+        <source xml:lang="en">Add File</source>
         <target state="translated">Ajouter un fichier</target>
+      </trans-unit>
+      <trans-unit id="addUrl">
+        <source xml:lang="en">Add URL</source>
+        <target state="translated">Ajouter une URL</target>
       </trans-unit>
       <trans-unit id="backup.advancedConfiguration">
         <source xml:lang="en">Advanced Configuration</source>
@@ -1519,6 +1866,10 @@
       <trans-unit id="backup.backupType">
         <source xml:lang="en">Backup type</source>
         <target state="translated">Type de sauvegarde</target>
+      </trans-unit>
+      <trans-unit id="backup.backupUrl">
+        <source xml:lang="en">Backup URL</source>
+        <target state="translated">URL de Sauvegarde Microsoft Azure</target>
       </trans-unit>
       <trans-unit id="backup.certificateOrAsymmetricKey">
         <source xml:lang="en">Certificate or Asymmetric key</source>
@@ -1604,6 +1955,10 @@
         <source xml:lang="en">Set backup retain days</source>
         <target state="translated">Définir le délai de conservation de sauvegarde en jours</target>
       </trans-unit>
+      <trans-unit id="backup.toUrl">
+        <source xml:lang="en">Save backup to URL</source>
+        <target state="translated">Enregistrer la sauvegarde dans l’URL</target>
+      </trans-unit>
       <trans-unit id="backup.transactionLog">
         <source xml:lang="en">Transaction log</source>
         <target state="translated">Journal des transactions</target>
@@ -1615,6 +1970,10 @@
       <trans-unit id="backup.verifyContainer">
         <source xml:lang="en">Verify backup when finished</source>
         <target state="translated">Vérifier la sauvegarde une fois terminée</target>
+      </trans-unit>
+      <trans-unit id="backupBrowseButton">
+        <source xml:lang="en">Browse</source>
+        <target state="translated">Parcourir</target>
       </trans-unit>
       <trans-unit id="backupComponent.backup">
         <source xml:lang="en">Backup</source>
@@ -2004,10 +2363,6 @@
   </file>
   <file original="src/sql/workbench/contrib/connection/browser/connection.contribution" source-language="en" datatype="plaintext" target-language="fr">
     <body>
-      <trans-unit id="connection.parseClipboardForConnectionStringDescription">
-        <source xml:lang="en">Attempt to parse the contents of the clipboard when the connection dialog is opened or a paste is performed.</source>
-        <target state="translated">Essayez d'analyser le contenu du presse-papiers quand la boîte de dialogue de connexion est ouverte ou qu'une opération de collage est effectuée.</target>
-      </trans-unit>
       <trans-unit id="connection.showUnsupportedServerVersionWarning">
         <source xml:lang="en">Whether to show the warning message when user connects to a server version that is not supported by Azure Data Studio.</source>
         <target state="translated">Indique si le message d’avertissement doit s’afficher quand l’utilisateur se connecte à une version de serveur qui n’est pas prise en charge par Azure Data Studio.</target>
@@ -2052,6 +2407,10 @@
   </file>
   <file original="src/sql/workbench/contrib/connection/common/connectionProviderExtension" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="schema.azureResource">
+        <source xml:lang="en">Azure resource endpoint for the provider.</source>
+        <target state="translated">Point de terminaison de ressource Azure pour le fournisseur.</target>
+      </trans-unit>
       <trans-unit id="schema.connectionOptions">
         <source xml:lang="en">Options for connection</source>
         <target state="translated">Options de connexion</target>
@@ -2059,6 +2418,10 @@
       <trans-unit id="schema.displayName">
         <source xml:lang="en">Display Name for the provider</source>
         <target state="translated">Nom d'affichage du fournisseur</target>
+      </trans-unit>
+      <trans-unit id="schema.enableConnectionStringOption">
+        <source xml:lang="en">Whether the provider supports connection string as an input option. The default value is false.</source>
+        <target state="translated">Indique si le fournisseur prend en charge la chaîne de connexion en tant qu’option d’entrée. La valeur par défaut est false.</target>
       </trans-unit>
       <trans-unit id="schema.iconPath">
         <source xml:lang="en">Icon path for the server type</source>
@@ -2075,6 +2438,10 @@
       <trans-unit id="schema.providerId">
         <source xml:lang="en">Common id for the provider</source>
         <target state="translated">ID courant du fournisseur</target>
+      </trans-unit>
+      <trans-unit id="schema.useConnectionStringAsDefaultOption">
+        <source xml:lang="en">Whether the connection provider uses connection string as the default option to connect. The default value is false.</source>
+        <target state="translated">Indique si le fournisseur de connexion utilise la chaîne de connexion comme option par défaut pour la connexion. La valeur par défaut est false.</target>
       </trans-unit>
     </body>
   </file>
@@ -2280,6 +2647,10 @@
   </file>
   <file original="src/sql/workbench/contrib/dashboard/browser/core/dashboardPage.component" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="dashboard.configureDashboardTooltip">
+        <source xml:lang="en">Learn more about how to configure the dashboard</source>
+        <target state="translated">En savoir plus sur la configuration du tableau de bord</target>
+      </trans-unit>
       <trans-unit id="dashboard.generalTabGroupHeader">
         <source xml:lang="en">General</source>
         <target state="translated">Général</target>
@@ -2315,6 +2686,10 @@
       <trans-unit id="azdata.extension.contributes.dashboard.tab.group">
         <source xml:lang="en">The unique identifier of the group this tab belongs to, value for home group: home.</source>
         <target state="translated">Identificateur unique du groupe auquel appartient cet onglet, valeur du groupe d'accueil : accueil.</target>
+      </trans-unit>
+      <trans-unit id="azdata.extension.contributes.dashboard.tab.hideRefreshTask">
+        <source xml:lang="en">Flag used to show/hide refresh button in toolbar. By default, the value is false</source>
+        <target state="translated">Indicateur utilisé pour afficher/masquer le bouton Actualiser dans la barre d’outils. Par défaut, la valeur est false.</target>
       </trans-unit>
       <trans-unit id="azdata.extension.contributes.dashboard.tab.icon.dark">
         <source xml:lang="en">Icon path when a dark theme is used</source>
@@ -3056,6 +3431,10 @@
   </file>
   <file original="src/sql/workbench/contrib/dataExplorer/browser/dataExplorerViewlet" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="ads-connections">
+        <source xml:lang="en">Icon represent a server.</source>
+        <target state="translated">L’icône représente un serveur.</target>
+      </trans-unit>
       <trans-unit id="dataExplorer.servers">
         <source xml:lang="en">Servers</source>
         <target state="translated">Serveurs</target>
@@ -3134,6 +3513,14 @@
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/editData/browser/editDataGridPanel" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="editData.cellWithNullCharMessage">
+        <source xml:lang="en">This cell contains the Unicode null character which is currently not supported for editing.</source>
+        <target state="translated">Cette cellule contient le caractère Unicode Nul qui n’est actuellement pas pris en charge pour la modification.</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/contrib/editData/browser/gridActions" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="copySelection">
@@ -3156,6 +3543,10 @@
         <source xml:lang="en">Save As JSON</source>
         <target state="translated">Enregistrer au format JSON</target>
       </trans-unit>
+      <trans-unit id="saveAsMarkdown">
+        <source xml:lang="en">Save As Markdown</source>
+        <target state="translated">Enregistrer au format Markdown</target>
+      </trans-unit>
       <trans-unit id="saveAsXml">
         <source xml:lang="en">Save As XML</source>
         <target state="translated">Enregistrer au format XML</target>
@@ -3163,6 +3554,576 @@
       <trans-unit id="selectAll">
         <source xml:lang="en">Select All</source>
         <target state="translated">Tout sélectionner</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/azdataGraphView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanComparison.bottomPlanDiagram.ariaLabel">
+        <source xml:lang="en">{0}, use arrow keys to navigate between nodes</source>
+        <target state="translated">{0}, utilisez les touches de direction pour naviguer entre les nœuds</target>
+      </trans-unit>
+      <trans-unit id="invalidExecutionPlanZoomError">
+        <source xml:lang="en">Zoom level cannot be 0 or negative</source>
+        <target state="translated">Le niveau de zoom ne peut pas être égal à 0 ou négatif</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/compareExecutionPlanInput" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="epCompare.editorName">
+        <source xml:lang="en">CompareExecutionPlans</source>
+        <target state="translated">CompareExecutionPlans</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/constants" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="ep.propertiesSearchDescription">
+        <source xml:lang="en">Search properties table</source>
+        <target state="translated">Recherchez dans la table des propriétés.</target>
+      </trans-unit>
+      <trans-unit id="ep.searchPlaceholder">
+        <source xml:lang="en">Filter for any field...</source>
+        <target state="translated">Filtrer un champ...</target>
+      </trans-unit>
+      <trans-unit id="ep.topOperationsSearchDescription">
+        <source xml:lang="en">Search top operations</source>
+        <target state="translated">Recherchez les principales opérations.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanComparisonEditor" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="compareExecutionPlanEditor">
+        <source xml:lang="en">Compare Execution Plan Editor</source>
+        <target state="translated">Éditeur de plans d'exécution de comparaison</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanComparisonEditorView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="addExecutionPlanLabel">
+        <source xml:lang="en">Add execution plan</source>
+        <target state="translated">Ajouter un plan d'exécution</target>
+      </trans-unit>
+      <trans-unit id="epComapre.LoadingPlanCompleteMessage">
+        <source xml:lang="en">Execution plan successfully loaded</source>
+        <target state="translated">Le plan d’exécution a été chargé avec succès.</target>
+      </trans-unit>
+      <trans-unit id="epComapre.LoadingPlanMessage">
+        <source xml:lang="en">Loading execution plan</source>
+        <target state="translated">Chargement du plan d’exécution</target>
+      </trans-unit>
+      <trans-unit id="epCompare.FileFilterDescription">
+        <source xml:lang="en">Execution Plan Files</source>
+        <target state="translated">Fichiers de plan d'exécution</target>
+      </trans-unit>
+      <trans-unit id="epCompare.addExecutionPlanLabel">
+        <source xml:lang="en">Add execution plan</source>
+        <target state="translated">Ajouter un plan d'exécution</target>
+      </trans-unit>
+      <trans-unit id="epCompare.comparePropertiesAction">
+        <source xml:lang="en">Properties</source>
+        <target state="translated">Propriétés</target>
+      </trans-unit>
+      <trans-unit id="epCompare.comparisonProgess">
+        <source xml:lang="en">Loading similar areas in compared plans</source>
+        <target state="translated">Chargement de zones similaires dans des plans comparés</target>
+      </trans-unit>
+      <trans-unit id="epCompare.searchNodeAction">
+        <source xml:lang="en">Find Node</source>
+        <target state="translated">Rechercher un nœud</target>
+      </trans-unit>
+      <trans-unit id="epCompare.searchNodeActionAddedPlan">
+        <source xml:lang="en">Find Node - Added Plan</source>
+        <target state="translated">Rechercher un nœud – Plan ajouté</target>
+      </trans-unit>
+      <trans-unit id="epCompare.toggleOrientation">
+        <source xml:lang="en">Toggle Orientation</source>
+        <target state="translated">Activer/désactiver l’orientation</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomInAction">
+        <source xml:lang="en">Zoom In</source>
+        <target state="translated">Zoom avant</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomOutAction">
+        <source xml:lang="en">Zoom Out</source>
+        <target state="translated">Zoom arrière</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomReset">
+        <source xml:lang="en">Reset Zoom</source>
+        <target state="translated">Réinitialiser le zoom</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomToFit">
+        <source xml:lang="en">Zoom to Fit</source>
+        <target state="translated">Zoom pour ajuster</target>
+      </trans-unit>
+      <trans-unit id="executionPlanComparison.bottomPlanDiagram.name">
+        <source xml:lang="en">Bottom execution Plan {0}</source>
+        <target state="translated">Plan d’exécution inférieur {0}</target>
+      </trans-unit>
+      <trans-unit id="executionPlanComparison.topPlanDiagram.name">
+        <source xml:lang="en">Top execution Plan {0}</source>
+        <target state="translated">Ajouter un plan d'exécution {0} principal</target>
+      </trans-unit>
+      <trans-unit id="executionPlanDisableTooltip">
+        <source xml:lang="en">Tooltips disabled</source>
+        <target state="translated">Info-bulles désactivées</target>
+      </trans-unit>
+      <trans-unit id="executionPlanEnableTooltip">
+        <source xml:lang="en">Tooltips enabled</source>
+        <target state="translated">Info-bulles activées</target>
+      </trans-unit>
+      <trans-unit id="queryDropdownPrefix">
+        <source xml:lang="en">Query {0} of {1}: {2}</source>
+        <target state="translated">{0} de requête de {1} : {2}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanComparisonPropertiesView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanPropertiesEdgeOperationName">
+        <source xml:lang="en">Edge</source>
+        <target state="translated">Edge</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewBottomOperation">
+        <source xml:lang="en">Bottom operation: {0}</source>
+        <target state="translated">Opération en bas : {0}</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewLeftOperation">
+        <source xml:lang="en">Left operation: {0}</source>
+        <target state="translated">Opération de gauche : {0}</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameEquivalentPropertiesRowHeader">
+        <source xml:lang="en">Equivalent Properties</source>
+        <target state="translated">Propriétés équivalentes</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameGreaterThanTitle">
+        <source xml:lang="en">Greater than</source>
+        <target state="translated">Supérieur à</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameLessThanTitle">
+        <source xml:lang="en">Less than</source>
+        <target state="translated">Inférieur à</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameNameColumnHeader">
+        <source xml:lang="en">Name</source>
+        <target state="translated">Nom</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameNotEqualTitle">
+        <source xml:lang="en">Not equal to</source>
+        <target state="translated">Pas égal à</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnBottomHeader">
+        <source xml:lang="en">Value (Bottom Plan)</source>
+        <target state="translated">Valeur (plan inférieur)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnLeftHeader">
+        <source xml:lang="en">Value (Left Plan)</source>
+        <target state="translated">Valeur (plan de gauche)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnRightHeader">
+        <source xml:lang="en">Value (Right Plan)</source>
+        <target state="translated">Valeur (plan de droite)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnTopHeader">
+        <source xml:lang="en">Value (Top Plan)</source>
+        <target state="translated">Valeur (plan supérieur)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewRightOperation">
+        <source xml:lang="en">Right operation: {0}</source>
+        <target state="translated">Opération appropriée : {0}</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewTopOperation">
+        <source xml:lang="en">Top operation: {0}</source>
+        <target state="translated">Principale opération : {0}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanContribution" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlan.tooltips.enableOnHoverTooltips">
+        <source xml:lang="en">When true, enables tooltips on hover for execution plan. When false, tooltips are shown on node click or F3 key press.</source>
+        <target state="translated">Quand la valeur est True, active les info-bulles sur pointage pour le plan d’exécution. Quand la valeur est False, les info-bulles sont affichées lors d’un clic de nœud ou d’une touche F3.</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCompareCommandOriginalValue">
+        <source xml:lang="en">Compare Execution Plans</source>
+        <target state="translated">Comparer les plans d'exécution</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCompareCommandValue">
+        <source xml:lang="en">Compare Execution Plans</source>
+        <target state="translated">Comparer les plans d'exécution</target>
+      </trans-unit>
+      <trans-unit id="executionPlanConfigurationTitle">
+        <source xml:lang="en">Execution Plan</source>
+        <target state="translated">Plan d'exécution</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanEditor" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanEditor">
+        <source xml:lang="en">Query Execution Plan Editor</source>
+        <target state="translated">Éditeur de plan d'exécution des requêtes</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanFileView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanFileLoadingComplete">
+        <source xml:lang="en">Execution plans are generated</source>
+        <target state="translated">Les plans d’exécution sont générés.</target>
+      </trans-unit>
+      <trans-unit id="executionPlanFileLoadingFailed">
+        <source xml:lang="en">Failed to load execution plan</source>
+        <target state="translated">Échec du chargement des plans d'exécution</target>
+      </trans-unit>
+      <trans-unit id="loadingExecutionPlanFile">
+        <source xml:lang="en">Generating execution plans</source>
+        <target state="translated">Génération des plans d’exécution</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanInput" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="epCompare.executionPlanEditorName">
+        <source xml:lang="en">ExecutionPlan</source>
+        <target state="translated">ExecutionPlan</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanPropertiesView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanPropertiesEdgeOperationName">
+        <source xml:lang="en">Edge</source>
+        <target state="translated">Edge</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameNameColumnHeader">
+        <source xml:lang="en">Name</source>
+        <target state="translated">Nom</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnHeader">
+        <source xml:lang="en">Value</source>
+        <target state="translated">Valeur</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanPropertiesViewBase" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="ep.topOperationsCopyTableData">
+        <source xml:lang="en">Copy</source>
+        <target state="translated">Copier</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCollapseAllProperties">
+        <source xml:lang="en">Collapse All</source>
+        <target state="translated">Tout réduire</target>
+      </trans-unit>
+      <trans-unit id="executionPlanExpandAllProperties">
+        <source xml:lang="en">Expand All</source>
+        <target state="translated">Tout développer</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewClose">
+        <source xml:lang="en">Close</source>
+        <target state="translated">Fermer</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewSortAlphabetically">
+        <source xml:lang="en">Alphabetical</source>
+        <target state="translated">Alphabétique</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewSortByDisplayOrder">
+        <source xml:lang="en">Importance</source>
+        <target state="translated">Importance</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewSortReverseAlphabetically">
+        <source xml:lang="en">Reverse Alphabetical</source>
+        <target state="translated">Alphabétique inversé</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewTitle">
+        <source xml:lang="en">Properties</source>
+        <target state="translated">Propriétés</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanTab" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanTitle">
+        <source xml:lang="en">Query Plan</source>
+        <target state="translated">Plan de requête</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanTreeTab" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="ept.topOperationsCopyTableData">
+        <source xml:lang="en">Copy</source>
+        <target state="translated">Copier</target>
+      </trans-unit>
+      <trans-unit id="ept.topOperationsCopyWithHeader">
+        <source xml:lang="en">Copy with Header</source>
+        <target state="translated">Copier avec en-tête</target>
+      </trans-unit>
+      <trans-unit id="ept.topOperationsSelectAll">
+        <source xml:lang="en">Select All</source>
+        <target state="translated">Tout sélectionner</target>
+      </trans-unit>
+      <trans-unit id="planTreeTab.title">
+        <source xml:lang="en">Plan Tree</source>
+        <target state="translated">Arborescence du plan</target>
+      </trans-unit>
+      <trans-unit id="topOperationsTableTitle">
+        <source xml:lang="en">Execution Plan Tree</source>
+        <target state="translated">Arborescence du plan d'exécution</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanView" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlan.SaveFileDescription">
+        <source xml:lang="en">Execution Plan Files</source>
+        <target state="translated">Fichiers de plan d'exécution</target>
+      </trans-unit>
+      <trans-unit id="executionPlan.diagram.ariaLabel">
+        <source xml:lang="en">Execution Plan {0}</source>
+        <target state="translated">Plan d'exécution {0}</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCompareExecutionPlanAction">
+        <source xml:lang="en">Compare Execution Plan</source>
+        <target state="translated">Comparer le plan d'exécution</target>
+      </trans-unit>
+      <trans-unit id="executionPlanContextMenuDisableTooltip">
+        <source xml:lang="en">Disable Tooltips</source>
+        <target state="translated">Désactiver les info-bulles</target>
+      </trans-unit>
+      <trans-unit id="executionPlanContextMenuEnableTooltip">
+        <source xml:lang="en">Enable Tooltips</source>
+        <target state="translated">Activer les info-bulles</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCustomZoom">
+        <source xml:lang="en">Custom Zoom</source>
+        <target state="translated">Zoom personnalisé</target>
+      </trans-unit>
+      <trans-unit id="executionPlanDisableTooltip">
+        <source xml:lang="en">Tooltips disabled</source>
+        <target state="translated">Info-bulles désactivées</target>
+      </trans-unit>
+      <trans-unit id="executionPlanEnableTooltip">
+        <source xml:lang="en">Tooltips enabled</source>
+        <target state="translated">Info-bulles activées</target>
+      </trans-unit>
+      <trans-unit id="executionPlanFitGraphLabel">
+        <source xml:lang="en">Zoom to Fit</source>
+        <target state="translated">Zoom pour ajuster</target>
+      </trans-unit>
+      <trans-unit id="executionPlanHighlightExpensiveOperationAction">
+        <source xml:lang="en">Highlight Expensive Operation</source>
+        <target state="translated">Mettre en surbrillance l’opération coûteuse</target>
+      </trans-unit>
+      <trans-unit id="executionPlanOpenGraphFile">
+        <source xml:lang="en">Show Query Plan XML</source>
+        <target state="translated">Afficher le code XML du plan de requête</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertiesActionLabel">
+        <source xml:lang="en">Properties</source>
+        <target state="translated">Propriétés</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSavePlanXML">
+        <source xml:lang="en">Save Plan File</source>
+        <target state="translated">Enregistrer le fichier de plan</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSearchNodeAction">
+        <source xml:lang="en">Find Node</source>
+        <target state="translated">Rechercher un nœud</target>
+      </trans-unit>
+      <trans-unit id="executionPlanTopOperationsAction">
+        <source xml:lang="en">Top Operations</source>
+        <target state="translated">Principales opérations</target>
+      </trans-unit>
+      <trans-unit id="executionPlanZoomInActionLabel">
+        <source xml:lang="en">Zoom In</source>
+        <target state="translated">Zoom avant</target>
+      </trans-unit>
+      <trans-unit id="executionPlanZoomOutActionLabel">
+        <source xml:lang="en">Zoom Out</source>
+        <target state="translated">Zoom arrière</target>
+      </trans-unit>
+      <trans-unit id="openQueryAction">
+        <source xml:lang="en">Open Query</source>
+        <target state="translated">Ouvrir la requête</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanViewHeader" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="planHeaderIndexAndCost">
+        <source xml:lang="en">Query {0}: Query cost (relative to the script): {1}%</source>
+        <note>{0} is the index of the graph in the execution plan tab
+{1} is the relative cost in percentage of the graph to the rest of the graphs in execution plan tab </note>
+        <target state="translated">Requête {0} : coût de requête (relatif au script) : {1} %</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/topOperationsTab" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="ep.topOperationsCopyTableData">
+        <source xml:lang="en">Copy</source>
+        <target state="translated">Copier</target>
+      </trans-unit>
+      <trans-unit id="ep.topOperationsCopyWithHeader">
+        <source xml:lang="en">Copy with Header</source>
+        <target state="translated">Copier avec en-tête</target>
+      </trans-unit>
+      <trans-unit id="ep.topOperationsSelectAll">
+        <source xml:lang="en">Select All</source>
+        <target state="translated">Tout sélectionner</target>
+      </trans-unit>
+      <trans-unit id="topOperationsTabTitle">
+        <source xml:lang="en">Top Operations</source>
+        <target state="translated">Principales opérations</target>
+      </trans-unit>
+      <trans-unit id="topOperationsTableTitle">
+        <source xml:lang="en">Top Operations</source>
+        <target state="translated">Principales opérations</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/widgets/customZoomWidget" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="cancelCustomZoomAction">
+        <source xml:lang="en">Close</source>
+        <target state="translated">Fermer</target>
+      </trans-unit>
+      <trans-unit id="customZoomApplyButton">
+        <source xml:lang="en">Apply</source>
+        <target state="translated">Appliquer</target>
+      </trans-unit>
+      <trans-unit id="customZoomApplyButtonTitle">
+        <source xml:lang="en">Apply Zoom</source>
+        <target state="translated">Appliquer Zoom</target>
+      </trans-unit>
+      <trans-unit id="invalidCustomZoomError">
+        <source xml:lang="en">Select a zoom value between 1 to 200</source>
+        <target state="translated">Sélectionner une valeur de zoom comprise entre 1 et 200</target>
+      </trans-unit>
+      <trans-unit id="qpZoomValueLabel">
+        <source xml:lang="en">Zoom (percent)</source>
+        <target state="translated">Zoom (pourcentage)</target>
+      </trans-unit>
+      <trans-unit id="zoomAction">
+        <source xml:lang="en">Zoom</source>
+        <target state="translated">Zoom</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/widgets/highlightExpensiveNodeWidget" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="actualNumberOfRowsForAllExecutionsAction">
+        <source xml:lang="en">Actual Number of Rows For All Executions</source>
+        <target state="translated">Nombre réel de lignes pour toutes les exécutions</target>
+      </trans-unit>
+      <trans-unit id="cancelExpensiveOperationAction">
+        <source xml:lang="en">Close</source>
+        <target state="translated">Fermer</target>
+      </trans-unit>
+      <trans-unit id="executionPlanActualElapsedCpuTime">
+        <source xml:lang="en">Actual Elapsed CPU Time</source>
+        <target state="translated">Temps processeur réel écoulé</target>
+      </trans-unit>
+      <trans-unit id="executionPlanActualElapsedTime">
+        <source xml:lang="en">Actual Elapsed Time</source>
+        <target state="translated">Temps réel écoulé</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCost">
+        <source xml:lang="en">Cost</source>
+        <target state="translated">Coût</target>
+      </trans-unit>
+      <trans-unit id="executionPlanNumberOfRowsRead">
+        <source xml:lang="en">Number of Rows Read</source>
+        <target state="translated">Nombre de lignes lues</target>
+      </trans-unit>
+      <trans-unit id="executionPlanOff">
+        <source xml:lang="en">Off</source>
+        <target state="translated">Inactif</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSelectExpenseMetricTitle">
+        <source xml:lang="en">Select expense metric</source>
+        <target state="translated">Sélectionner une métrique de dépense</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSubtreeCost">
+        <source xml:lang="en">Subtree Cost</source>
+        <target state="translated">Coût de la sous-arborescence</target>
+      </trans-unit>
+      <trans-unit id="expensiveOperationLabel">
+        <source xml:lang="en">Metric:</source>
+        <target state="translated">Métrique :</target>
+      </trans-unit>
+      <trans-unit id="highlightExpensiveOperationAction">
+        <source xml:lang="en">Apply</source>
+        <target state="translated">Appliquer</target>
+      </trans-unit>
+      <trans-unit id="highlightExpensiveOperationApplyButton">
+        <source xml:lang="en">Apply</source>
+        <target state="translated">Appliquer</target>
+      </trans-unit>
+      <trans-unit id="highlightExpensiveOperationButtonTitle">
+        <source xml:lang="en">Highlight Expensive Operation</source>
+        <target state="translated">Mettre en surbrillance l’opération coûteuse</target>
+      </trans-unit>
+      <trans-unit id="qp.expensiveOperationMetric.dontShowAgain">
+        <source xml:lang="en">Don't Show Again</source>
+        <target state="translated">Ne plus afficher</target>
+      </trans-unit>
+      <trans-unit id="qp.expensiveOperationMetric.no">
+        <source xml:lang="en">No</source>
+        <target state="translated">Non</target>
+      </trans-unit>
+      <trans-unit id="qp.expensiveOperationMetric.yes">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">Oui</target>
+      </trans-unit>
+      <trans-unit id="queryExecutionPlan.showUpdateDefaultMetricInfo">
+        <source xml:lang="en">Set chosen metric as the default for query execution plans?</source>
+        <target state="translated">Définir la métrique choisie comme valeur par défaut pour les plans d’exécution de requêtes ?</target>
+      </trans-unit>
+      <trans-unit id="turnOffExpensiveHighlightingOperationAction">
+        <source xml:lang="en">Off</source>
+        <target state="translated">Inactif</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/widgets/nodeSearchWidget" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="cancelSearchAction">
+        <source xml:lang="en">Close</source>
+        <target state="translated">Fermer</target>
+      </trans-unit>
+      <trans-unit id="executionPlanEnterValueTitle">
+        <source xml:lang="en">Enter search value</source>
+        <target state="translated">Entrer une valeur de recherche</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSearchTypeContains">
+        <source xml:lang="en">Contains</source>
+        <target state="translated">Contient</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSearchTypeEquals">
+        <source xml:lang="en">Equals</source>
+        <target state="translated">Égal à</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSelectPropertyTitle">
+        <source xml:lang="en">Select property</source>
+        <target state="translated">Sélectionner une propriété</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSelectSearchTypeTitle">
+        <source xml:lang="en">Select search type</source>
+        <target state="translated">Sélectionner un type de recherche</target>
+      </trans-unit>
+      <trans-unit id="nextSearchItemAction">
+        <source xml:lang="en">Next Match</source>
+        <target state="translated">Correspondance suivante</target>
+      </trans-unit>
+      <trans-unit id="previousSearchItemAction">
+        <source xml:lang="en">Previous Match</source>
+        <target state="translated">Correspondance précédente</target>
       </trans-unit>
     </body>
   </file>
@@ -3898,9 +4859,21 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/contrib/notebook/browser/cellViews/code.component" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="cellLanguageDescription">
+        <source xml:lang="en">({0}) - Current Language</source>
+        <target state="translated">({0}) - Langage actuel</target>
+      </trans-unit>
+      <trans-unit id="cellLanguageDescriptionConfigured">
+        <source xml:lang="en">({0})</source>
+        <target state="translated">({0})</target>
+      </trans-unit>
       <trans-unit id="parametersText">
         <source xml:lang="en">Parameters</source>
         <target state="translated">Paramètres</target>
+      </trans-unit>
+      <trans-unit id="selectCellLanguage">
+        <source xml:lang="en">Select Cell Language Mode</source>
+        <target state="translated">Sélectionner le mode de langage de la cellule</target>
       </trans-unit>
     </body>
   </file>
@@ -3946,9 +4919,9 @@ Erreur : {1}</target>
         <source xml:lang="en">Markdown preview toggle - off</source>
         <target state="translated">Bouton bascule d'aperçu Markdown - désactivé</target>
       </trans-unit>
-      <trans-unit id="dropdownHeading">
-        <source xml:lang="en">Heading</source>
-        <target state="translated">Titre</target>
+      <trans-unit id="headingDropdownLabel">
+        <source xml:lang="en">Text Size</source>
+        <target state="translated">Taille du texte</target>
       </trans-unit>
       <trans-unit id="highlight">
         <source xml:lang="en">Highlight</source>
@@ -4019,16 +4992,16 @@ Erreur : {1}</target>
         <target state="translated">Erreur de rendu du composant : {0}</target>
       </trans-unit>
       <trans-unit id="noMimeTypeFound">
-        <source xml:lang="en">No {0}renderer could be found for output. It has the following MIME types: {1}</source>
-        <target state="translated">Aucun renderer {0} pour la sortie. Types MIME : {1}</target>
+        <source xml:lang="en">No renderer could be found for output. It has the following MIME types: {0}</source>
+        <target state="translated">Aucun convertisseur n’a été trouvé pour la sortie. La sortie a les types MIME suivants : {0}</target>
+      </trans-unit>
+      <trans-unit id="noSafeMimeTypeFound">
+        <source xml:lang="en">No safe renderer could be found for output. It has the following MIME types: {0}</source>
+        <target state="translated">Aucun convertisseur n’a été trouvé pour la sortie. La sortie a les types MIME suivants : {0}.</target>
       </trans-unit>
       <trans-unit id="noSelectorFound">
         <source xml:lang="en">No component could be found for selector {0}</source>
         <target state="translated">Aucun composant pour le sélecteur {0}</target>
-      </trans-unit>
-      <trans-unit id="safe">
-        <source xml:lang="en">safe </source>
-        <target state="translated">sécurisé </target>
       </trans-unit>
     </body>
   </file>
@@ -4120,6 +5093,14 @@ Erreur : {1}</target>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/notebook/browser/models/outputProcessor" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="notebookInvalidOutputTypeError">
+        <source xml:lang="en">Output type '{0}' not recognized.</source>
+        <target state="translated">Le type de sortie '{0}' n’est pas reconnu.</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/contrib/notebook/browser/notebook.component" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="addCell">
@@ -4141,10 +5122,6 @@ Erreur : {1}</target>
       <trans-unit id="cellRunFailed">
         <source xml:lang="en">Run Cells failed - See error in output of the currently selected cell for more information.</source>
         <target state="translated">L'exécution des cellules a échoué. Pour plus d'informations, consultez l'erreur dans la sortie de la cellule actuellement sélectionnée.</target>
-      </trans-unit>
-      <trans-unit id="code">
-        <source xml:lang="en">Code</source>
-        <target state="translated">Code</target>
       </trans-unit>
       <trans-unit id="codeCellsPreview">
         <source xml:lang="en">Add cell</source>
@@ -4174,17 +5151,9 @@ Erreur : {1}</target>
         <source xml:lang="en">&lt; Previous</source>
         <target state="translated">&lt; Précédent</target>
       </trans-unit>
-      <trans-unit id="runAll">
-        <source xml:lang="en">Run Cells</source>
-        <target state="translated">Exécuter les cellules</target>
-      </trans-unit>
       <trans-unit id="runAllPreview">
         <source xml:lang="en">Run all</source>
         <target state="translated">Tout exécuter</target>
-      </trans-unit>
-      <trans-unit id="text">
-        <source xml:lang="en">Text</source>
-        <target state="translated">Texte</target>
       </trans-unit>
       <trans-unit id="textPreview">
         <source xml:lang="en">Text cell</source>
@@ -4258,6 +5227,10 @@ Erreur : {1}</target>
         <source xml:lang="en">The maximum number of changes stored in the undo history for the notebook Rich Text editor.</source>
         <target state="translated">Nombre maximal de modifications stockées dans l’historique des annulations pour l’éditeur de texte enrichi de bloc-notes.</target>
       </trans-unit>
+      <trans-unit id="notebook.renderTablesInHtml">
+        <source xml:lang="en">Display and save tables in HTML format in text cells instead of converting to markdown tables.</source>
+        <target state="translated">Affichez et enregistrez les tableaux au format HTML dans les cellules de texte au lieu de les convertir en tableaux Markdown.</target>
+      </trans-unit>
       <trans-unit id="notebook.richTextModeDescription">
         <source xml:lang="en">Text is displayed as Rich Text (also known as WYSIWYG).</source>
         <target state="translated">Le texte est affiché sous forme de texte enrichi (également appelé WYSIWYG).</target>
@@ -4297,6 +5270,10 @@ Erreur : {1}</target>
       <trans-unit id="notebookViews.enabled">
         <source xml:lang="en">(Preview) Enable Notebook Views</source>
         <target state="translated">(Préversion) Activer les affichages bloc-notes</target>
+      </trans-unit>
+      <trans-unit id="restartNotebookKernel">
+        <source xml:lang="en">Restart Notebook Kernel</source>
+        <target state="translated">Redémarrer un noyau du notebook</target>
       </trans-unit>
       <trans-unit id="search.actionsPosition">
         <source xml:lang="en">Controls the positioning of the actionbar on rows in the search view.</source>
@@ -4502,6 +5479,10 @@ Erreur : {1}</target>
         <source xml:lang="en">New Notebook</source>
         <target state="translated">Nouveau notebook</target>
       </trans-unit>
+      <trans-unit id="newNotebookTask.newNotebook">
+        <source xml:lang="en">New Notebook</source>
+        <target state="translated">Nouveau Notebook</target>
+      </trans-unit>
       <trans-unit id="newViewLabel">
         <source xml:lang="en">Create New View</source>
         <target state="translated">Créer une nouvelle vue</target>
@@ -4546,6 +5527,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Trusted</source>
         <target state="translated">Approuvé</target>
       </trans-unit>
+      <trans-unit id="untitledNotSupported">
+        <source xml:lang="en">Run with parameters is not supported for Untitled notebooks. Please save the notebook before continuing. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).</source>
+        <target state="translated">L’exécution avec des paramètres n’est pas prise en charge pour les notebooks sans titre. Enregistrez le bloc-notes avant de continuer. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).</target>
+      </trans-unit>
       <trans-unit id="untrustLabel">
         <source xml:lang="en">Not Trusted</source>
         <target state="translated">Non approuvé</target>
@@ -4564,8 +5549,24 @@ Erreur : {1}</target>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/notebook/browser/notebookEditor.component" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="loadingNotebookCompletedMessage">
+        <source xml:lang="en">Loading notebook {0} completed</source>
+        <target state="translated">Chargement du bloc-notes {0} terminé</target>
+      </trans-unit>
+      <trans-unit id="loadingNotebookMessage">
+        <source xml:lang="en">Loading notebook {0}</source>
+        <target state="translated">Chargement du bloc-notes {0}</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/contrib/notebook/browser/notebookExplorer/notebookExplorerViewlet" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="ads-notebook">
+        <source xml:lang="en">Icon represent a notebook.</source>
+        <target state="translated">L’icône représente un bloc-notes.</target>
+      </trans-unit>
       <trans-unit id="notebookExplorer.name">
         <source xml:lang="en">Notebooks</source>
         <target state="translated">Notebooks</target>
@@ -4850,9 +5851,21 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/contrib/objectExplorer/browser/serverTreeView" source-language="en" datatype="plaintext" target-language="fr">
     <body>
-      <trans-unit id="serverTree.addConnection">
-        <source xml:lang="en">Add Connection</source>
-        <target state="translated">Ajouter une connexion</target>
+      <trans-unit id="serverTree.newConnection">
+        <source xml:lang="en">New Connection</source>
+        <target state="translated">Nouvelle connexion</target>
+      </trans-unit>
+      <trans-unit id="serverTreeViewChangeNotification">
+        <source xml:lang="en">Server tree has changed. Please reload the window to see the changes.</source>
+        <target state="translated">L'arborescence des serveurs a changé. Veuillez recharger la fenêtre pour voir les changements.</target>
+      </trans-unit>
+      <trans-unit id="serverTreeViewChangeNotification.doNotReload">
+        <source xml:lang="en">Don't Reload</source>
+        <target state="translated">Ne pas recharger</target>
+      </trans-unit>
+      <trans-unit id="serverTreeViewChangeNotification.reload">
+        <source xml:lang="en">Reload</source>
+        <target state="translated">Recharger</target>
       </trans-unit>
       <trans-unit id="servers.noConnections">
         <source xml:lang="en">No connections found.</source>
@@ -4870,9 +5883,17 @@ Erreur : {1}</target>
         <source xml:lang="en">Server Group color palette used in the Object Explorer viewlet.</source>
         <target state="translated">Palette de couleurs du groupe de serveurs utilisée dans la viewlet Explorateur d'objets.</target>
       </trans-unit>
+      <trans-unit id="serverTree.configuration.title">
+        <source xml:lang="en">Server Tree</source>
+        <target state="translated">Arborescence du serveur</target>
+      </trans-unit>
+      <trans-unit id="serverTree.nodeExpansionTimeout">
+        <source xml:lang="en">The timeout in seconds for expanding a node in the Servers view</source>
+        <target state="translated">Délai d'attente en secondes pour développer un nœud dans la vue Serveurs</target>
+      </trans-unit>
       <trans-unit id="serverTree.useAsyncServerTree">
-        <source xml:lang="en">(Preview) Use the new async server tree for the Servers view and Connection Dialog with support for new features such as dynamic node filtering.</source>
-        <target state="translated">(Préversion) Utilisez la nouvelle arborescence de serveur asynchrone pour la vue des serveurs et la boîte de dialogue de connexion avec prise en charge des nouvelles fonctionnalités, comme le filtrage dynamique de nœuds.</target>
+        <source xml:lang="en">Use the new async server tree for the Servers view and Connection Dialog with support for new features such as dynamic node filtering. Requires a restart to take effect.</source>
+        <target state="translated">Utilisez la nouvelle arborescence de serveurs asynchrones pour la vue Serveurs et la boîte de dialogue de connexion avec prise en charge de nouvelles fonctionnalités telles que le filtrage dynamique des nœuds. Nécessite un redémarrage pour prendre effet.</target>
       </trans-unit>
     </body>
   </file>
@@ -4893,6 +5914,10 @@ Erreur : {1}</target>
       <trans-unit id="data">
         <source xml:lang="en">Data</source>
         <target state="translated">Données</target>
+      </trans-unit>
+      <trans-unit id="executionPlan">
+        <source xml:lang="en">Execution Plan</source>
+        <target state="translated">Plan d'exécution</target>
       </trans-unit>
       <trans-unit id="notebook">
         <source xml:lang="en">Notebook</source>
@@ -5110,6 +6135,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Chart</source>
         <target state="translated">Graphique</target>
       </trans-unit>
+      <trans-unit id="copyHeaders">
+        <source xml:lang="en">Copy Headers</source>
+        <target state="translated">Copier les en-têtes</target>
+      </trans-unit>
       <trans-unit id="copySelection">
         <source xml:lang="en">Copy</source>
         <target state="translated">Copier</target>
@@ -5141,6 +6170,10 @@ Erreur : {1}</target>
       <trans-unit id="saveAsJson">
         <source xml:lang="en">Save As JSON</source>
         <target state="translated">Enregistrer au format JSON</target>
+      </trans-unit>
+      <trans-unit id="saveAsMarkdown">
+        <source xml:lang="en">Save As Markdown</source>
+        <target state="translated">Enregistrer au format Markdown</target>
       </trans-unit>
       <trans-unit id="saveAsXml">
         <source xml:lang="en">Save As XML</source>
@@ -5194,6 +6227,18 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/contrib/query/browser/gridPanel" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="query.QueryErrorOccured">
+        <source xml:lang="en">Error occured while executing the query.</source>
+        <target state="translated">Une erreur s’est produite lors de l’exécution de la requête.</target>
+      </trans-unit>
+      <trans-unit id="query.QueryExecutionEnded">
+        <source xml:lang="en">Query execution completed.</source>
+        <target state="translated">Exécution de la requête terminée.</target>
+      </trans-unit>
+      <trans-unit id="query.QueryExecutionStarted">
+        <source xml:lang="en">Query execution started.</source>
+        <target state="translated">L’exécution de la requête a démarré.</target>
+      </trans-unit>
       <trans-unit id="resultsGrid">
         <source xml:lang="en">Results grid</source>
         <target state="translated">Grille de résultats</target>
@@ -5210,6 +6255,10 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/contrib/query/browser/keyboardQueryActions" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="ToggleActualPlanKeyboardAction">
+        <source xml:lang="en">Enable/Disable Actual Execution Plan</source>
+        <target state="translated">Activer/désactiver le plan d’exécution réel</target>
+      </trans-unit>
       <trans-unit id="ToggleFocusBetweenQueryEditorAndResultsAction">
         <source xml:lang="en">Toggle Focus Between Query And Results</source>
         <target state="translated">Basculer le focus entre la requête et les résultats</target>
@@ -5222,6 +6271,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Copy Query With Results</source>
         <target state="translated">Copier la requête avec les résultats</target>
       </trans-unit>
+      <trans-unit id="estimatedExecutionPlanKeyboardAction">
+        <source xml:lang="en">Display Estimated Execution Plan</source>
+        <target state="translated">Afficher le plan d’exécution estimé</target>
+      </trans-unit>
       <trans-unit id="focusOnCurrentQueryKeyboardAction">
         <source xml:lang="en">Focus on Current Query</source>
         <target state="translated">Se concentrer sur la requête actuelle</target>
@@ -5231,16 +6284,16 @@ Erreur : {1}</target>
         <target state="translated">Analyser la requête</target>
       </trans-unit>
       <trans-unit id="queryActions.notConnected">
-        <source xml:lang="en">Please connect to a server</source>
-        <target state="translated">Connectez-vous à un serveur</target>
+        <source xml:lang="en">Please connect to a server before running this action.</source>
+        <target state="translated">Veuillez vous connecter à un serveur avant d'exécuter cette action.</target>
       </trans-unit>
       <trans-unit id="queryActions.parseSyntaxFailure">
-        <source xml:lang="en">Command failed: </source>
-        <target state="translated">La commande a échoué : </target>
+        <source xml:lang="en">Failed to parse the query: {0}</source>
+        <target state="translated">Échec de l'analyse de la requête : {0}</target>
       </trans-unit>
       <trans-unit id="queryActions.parseSyntaxSuccess">
-        <source xml:lang="en">Commands completed successfully</source>
-        <target state="translated">Commandes exécutées</target>
+        <source xml:lang="en">Successfully parsed the query.</source>
+        <target state="translated">L'analyse de la requête a réussi.</target>
       </trans-unit>
       <trans-unit id="queryActions.queryResultsCopySuccess">
         <source xml:lang="en">Successfully copied query and results.</source>
@@ -5257,10 +6310,6 @@ Erreur : {1}</target>
       <trans-unit id="runCurrentQueryKeyboardAction">
         <source xml:lang="en">Run Current Query</source>
         <target state="translated">Exécuter la requête actuelle</target>
-      </trans-unit>
-      <trans-unit id="runCurrentQueryWithActualPlanKeyboardAction">
-        <source xml:lang="en">Run Current Query with Actual Plan</source>
-        <target state="translated">Exécuter la requête actuelle avec le plan réel</target>
       </trans-unit>
       <trans-unit id="runQueryKeyboardAction">
         <source xml:lang="en">Run Query</source>
@@ -5346,6 +6395,22 @@ Erreur : {1}</target>
         <source xml:lang="en">Character used for enclosing text fields when saving results as CSV</source>
         <target state="translated">Caractère utilisé pour englober les champs de texte pendant l'enregistrement des résultats au format CSV</target>
       </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsExcel.includeHeaders">
+        <source xml:lang="en">When true, column headers are included when saving results as an Excel file</source>
+        <target state="translated">Lorsque la valeur est true, les en-têtes de colonne sont inclus lors de l’enregistrement des résultats dans un fichier Excel</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsMarkdown.encoding">
+        <source xml:lang="en">File encoding used when saving results as Markdown</source>
+        <target state="translated">Encodage de fichier utilisé pendant l'enregistrement de résultats au format Markdown</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsMarkdown.includeHeaders">
+        <source xml:lang="en">When true, column headers are included when saving results as a Markdown file</source>
+        <target state="translated">Lorsque la valeur est true, les en-têtes de colonne sont inclus lors de l’enregistrement des résultats dans un fichier Markdown</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsMarkdown.lineSeparator">
+        <source xml:lang="en">Character(s) to use to separate lines when exporting to Markdown, defaults to system line endings</source>
+        <target state="translated">Caractère(s) à utiliser pour séparer les lignes lors de l’exportation vers Markdown. Par défaut, il s’agit des fins de ligne système</target>
+      </trans-unit>
       <trans-unit id="queryEditor.results.saveAsXml.encoding">
         <source xml:lang="en">File encoding used when saving results as XML</source>
         <target state="translated">Encodage de fichier utilisé pendant l'enregistrement des résultats au format XML</target>
@@ -5353,6 +6418,10 @@ Erreur : {1}</target>
       <trans-unit id="queryEditor.results.saveAsXml.formatted">
         <source xml:lang="en">When true, XML output will be formatted when saving results as XML</source>
         <target state="translated">Quand la valeur est true, la sortie XML est mise en forme pendant l'enregistrement des résultats au format XML</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.showActionBar">
+        <source xml:lang="en">Whether to show the action bar in the query results view</source>
+        <target state="translated">Indique s’il faut afficher la barre d’action dans l’affichage des résultats de la requête</target>
       </trans-unit>
       <trans-unit id="queryEditor.results.streaming">
         <source xml:lang="en">Enable results streaming; contains few minor visual issues</source>
@@ -5394,6 +6463,10 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/contrib/query/browser/queryActions" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="ExecutionPlan">
+        <source xml:lang="en">Execution Plan</source>
+        <target state="translated">Plan d'exécution</target>
+      </trans-unit>
       <trans-unit id="actualQueryPlan">
         <source xml:lang="en">Actual</source>
         <target state="translated">Réel</target>
@@ -5403,6 +6476,10 @@ Erreur : {1}</target>
         <target state="translated">Annuler</target>
       </trans-unit>
       <trans-unit id="changeConnectionDatabaseLabel">
+        <source xml:lang="en">Change</source>
+        <target state="translated">Changer</target>
+      </trans-unit>
+      <trans-unit id="changeConnectionDatabaseTooltip">
         <source xml:lang="en">Change Connection</source>
         <target state="translated">Changer la connexion</target>
       </trans-unit>
@@ -5418,6 +6495,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Connect</source>
         <target state="translated">Connecter</target>
       </trans-unit>
+      <trans-unit id="disableActualPlanLabel">
+        <source xml:lang="en">Disable Actual Plan</source>
+        <target state="translated">Désactiver le plan réel</target>
+      </trans-unit>
       <trans-unit id="disablesqlcmdLabel">
         <source xml:lang="en">Disable SQLCMD</source>
         <target state="translated">Désactiver SQLCMD</target>
@@ -5426,21 +6507,37 @@ Erreur : {1}</target>
         <source xml:lang="en">Disconnect</source>
         <target state="translated">Déconnecter</target>
       </trans-unit>
+      <trans-unit id="enableActualPlanLabel">
+        <source xml:lang="en">Enable Actual Plan</source>
+        <target state="translated">Activer le plan réel</target>
+      </trans-unit>
       <trans-unit id="enablesqlcmdLabel">
         <source xml:lang="en">Enable SQLCMD</source>
         <target state="translated">Activer SQLCMD</target>
       </trans-unit>
       <trans-unit id="estimatedQueryPlan">
-        <source xml:lang="en">Explain</source>
-        <target state="translated">Expliquer</target>
+        <source xml:lang="en">Estimated Plan</source>
+        <target state="translated">Plan estimé</target>
       </trans-unit>
       <trans-unit id="newQueryTask.newQuery">
         <source xml:lang="en">New Query</source>
         <target state="translated">Nouvelle requête</target>
       </trans-unit>
-      <trans-unit id="queryEditor.exportSqlAsNotebook">
+      <trans-unit id="query.multiSelectionNotSupported">
+        <source xml:lang="en">Running query is not supported when the editor is in multiple selection mode.</source>
+        <target state="translated">L’exécution de la requête n’est pas prise en charge lorsque l’éditeur est en mode de sélection multiple.</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.exportSqlAsNotebookLabel">
+        <source xml:lang="en">To Notebook</source>
+        <target state="translated">Vers l'ordinateur portable</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.exportSqlAsNotebookTooltip">
         <source xml:lang="en">Export as Notebook</source>
         <target state="translated">Exporter au format Notebook</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.parse">
+        <source xml:lang="en">Parse</source>
+        <target state="translated">Analyser</target>
       </trans-unit>
       <trans-unit id="runQueryLabel">
         <source xml:lang="en">Run</source>
@@ -5502,6 +6599,14 @@ Erreur : {1}</target>
         <source xml:lang="en">Average: {0}  Count: {1}  Sum: {2}</source>
         <target state="translated">Moyenne : {0}, nombre : {1}, somme : {2}</target>
       </trans-unit>
+      <trans-unit id="status.query.summaryTextNonNumeric">
+        <source xml:lang="en">Count: {0}  Distinct Count: {1}  Null Count: {2}</source>
+        <target state="translated">Nombre : {0} Nombre distinct : {1} Nombre de Null : {2}</target>
+      </trans-unit>
+      <trans-unit id="status.query.summaryTooltip">
+        <source xml:lang="en">Average: {0}  Count: {1}  Distinct Count: {2}  Max: {3}  Min: {4}  Null Count: {5}  Sum: {6}</source>
+        <target state="translated">Moyenne : {0} Nombre : {1} Nombre distinct : {2} Max : {3} Min : {4} Nombre de Null : {5} Somme : {6}</target>
+      </trans-unit>
       <trans-unit id="status.query.timeElapsed">
         <source xml:lang="en">Time Elapsed</source>
         <target state="translated">Temps écoulé</target>
@@ -5538,6 +6643,10 @@ Erreur : {1}</target>
         <source xml:lang="en">The maximum width in pixels for auto-sized columns</source>
         <target state="translated">Largeur maximale en pixels des colonnes dimensionnées automatiquement</target>
       </trans-unit>
+      <trans-unit id="resultsGrid.showJsonAsLink">
+        <source xml:lang="en">Whether to show cells with JSON formatted string as hyperlink. When enabled, upon click the JSON value will be opened in another tab. The default value is true.</source>
+        <target state="translated">Indique s’il faut afficher les cellules avec une chaîne au format JSON en tant que lien hypertexte. Lorsque cette option est activée, lorsque vous cliquez sur la valeur JSON, elle est ouverte dans un autre onglet. La valeur par défaut est true.</target>
+      </trans-unit>
       <trans-unit id="resultsGridConfigurationTitle">
         <source xml:lang="en">Results Grid and Messages</source>
         <target state="translated">Grille de résultats et messages</target>
@@ -5545,318 +6654,6 @@ Erreur : {1}</target>
       <trans-unit id="rowHeight">
         <source xml:lang="en">Controls the row height in pixels</source>
         <target state="translated">Contrôle la hauteur de ligne en pixels</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/browser/queryHistoryActions" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="queryHistory.clearLabel">
-        <source xml:lang="en">Clear All History</source>
-        <target state="translated">Effacer tout l'historique</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.delete">
-        <source xml:lang="en">Delete</source>
-        <target state="translated">Supprimer</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.disableCapture">
-        <source xml:lang="en">Pause Query History Capture</source>
-        <target state="translated">Suspendre la capture de l'historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.enableCapture">
-        <source xml:lang="en">Start Query History Capture</source>
-        <target state="translated">Démarrer la capture de l'historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.openQuery">
-        <source xml:lang="en">Open Query</source>
-        <target state="translated">Ouvrir la requête</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.runQuery">
-        <source xml:lang="en">Run Query</source>
-        <target state="translated">Exécuter la requête</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.toggleCaptureLabel">
-        <source xml:lang="en">Toggle Query History capture</source>
-        <target state="translated">Activer/désactiver la capture de l'historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="toggleQueryHistory">
-        <source xml:lang="en">Toggle Query History</source>
-        <target state="translated">Activer/désactiver l'historique des requêtes</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/browser/queryHistoryRenderer" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="failed">
-        <source xml:lang="en">failed</source>
-        <target state="translated">échec</target>
-      </trans-unit>
-      <trans-unit id="succeeded">
-        <source xml:lang="en">succeeded</source>
-        <target state="translated">succès</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/browser/queryHistoryView" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="noQueriesMessage">
-        <source xml:lang="en">No queries to display.</source>
-        <target state="translated">Aucune requête à afficher.</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.regTreeAriaLabel">
-        <source xml:lang="en">Query History</source>
-        <note>QueryHistory</note>
-        <target state="translated">Historique des requêtes</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/electron-browser/queryHistory" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="miViewQueryHistory">
-        <source xml:lang="en">&amp;&amp;Query History</source>
-        <note>&amp;&amp; denotes a mnemonic</note>
-        <target state="translated">&amp;&amp;Historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="queryHistory">
-        <source xml:lang="en">Query History</source>
-        <target state="translated">Historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.clearLabel">
-        <source xml:lang="en">Clear All History</source>
-        <target state="translated">Effacer tout l'historique</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.disableCapture">
-        <source xml:lang="en">Pause Query History Capture</source>
-        <target state="translated">Suspendre la capture de l'historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.enableCapture">
-        <source xml:lang="en">Start Query History Capture</source>
-        <target state="translated">Démarrer la capture de l'historique des requêtes</target>
-      </trans-unit>
-      <trans-unit id="queryHistoryCaptureEnabled">
-        <source xml:lang="en">Whether Query History capture is enabled. If false queries executed will not be captured.</source>
-        <target state="translated">Indique si la capture de l'historique des requêtes est activée. Si la valeur est false, les requêtes exécutées ne sont pas capturées.</target>
-      </trans-unit>
-      <trans-unit id="queryHistoryConfigurationTitle">
-        <source xml:lang="en">QueryHistory</source>
-        <target state="translated">QueryHistory</target>
-      </trans-unit>
-      <trans-unit id="viewCategory">
-        <source xml:lang="en">View</source>
-        <target state="translated">Voir</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryPlan/browser/queryPlan" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="queryPlanTitle">
-        <source xml:lang="en">Query Plan</source>
-        <target state="translated">Plan de requête</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryPlan/browser/queryPlanEditor" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="queryPlanEditor">
-        <source xml:lang="en">Query Plan Editor</source>
-        <target state="translated">Éditeur du plan de requête</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryPlan/browser/topOperations" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="topOperations.actualExecutions">
-        <source xml:lang="en">Actual Executions</source>
-        <target state="translated">Exécutions réelles</target>
-      </trans-unit>
-      <trans-unit id="topOperations.actualRebinds">
-        <source xml:lang="en">Actual Rebinds</source>
-        <target state="translated">Reliaisons réelles</target>
-      </trans-unit>
-      <trans-unit id="topOperations.actualRewinds">
-        <source xml:lang="en">Actual Rewinds</source>
-        <target state="translated">Rembobinages réels</target>
-      </trans-unit>
-      <trans-unit id="topOperations.actualRows">
-        <source xml:lang="en">Actual Rows</source>
-        <target state="translated">Lignes réelles</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estCPUCost">
-        <source xml:lang="en">Est CPU Cost</source>
-        <target state="translated">Coût estimé du processeur</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estCost">
-        <source xml:lang="en">Est Cost</source>
-        <target state="translated">Coût estimé</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estIOCost">
-        <source xml:lang="en">Est IO Cost</source>
-        <target state="translated">Coût estimé des E/S</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estRebinds">
-        <source xml:lang="en">Est Rebinds</source>
-        <target state="translated">Reliaisons estimées</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estRewinds">
-        <source xml:lang="en">Est Rewinds</source>
-        <target state="translated">Rembobinages estimés</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estRows">
-        <source xml:lang="en">Est Rows</source>
-        <target state="translated">Lignes estimées</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estSubtreeCost">
-        <source xml:lang="en">Est Subtree Cost</source>
-        <target state="translated">Coût estimé de la sous-arborescence</target>
-      </trans-unit>
-      <trans-unit id="topOperations.object">
-        <source xml:lang="en">Object</source>
-        <target state="translated">Objet</target>
-      </trans-unit>
-      <trans-unit id="topOperations.operation">
-        <source xml:lang="en">Operation</source>
-        <target state="translated">Opération</target>
-      </trans-unit>
-      <trans-unit id="topOperations.parallel">
-        <source xml:lang="en">Parallel</source>
-        <target state="translated">Parallèle</target>
-      </trans-unit>
-      <trans-unit id="topOperations.partitioned">
-        <source xml:lang="en">Partitioned</source>
-        <target state="translated">Partitionné</target>
-      </trans-unit>
-      <trans-unit id="topOperationsTitle">
-        <source xml:lang="en">Top Operations</source>
-        <target state="translated">Principales opérations</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/planHeader" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="planHeaderIndexAndCost">
-        <source xml:lang="en">Query {0}: Query cost (relative to the script): {1}%</source>
-        <note>{0} is the index of the graph in the execution plan tab
-{1} is the relative cost in percentage of the graph to the rest of the graphs in execution plan tab </note>
-        <target state="translated">Requête {0} : coût de requête (relatif au script) : {1} %</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/queryPlan" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="openQueryAction">
-        <source xml:lang="en">Open Query</source>
-        <target state="translated">Ouvrir la requête</target>
-      </trans-unit>
-      <trans-unit id="queryPlanCustomZoom">
-        <source xml:lang="en">Custom Zoom</source>
-        <target state="translated">Zoom personnalisé</target>
-      </trans-unit>
-      <trans-unit id="queryPlanFitGraphLabel">
-        <source xml:lang="en">Zoom to fit</source>
-        <target state="translated">Zoomer pour ajuster</target>
-      </trans-unit>
-      <trans-unit id="queryPlanOpenGraphFile">
-        <source xml:lang="en">Open Plan File</source>
-        <target state="new">Open Plan File</target>
-      </trans-unit>
-      <trans-unit id="queryPlanPropertiesActionLabel">
-        <source xml:lang="en">Properties</source>
-        <target state="translated">Propriétés</target>
-      </trans-unit>
-      <trans-unit id="queryPlanSavePlanXML">
-        <source xml:lang="en">Save Plan File</source>
-        <target state="new">Save Plan File</target>
-      </trans-unit>
-      <trans-unit id="queryPlanSearchNodeAction">
-        <source xml:lang="en">SearchNode</source>
-        <target state="translated">SearchNode</target>
-      </trans-unit>
-      <trans-unit id="queryPlanTitle">
-        <source xml:lang="en">Query Plan (Preview)</source>
-        <target state="new">Query Plan (Preview)</target>
-      </trans-unit>
-      <trans-unit id="queryPlanZoomInActionLabel">
-        <source xml:lang="en">Zoom In</source>
-        <target state="translated">Zoom avant</target>
-      </trans-unit>
-      <trans-unit id="queryPlanZoomOutActionLabel">
-        <source xml:lang="en">Zoom Out</source>
-        <target state="translated">Zoom arrière</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/queryPlanPropertiesView" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="nodePropertyViewNameNameColumnHeader">
-        <source xml:lang="en">Name</source>
-        <target state="new">Name</target>
-      </trans-unit>
-      <trans-unit id="nodePropertyViewNameValueColumnHeader">
-        <source xml:lang="en">Value</source>
-        <target state="new">Value</target>
-      </trans-unit>
-      <trans-unit id="nodePropertyViewTitle">
-        <source xml:lang="en">Properties</source>
-        <target state="new">Properties</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertiesEdgeOperationName">
-        <source xml:lang="en">Edge</source>
-        <target state="new">Edge</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertyViewClose">
-        <source xml:lang="en">Close</source>
-        <target state="new">Close</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertyViewSortAlphabetically">
-        <source xml:lang="en">Alphabetical</source>
-        <target state="new">Alphabetical</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertyViewSortByDisplayOrder">
-        <source xml:lang="en">Categorized</source>
-        <target state="new">Categorized</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/widgets/customZoomWidget" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="cancelCustomZoomAction">
-        <source xml:lang="en">Close (Escape)</source>
-        <target state="new">Close (Escape)</target>
-      </trans-unit>
-      <trans-unit id="invalidCustomZoomError">
-        <source xml:lang="en">Select a zoom value between 1 to 200</source>
-        <target state="new">Select a zoom value between 1 to 200</target>
-      </trans-unit>
-      <trans-unit id="qpZoomValueLabel">
-        <source xml:lang="en">Zoom (percent)</source>
-        <target state="new">Zoom (percent)</target>
-      </trans-unit>
-      <trans-unit id="zoomAction">
-        <source xml:lang="en">Zoom (Enter)</source>
-        <target state="new">Zoom (Enter)</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/widgets/nodeSearchWidget" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="cancelSearchAction">
-        <source xml:lang="en">Close (Escape)</source>
-        <target state="new">Close (Escape)</target>
-      </trans-unit>
-      <trans-unit id="nextSearchItemAction">
-        <source xml:lang="en">Next Match (Enter)</source>
-        <target state="new">Next Match (Enter)</target>
-      </trans-unit>
-      <trans-unit id="previousSearchItemAction">
-        <source xml:lang="en">Previous Match (Shift+Enter)</source>
-        <target state="new">Previous Match (Shift+Enter)</target>
-      </trans-unit>
-      <trans-unit id="executionPlanSearchTypeContains">
-        <source xml:lang="en">Contains</source>
-        <target state="new">Contains</target>
-      </trans-unit>
-      <trans-unit id="executionPlanSearchTypeEquals">
-        <source xml:lang="en">Equals</source>
-        <target state="new">Equals</target>
       </trans-unit>
     </body>
   </file>
@@ -5873,6 +6670,10 @@ Erreur : {1}</target>
       <trans-unit id="resourceViewer">
         <source xml:lang="en">Resource Viewer</source>
         <target state="translated">Visionneuse de ressources</target>
+      </trans-unit>
+      <trans-unit id="resourceViewerIcon">
+        <source xml:lang="en">Icon for resource viewer.</source>
+        <target state="translated">Icône de la visionneuse de ressources.</target>
       </trans-unit>
     </body>
   </file>
@@ -6030,21 +6831,13 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/contrib/tableDesigner/browser/actions" source-language="en" datatype="plaintext" target-language="fr">
     <body>
-      <trans-unit id="tableDesigner.generateScript">
-        <source xml:lang="en">Generate Script</source>
-        <target state="translated">Générer le script</target>
-      </trans-unit>
       <trans-unit id="tableDesigner.publishTableChanges">
         <source xml:lang="en">Publish Changes...</source>
         <target state="translated">Publier les modifications</target>
       </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/tableDesigner/browser/tableDesignerEditor" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="tableDesigner.PreviewFeature">
-        <source xml:lang="en">Preview feature</source>
-        <target state="translated">Fonctionnalité en préversion</target>
+      <trans-unit id="tableDesigner.saveTableChanges">
+        <source xml:lang="en">Save</source>
+        <target state="translated">Enregistrer</target>
       </trans-unit>
     </body>
   </file>
@@ -6203,6 +6996,22 @@ Erreur : {1}</target>
       <trans-unit id="enablePreviewFeatures.yes">
         <source xml:lang="en">Yes (recommended)</source>
         <target state="translated">Oui (recommandé)</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/welcome/notifyEncryption/notifyEncryptionDialog" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="notifyEncryption.message">
+        <source xml:lang="en">Azure Data Studio now has encryption enabled by default for all SQL Server connections. This may result in your existing connections no longer working unless certain Encryption related connection properties are changed.{0}We recommend you review the link below for more details.</source>
+        <target state="translated">Azure Data Studio a maintenant activé le chiffrement par défaut pour toutes les connexions SQL Server. Cela peut avoir pour conséquence que vos connexions existantes ne fonctionnent plus, à moins que certaines propriétés de connexion liées au chiffrement ne soient modifiées.{0}Nous vous recommandons de consulter le lien ci-dessous pour plus de détails.</target>
+      </trans-unit>
+      <trans-unit id="notifyEncryption.moreInfoLink">
+        <source xml:lang="en">More information</source>
+        <target state="translated">Plus d'informations</target>
+      </trans-unit>
+      <trans-unit id="notifyEncryption.title">
+        <source xml:lang="en">Important Update</source>
+        <target state="translated">Mise à jour importante</target>
       </trans-unit>
     </body>
   </file>
@@ -6566,6 +7375,49 @@ Erreur : {1}</target>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/welcome/page/browser/welcomePage.contribution" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="miWelcome">
+        <source xml:lang="en">&amp;&amp;Welcome</source>
+        <note>&amp;&amp; denotes a mnemonic</note>
+        <target state="translated">&amp;&amp;Bienvenue</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor">
+        <source xml:lang="en">Controls which editor is shown at startup, if none are restored from the previous session.</source>
+        <target state="translated">Contrôle quel éditeur s’affiche au démarrage, si aucun n'est restauré de la session précédente.</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.newUntitledFile">
+        <source xml:lang="en">Open a new untitled file (only applies when opening an empty window).</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">Ouvrez un nouveau fichier sans titre (s'applique uniquement à l'ouverture d'une fenêtre vide).</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.none">
+        <source xml:lang="en">Start without an editor.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">Démarrage sans éditeur.</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.readme">
+        <source xml:lang="en">Open the README when opening a folder that contains one, fallback to 'welcomePage' otherwise. Note: This is only observed as a global configuration, it will be ignored if set in a workspace or folder configuration.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">Ouvre le fichier README lors de l'ouverture d'un dossier qui en contient un, sinon il revient à 'welcomePage'. Remarque : ceci n'est observé que comme une configuration globale, elle sera ignorée si elle est définie dans une configuration d'espace de travail ou de dossier.</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.welcomePage">
+        <source xml:lang="en">Open the Welcome page, with content to aid in getting started with Azure Data Studio and extensions.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">Ouvrez la page d’accueil qui propose du contenu pour faciliter la prise en main d’Azure Data Studio et des extensions.</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.welcomePageInEmptyWorkbench">
+        <source xml:lang="en">Open the Welcome page when opening an empty workbench.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">Ouvre la page d'accueil à l'ouverture d'un banc d'essai vide.</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.welcomePageWithTour">
+        <source xml:lang="en">Open the welcome page with Getting Started Tour (default)</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">Ouvrir la page d’accueil avec la visite guidée Prise en main (par défaut)</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/services/accountManagement/browser/accountDialog" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="accountDialog.addConnection">
@@ -6579,6 +7431,10 @@ Erreur : {1}</target>
       <trans-unit id="accountDialog.didNotPickAuthProvider">
         <source xml:lang="en">You didn't select any authentication provider. Please try again.</source>
         <target state="translated">Vous n'avez sélectionné aucun fournisseur d'authentification. Réessayez.</target>
+      </trans-unit>
+      <trans-unit id="accountDialog.loadingProviderLabel">
+        <source xml:lang="en">Loading accounts...</source>
+        <target state="translated">Chargement des comptes...</target>
       </trans-unit>
       <trans-unit id="accountDialog.noAccountLabel">
         <source xml:lang="en">There is no linked account. Please add an account.</source>
@@ -6620,13 +7476,33 @@ Erreur : {1}</target>
         <source xml:lang="en">Close</source>
         <target state="translated">Fermer</target>
       </trans-unit>
+      <trans-unit id="addAccountFailedCodeMessage">
+        <source xml:lang="en">{0} 
+Error Message: {1}</source>
+        <target state="translated">{0} 
+Message d'erreur : {1}</target>
+      </trans-unit>
+      <trans-unit id="addAccountFailedGenericMessage">
+        <source xml:lang="en">Adding account failed, check Azure Accounts log for more info.</source>
+        <target state="translated">Échec de l’ajout du compte. Pour plus d’informations, consultez le journal des comptes Azure.</target>
+      </trans-unit>
       <trans-unit id="loggingIn">
         <source xml:lang="en">Adding account...</source>
         <target state="translated">Ajout du compte...</target>
       </trans-unit>
-      <trans-unit id="refreshFailed">
+      <trans-unit id="refreshAccountFailedGenericMessage">
+        <source xml:lang="en">Refreshing account failed, check Azure Accounts log for more info.</source>
+        <target state="translated">Échec de l’actualisation du compte. Pour plus d’informations, consultez le journal des comptes Azure.</target>
+      </trans-unit>
+      <trans-unit id="refreshCanceled">
         <source xml:lang="en">Refresh account was canceled by the user</source>
         <target state="translated">L'actualisation du compte a été annulée par l'utilisateur</target>
+      </trans-unit>
+      <trans-unit id="refreshFailed">
+        <source xml:lang="en">{0} 
+Error Message: {1}</source>
+        <target state="translated">{0} 
+Message d’erreur : {1}</target>
       </trans-unit>
     </body>
   </file>
@@ -6691,6 +7567,62 @@ Erreur : {1}</target>
       <trans-unit id="asmt.providerIdNotValidError">
         <source xml:lang="en">Connection is required in order to interact with Assessment Service</source>
         <target state="translated">La connexion est nécessaire pour interagir avec le service d'évaluation</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/backupRestoreUrlBrowser/browser/urlBrowserDialog" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="backupRestoreUrlBrowserDialog.account">
+        <source xml:lang="en">Azure Account</source>
+        <target state="translated">Compte Azure</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.backupFile">
+        <source xml:lang="en">Backup file</source>
+        <target state="translated">Fichier de Sauvegarde Microsoft Azure</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.blobContainer">
+        <source xml:lang="en">Blob container</source>
+        <target state="translated">Conteneur d’objets blob</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.linkAccount">
+        <source xml:lang="en">Link account</source>
+        <target state="translated">Lier un compte</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.sharedAccessSignature">
+        <source xml:lang="en">Shared access signature generated</source>
+        <target state="translated">Signature d’accès partagé générée</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.sharedAccessSignatureButton">
+        <source xml:lang="en">Create Credentials</source>
+        <target state="translated">Créer des identifiants</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.storageAccount">
+        <source xml:lang="en">Storage account</source>
+        <target state="translated">Compte de stockage</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.subscription">
+        <source xml:lang="en">Azure subscription</source>
+        <target state="translated">Souscription Azure</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.tenant">
+        <source xml:lang="en">Azure AD Tenant</source>
+        <target state="translated">Locataire Microsoft Azure Active Directory</target>
+      </trans-unit>
+      <trans-unit id="fileBrowser.discard">
+        <source xml:lang="en">Discard</source>
+        <target state="translated">Abandonner</target>
+      </trans-unit>
+      <trans-unit id="fileBrowser.ok">
+        <source xml:lang="en">OK</source>
+        <target state="translated">OK</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/backupRestoreUrlBrowser/browser/urlBrowserDialogService" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="filebrowser.selectBlob">
+        <source xml:lang="en">Select a blob</source>
+        <target state="translated">Sélectionner un blob</target>
       </trans-unit>
     </body>
   </file>
@@ -6824,6 +7756,10 @@ Erreur : {1}</target>
         <source xml:lang="en">If you have previously connected you may need to re-run kinit.</source>
         <target state="translated">Si vous vous êtes déjà connecté, vous devez peut-être réexécuter kinit.</target>
       </trans-unit>
+      <trans-unit id="runKinit">
+        <source xml:lang="en">Run Kinit</source>
+        <target state="translated">Exécuter Kinit</target>
+      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/services/connection/browser/connectionDialogWidget" source-language="en" datatype="plaintext" target-language="fr">
@@ -6872,6 +7808,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Are you sure you want to cancel this connection?</source>
         <target state="translated">Voulez-vous vraiment annuler cette connexion ?</target>
       </trans-unit>
+      <trans-unit id="connection.extensionNotInstalled">
+        <source xml:lang="en">The extension '{0}' is required in order to connect to this resource. Do you want to install it?</source>
+        <target state="translated">L’extension '{0}' est nécessaire pour se connecter à cette ressource. Voulez-vous l’installer?</target>
+      </trans-unit>
       <trans-unit id="connection.invalidConnectionResult">
         <source xml:lang="en">Connection result is invalid</source>
         <target state="translated">Le résultat de la connexion n'est pas valide.</target>
@@ -6888,9 +7828,17 @@ Erreur : {1}</target>
         <source xml:lang="en">Failed to refresh Azure account token for connection</source>
         <target state="translated">L’actualisation d'un jeton de compte Azure pour la connexion a échoué.</target>
       </trans-unit>
+      <trans-unit id="connection.unknownProvider">
+        <source xml:lang="en">Unknown provider '{0}'</source>
+        <target state="translated">Fournisseur inconnu '{0}'</target>
+      </trans-unit>
       <trans-unit id="connection.unsupportedServerVersionWarning">
         <source xml:lang="en">The server version is not supported by Azure Data Studio, you may still connect to it but some features in Azure Data Studio might not work as expected.</source>
         <target state="translated">La version du serveur n’est pas prise en charge par Azure Data Studio, vous pouvez toujours vous y connecter mais certaines fonctionnalités de Azure Data Studio peuvent ne pas fonctionner comme prévu.</target>
+      </trans-unit>
+      <trans-unit id="connectionDialog.connectionProviderNotSupported">
+        <source xml:lang="en">The extension that supports provider type '{0}' is not currently installed. Do you want to view the extensions?</source>
+        <target state="translated">L’extension qui prend en charge le type de fournisseur '{0}' n’est pas installée actuellement. Voulez-vous afficher les extensions?</target>
       </trans-unit>
       <trans-unit id="connectionManagementService.noProviderForUri">
         <source xml:lang="en">Could not find provider for uri: {0}</source>
@@ -6920,6 +7868,14 @@ Erreur : {1}</target>
         <source xml:lang="en">Advanced...</source>
         <target state="translated">Avancé...</target>
       </trans-unit>
+      <trans-unit id="boolean.false">
+        <source xml:lang="en">False</source>
+        <target state="translated">Faux</target>
+      </trans-unit>
+      <trans-unit id="boolean.true">
+        <source xml:lang="en">True</source>
+        <target state="translated">Vrai</target>
+      </trans-unit>
       <trans-unit id="connection.azureAccountDropdownLabel">
         <source xml:lang="en">Account</source>
         <target state="translated">Compte</target>
@@ -6936,9 +7892,21 @@ Erreur : {1}</target>
         <source xml:lang="en">Add an account...</source>
         <target state="translated">Ajouter un compte...</target>
       </trans-unit>
-      <trans-unit id="connectionWidget.fieldWillBeTrimmed">
-        <source xml:lang="en">{0} will be trimmed.</source>
-        <target state="translated">{0} est tronqué.</target>
+      <trans-unit id="connectionWidget.ConnectionStringError">
+        <source xml:lang="en">Failed to parse the connection string. {0}</source>
+        <target state="translated">Échec de l'analyse de la chaîne de connexion. {0}</target>
+      </trans-unit>
+      <trans-unit id="connectionWidget.ConnectionStringUndefined">
+        <source xml:lang="en">No connection info returned.</source>
+        <target state="translated">Aucune information de connexion renvoyée.</target>
+      </trans-unit>
+      <trans-unit id="connectionWidget.Error">
+        <source xml:lang="en">Error</source>
+        <target state="translated">Erreur</target>
+      </trans-unit>
+      <trans-unit id="connectionWidget.connectionString">
+        <source xml:lang="en">Connection string</source>
+        <target state="translated">Chaîne de connexion</target>
       </trans-unit>
       <trans-unit id="connectionWidget.invalidAzureAccount">
         <source xml:lang="en">You must select an account</source>
@@ -6994,6 +7962,58 @@ Erreur : {1}</target>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/services/connection/browser/passwordChangeDialog" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="passwordChangeDialog.Message1">
+        <source xml:lang="en">Password must be changed for '{0}' to continue logging into '{1}'.</source>
+        <target state="translated">Le mot de passe doit être modifié pour que '{0}' continue de se connecter à '{1}'.</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.Message2">
+        <source xml:lang="en">Please enter a new password below:</source>
+        <target state="translated">Entrez un nouveau mot de passe ci-dessous :</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.cancel">
+        <source xml:lang="en">Cancel</source>
+        <target state="translated">Annuler</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.confirmPassword">
+        <source xml:lang="en">Confirm password:</source>
+        <target state="translated">Confirmer le mot de passe :</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.connecting">
+        <source xml:lang="en">Connecting</source>
+        <target state="translated">Connexion</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.errorHeader">
+        <source xml:lang="en">Failure when attempting to change password</source>
+        <target state="translated">Échec lors de la tentative de modification du mot de passe</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.errorPasswordMismatchErrorMessage">
+        <source xml:lang="en">Passwords entered do not match</source>
+        <target state="translated">Les mots de passe entrés ne correspondent pas.</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.errorPasswordMismatchRecoveryInstructions">
+        <source xml:lang="en">Press OK and enter the exact same password in both boxes.</source>
+        <target state="translated">Appuyez sur OK et entrez exactement le même mot de passe dans les deux zones.</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.newPassword">
+        <source xml:lang="en">New password:</source>
+        <target state="translated">Nouveau mot de passe :</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.ok">
+        <source xml:lang="en">OK</source>
+        <target state="translated">OK</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.passwordChangeInProgress">
+        <source xml:lang="en">Password change already in progress</source>
+        <target state="translated">Modification du mot de passe déjà en cours</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.title">
+        <source xml:lang="en">Change Password</source>
+        <target state="translated">Changer le mot de passe</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/services/dashboard/browser/newDashboardTabDialogImpl" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="newDashboardTab.cancel">
@@ -7019,6 +8039,15 @@ Erreur : {1}</target>
       <trans-unit id="wizardPageNumberDisplayText">
         <source xml:lang="en">Step {0}</source>
         <target state="translated">Étape {0}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/dialog/browser/wizardNavigation.component" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="wizardNavigation.stepName">
+        <source xml:lang="en">Step {0}: {1}</source>
+        <note>Name of a step in wizard. {0}: step number, {1}: step name.</note>
+        <target state="translated">Étape {0} : {1}</target>
       </trans-unit>
     </body>
   </file>
@@ -7060,6 +8089,10 @@ Erreur : {1}</target>
         <source xml:lang="en">OK</source>
         <target state="translated">OK</target>
       </trans-unit>
+      <trans-unit id="errorMessageDialog.readMore">
+        <source xml:lang="en">Read More</source>
+        <target state="translated">En savoir plus</target>
+      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/services/errorMessage/browser/errorMessageService" source-language="en" datatype="plaintext" target-language="fr">
@@ -7079,6 +8112,30 @@ Erreur : {1}</target>
       <trans-unit id="warning">
         <source xml:lang="en">Warning</source>
         <target state="translated">Avertissement</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/executionPlan/common/executionPlanService" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="executionPlanService.ensureCapabilitiesRegistered">
+        <source xml:lang="en">Provider with id {0} was not registered after 30 seconds.</source>
+        <target state="translated">Le fournisseur avec l’ID {0} n’a pas été inscrit après 30 secondes.</target>
+      </trans-unit>
+      <trans-unit id="executionPlanService.ensureFileExtensionHandlerRegistered">
+        <source xml:lang="en">Execution plan provider which supports file format '{0}' was not registered after 30 seconds.</source>
+        <target state="translated">Le fournisseur de plan d’exécution qui prend en charge le format de fichier ’{0}’ n’a pas été inscrit après 30 secondes.</target>
+      </trans-unit>
+      <trans-unit id="noHandlerRegistered">
+        <source xml:lang="en">No valid execution plan handler is registered</source>
+        <target state="translated">Aucun gestionnaire de plan d’exécution valide n’est inscrit.</target>
+      </trans-unit>
+      <trans-unit id="providerIdNotValidError">
+        <source xml:lang="en">Valid provider is required in order to interact with ExecutionPlanService</source>
+        <target state="translated">Un fournisseur valide est nécessaire pour interagir avec ExecutionPlanService.</target>
+      </trans-unit>
+      <trans-unit id="selectExecutionPlanProvider">
+        <source xml:lang="en">Select a provider to open execution plan</source>
+        <target state="translated">Sélectionner un fournisseur pour ouvrir le plan d’exécution</target>
       </trans-unit>
     </body>
   </file>
@@ -7303,6 +8360,18 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/services/notebook/browser/models/cell" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="cellExecutionComplete">
+        <source xml:lang="en">Cell execution is complete</source>
+        <target state="translated">L’exécution de la cellule est terminée</target>
+      </trans-unit>
+      <trans-unit id="cellExecutionStarted">
+        <source xml:lang="en">Cell execution started</source>
+        <target state="translated">Début de l’exécution de la cellule</target>
+      </trans-unit>
+      <trans-unit id="codeCellLabel">
+        <source xml:lang="en">Code Cell {0}</source>
+        <target state="translated">Cellule de code {0}</target>
+      </trans-unit>
       <trans-unit id="commandSuccessful">
         <source xml:lang="en">Command executed successfully</source>
         <target state="translated">Commande exécutée</target>
@@ -7310,6 +8379,10 @@ Erreur : {1}</target>
       <trans-unit id="executionCanceled">
         <source xml:lang="en">Query execution was canceled</source>
         <target state="translated">L'exécution de requête a été annulée</target>
+      </trans-unit>
+      <trans-unit id="mdCellLabel">
+        <source xml:lang="en">Markdown Cell {0}</source>
+        <target state="translated">Cellule Markdown {0}</target>
       </trans-unit>
       <trans-unit id="noDefaultKernel">
         <source xml:lang="en">No kernel is available for this notebook</source>
@@ -7368,8 +8441,16 @@ Erreur : {1}</target>
         <target state="translated">Une erreur s'est produite au démarrage d'une session de notebook</target>
       </trans-unit>
       <trans-unit id="kernelRequiresConnection">
-        <source xml:lang="en">Kernel {0} was not found. The default kernel will be used instead.</source>
-        <target state="translated">Noyau {0} introuvable. Le noyau par défaut est utilisé à la place.</target>
+        <source xml:lang="en">Kernel '{0}' was not found. The default kernel will be used instead.</source>
+        <target state="translated">Le noyau « {0} » est introuvable. Le noyau par défaut sera utilisé à la place.</target>
+      </trans-unit>
+      <trans-unit id="kernelRestartFailed">
+        <source xml:lang="en">Kernel restart failed: {0}</source>
+        <target state="translated">Échec du redémarrage du noyau : {0}</target>
+      </trans-unit>
+      <trans-unit id="kernelRestartedSuccessfully">
+        <source xml:lang="en">Kernel restarted successfully</source>
+        <target state="translated">Le noyau a redémarré</target>
       </trans-unit>
     </body>
   </file>
@@ -7417,6 +8498,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Please select a connection to run cells for this kernel</source>
         <target state="translated">Sélectionnez une connexion afin d'exécuter les cellules pour ce noyau</target>
       </trans-unit>
+      <trans-unit id="savedKernelNotSupported">
+        <source xml:lang="en">This notebook's '{0}' kernel is not supported. Defaulting to SQL kernel instead.</source>
+        <target state="translated">Le noyau « {0} » de ce notebook n’est pas pris en charge. La valeur par défaut est le noyau SQL à la place.</target>
+      </trans-unit>
       <trans-unit id="shutdownClientSessionError">
         <source xml:lang="en">A client session error occurred when closing the notebook: {0}</source>
         <target state="translated">Une erreur de session du client s'est produite pendant la fermeture du notebook : {0}</target>
@@ -7432,6 +8517,10 @@ Erreur : {1}</target>
       <trans-unit id="executeProviderTimeout">
         <source xml:lang="en">Waiting for Execute Provider availability timed out for notebook provider '{0}'</source>
         <target state="translated">L’attente du délai de disponibilité du fournisseur d’exécution a expiré pour le fournisseur de notebooks « {0} »</target>
+      </trans-unit>
+      <trans-unit id="failedToCreateNotebookInput">
+        <source xml:lang="en">Failed to create notebook input for provider '{0}'</source>
+        <target state="translated">Échec de la création de l’entrée de notebook pour le fournisseur '{0}'</target>
       </trans-unit>
       <trans-unit id="notebookServiceNoProvider">
         <source xml:lang="en">Notebook provider does not exist</source>
@@ -7453,6 +8542,10 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/services/notebook/browser/notebookViews/notebookViewModel" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="Untitled">
+        <source xml:lang="en">Untitled</source>
+        <target state="translated">Sans titre</target>
+      </trans-unit>
       <trans-unit id="notebookView.nameTaken">
         <source xml:lang="en">A view with the name {0} already exists in this notebook.</source>
         <target state="translated">Une vue portant le nom {0} existe déjà dans ce bloc-notes.</target>
@@ -7469,6 +8562,10 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/services/notebook/browser/sql/sqlSessionManager" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="SqlKernelRestartNotSupported">
+        <source xml:lang="en">SQL kernel restart not supported</source>
+        <target state="translated">Redémarrage du noyau SQL non pris en charge</target>
+      </trans-unit>
       <trans-unit id="connectionRequired">
         <source xml:lang="en">A connection must be chosen to run notebook cells</source>
         <target state="translated">Une connexion doit être choisie pour exécuter des cellules de notebook</target>
@@ -7517,29 +8614,21 @@ Erreur : {1}</target>
         <source xml:lang="en">Cell type {0} unknown</source>
         <target state="translated">Type de cellule {0} inconnu</target>
       </trans-unit>
-      <trans-unit id="unrecognizedOutput">
-        <source xml:lang="en">Output type {0} not recognized</source>
-        <target state="translated">Type de sortie {0} non reconnu</target>
-      </trans-unit>
-      <trans-unit id="unrecognizedOutputType">
-        <source xml:lang="en">Output type {0} not recognized</source>
-        <target state="translated">Type de sortie {0} non reconnu</target>
-      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/services/notebook/common/notebookRegistry" source-language="en" datatype="plaintext" target-language="fr">
     <body>
       <trans-unit id="carbon.extension.contributes.notebook.executionTarget">
-        <source xml:lang="en">Optional execution target this magic indicates, for example Spark vs SQL</source>
-        <target state="translated">Cible d'exécution facultative que cette commande magique indique, par exemple, Spark vs. SQL</target>
+        <source xml:lang="en">Optional execution target this magic indicates, for example Python vs SQL</source>
+        <target state="translated">Cible d’exécution facultative que cette commande magique indique, par exemple, Python vs. SQL</target>
       </trans-unit>
       <trans-unit id="carbon.extension.contributes.notebook.fileExtensions">
         <source xml:lang="en">What file extensions should be registered to this notebook provider</source>
         <target state="translated">Extensions de fichier à inscrire dans ce fournisseur de notebooks</target>
       </trans-unit>
       <trans-unit id="carbon.extension.contributes.notebook.kernels">
-        <source xml:lang="en">Optional set of kernels this is valid for, e.g. python3, pyspark, sql</source>
-        <target state="translated">Ensemble facultatif de noyaux, valable, par exemple, pour python3, pyspark, sql</target>
+        <source xml:lang="en">Optional set of kernels this is valid for, e.g. python3, sql</source>
+        <target state="translated">Ensemble facultatif de noyaux, valable, par exemple, pour python3, sql</target>
       </trans-unit>
       <trans-unit id="carbon.extension.contributes.notebook.language">
         <source xml:lang="en">The cell language to be used if this cell magic is included in the cell</source>
@@ -7557,10 +8646,6 @@ Erreur : {1}</target>
         <source xml:lang="en">What kernels should be standard with this notebook provider</source>
         <target state="translated">Noyaux devant être standard avec ce fournisseur de notebooks</target>
       </trans-unit>
-      <trans-unit id="providerNotInRegistryError">
-        <source xml:lang="en">The specified provider '{0}' is not present in the notebook registry.</source>
-        <target state="translated">Le fournisseur spécifié « {0} » n’est pas présent dans le registre de notebooks.</target>
-      </trans-unit>
       <trans-unit id="vscode.extension.contributes.notebook.languagemagics">
         <source xml:lang="en">Contributes notebook language.</source>
         <target state="translated">Ajoute un langage de notebook.</target>
@@ -7568,14 +8653,6 @@ Erreur : {1}</target>
       <trans-unit id="vscode.extension.contributes.notebook.providersDescriptions">
         <source xml:lang="en">Contributes notebook provider descriptions.</source>
         <target state="translated">Contribue à la description des fournisseurs de blocs-notes.</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/services/objectExplorer/browser/asyncServerTreeRenderer" source-language="en" datatype="plaintext" target-language="fr">
-    <body>
-      <trans-unit id="loading">
-        <source xml:lang="en">Loading...</source>
-        <target state="translated">Chargement...</target>
       </trans-unit>
     </body>
   </file>
@@ -7613,9 +8690,25 @@ Erreur : {1}</target>
         <source xml:lang="en">Delete Connection</source>
         <target state="translated">Supprimer la connexion</target>
       </trans-unit>
+      <trans-unit id="deleteConnectionConfirmation">
+        <source xml:lang="en">Are you sure you want to delete connection '{0}'?</source>
+        <target state="translated">Êtes-vous sûr de vouloir supprimer la connexion '{0}' ?</target>
+      </trans-unit>
+      <trans-unit id="deleteConnectionConfirmationNo">
+        <source xml:lang="en">No</source>
+        <target state="translated">Non</target>
+      </trans-unit>
+      <trans-unit id="deleteConnectionConfirmationYes">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">Oui</target>
+      </trans-unit>
       <trans-unit id="deleteConnectionGroup">
         <source xml:lang="en">Delete Group</source>
         <target state="translated">Supprimer le groupe</target>
+      </trans-unit>
+      <trans-unit id="deleteConnectionGroupConfirmation">
+        <source xml:lang="en">Are you sure you want to delete connection group '{0}'?</source>
+        <target state="translated">Êtes-vous sûr de vouloir supprimer le groupe de connexion '{0}' ?</target>
       </trans-unit>
       <trans-unit id="showAllConnections">
         <source xml:lang="en">Show All Connections</source>
@@ -7632,6 +8725,22 @@ Erreur : {1}</target>
       <trans-unit id="nodeExpansionError">
         <source xml:lang="en">Multiple errors:</source>
         <target state="translated">Plusieurs erreurs :</target>
+      </trans-unit>
+      <trans-unit id="nodeExpansionTimeout">
+        <source xml:lang="en">Node expansion timed out for node {0} for providers {1}</source>
+        <target state="translated">L'expansion du nœud a expiré pour le nœud {0} pour les fournisseurs {1}</target>
+      </trans-unit>
+      <trans-unit id="objectExplorerMissingConnectionForSession">
+        <source xml:lang="en">Timeout waiting for session {0} to be created for connection "{1}". This has probably happened because OE service did not recieve a response for createNewSession from the provider for connection "{1}"</source>
+        <target state="translated">Expiration du délai d’attente pour la création de session {0} pour la connexion « {1} ». Ceci est probablement dû au fait que le service OE n’a pas reçu de réponse pour createNewSession de la part du fournisseur pour la connexion « {1} »</target>
+      </trans-unit>
+      <trans-unit id="objectExplorerMissingSession">
+        <source xml:lang="en">Timed out waiting for session {0} to be created. This has probably happened because OE service did not recieve a response for createNewSession from the provider.</source>
+        <target state="translated">Expiration du délai d’attente de la création de session {0}. Cela est probablement dû au fait que le service OE n’a pas reçu de réponse du fournisseur pour createNewSession.</target>
+      </trans-unit>
+      <trans-unit id="objectExplorerSessionIdMissing">
+        <source xml:lang="en">The session ID returned by provider "{0}" for connection "{1}" is invalid.</source>
+        <target state="translated">L’ID de session retourné par le fournisseur « {0} » pour le « {1} » de connexion n’est pas valide.</target>
       </trans-unit>
     </body>
   </file>
@@ -7653,9 +8762,9 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/services/objectExplorer/browser/serverTreeRenderer" source-language="en" datatype="plaintext" target-language="fr">
     <body>
-      <trans-unit id="loading">
-        <source xml:lang="en">Loading...</source>
-        <target state="translated">Chargement...</target>
+      <trans-unit id="filteredTreeElementName">
+        <source xml:lang="en">{0} (filtered)</source>
+        <target state="translated">{0} (filtré)</target>
       </trans-unit>
     </body>
   </file>
@@ -7672,6 +8781,14 @@ Erreur : {1}</target>
       <trans-unit id="treeCreation.regTreeAriaLabel">
         <source xml:lang="en">Servers</source>
         <target state="translated">Serveurs</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/objectExplorer/browser/treeUpdateUtils" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="objectExplorerTimeout">
+        <source xml:lang="en">Object Explorer expansion timed out for '{0}'</source>
+        <target state="translated">Explorateur d’objets d’extension de '{0}' a expiré</target>
       </trans-unit>
     </body>
   </file>
@@ -7705,6 +8822,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Add a clause</source>
         <target state="translated">Ajouter une clause</target>
       </trans-unit>
+      <trans-unit id="profilerFilterDialog.allClausesCleared">
+        <source xml:lang="en">All clauses have been cleared.</source>
+        <target state="translated">Toutes les clauses ont été effacées.</target>
+      </trans-unit>
       <trans-unit id="profilerFilterDialog.apply">
         <source xml:lang="en">Apply</source>
         <target state="translated">Appliquer</target>
@@ -7736,6 +8857,10 @@ Erreur : {1}</target>
       <trans-unit id="profilerFilterDialog.loadFilter">
         <source xml:lang="en">Load Filter</source>
         <target state="translated">Charger le filtre</target>
+      </trans-unit>
+      <trans-unit id="profilerFilterDialog.newClauseAdded">
+        <source xml:lang="en">A new clause has been added.</source>
+        <target state="translated">Une nouvelle clause a été ajoutée.</target>
       </trans-unit>
       <trans-unit id="profilerFilterDialog.notContainsOperator">
         <source xml:lang="en">Not Contains</source>
@@ -7873,6 +8998,10 @@ Erreur : {1}</target>
         <source xml:lang="en">JSON</source>
         <target state="translated">JSON</target>
       </trans-unit>
+      <trans-unit id="resultsSerializer.saveAsFileExtensionMarkdownTitle">
+        <source xml:lang="en">Markdown</source>
+        <target state="translated">Markdown</target>
+      </trans-unit>
       <trans-unit id="resultsSerializer.saveAsFileExtensionTXTTitle">
         <source xml:lang="en">Plain Text</source>
         <target state="translated">Texte brut</target>
@@ -7917,13 +9046,17 @@ Erreur : {1}</target>
         <source xml:lang="en">OK</source>
         <target state="translated">OK</target>
       </trans-unit>
-      <trans-unit id="firewallRuleDialogDescription">
-        <source xml:lang="en">Your client IP address does not have access to the server. Sign in to an Azure account and create a new firewall rule to enable access.</source>
-        <target state="translated">L'adresse IP de votre client n'a pas accès au serveur. Connectez-vous à un compte Azure et créez une règle de pare-feu pour autoriser l'accès.</target>
+      <trans-unit id="firewall.ruleName">
+        <source xml:lang="en">Rule name</source>
+        <target state="translated">Nom de la règle</target>
       </trans-unit>
-      <trans-unit id="firewallRuleHelpDescription">
-        <source xml:lang="en">Learn more about firewall settings</source>
-        <target state="translated">En savoir plus sur les paramètres de pare-feu</target>
+      <trans-unit id="firewallRuleDescription">
+        <source xml:lang="en">A firewall rule is required to access the SQL Server instance. Click the link below to create a new firewall rule.</source>
+        <target state="translated">Une règle de pare-feu est nécessaire pour accéder à l’instance SQL Server. Cliquez sur le lien ci-dessous pour créer une règle de pare-feu.</target>
+      </trans-unit>
+      <trans-unit id="firewallRuleHelpLink">
+        <source xml:lang="en">Learn more about firewall rules</source>
+        <target state="translated">En savoir plus sur les règles de pare-feu</target>
       </trans-unit>
       <trans-unit id="from">
         <source xml:lang="en">From</source>
@@ -7961,6 +9094,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Backup sets to restore</source>
         <target state="translated">Jeux de sauvegarde à restaurer</target>
       </trans-unit>
+      <trans-unit id="backupUrl">
+        <source xml:lang="en">Backup URL</source>
+        <target state="translated">URL de Sauvegarde Microsoft Azure</target>
+      </trans-unit>
       <trans-unit id="database">
         <source xml:lang="en">Database</source>
         <target state="translated">Base de données</target>
@@ -7968,6 +9105,10 @@ Erreur : {1}</target>
       <trans-unit id="destination">
         <source xml:lang="en">Destination</source>
         <target state="translated">Destination</target>
+      </trans-unit>
+      <trans-unit id="enterBackupUrl">
+        <source xml:lang="en">Please enter URL</source>
+        <target state="translated">Veuillez entrer l’URL</target>
       </trans-unit>
       <trans-unit id="fileType">
         <source xml:lang="en">File type</source>
@@ -7988,6 +9129,10 @@ Erreur : {1}</target>
       <trans-unit id="missingBackupFilePathError">
         <source xml:lang="en">Backup file path is required.</source>
         <target state="translated">Le chemin du fichier de sauvegarde est obligatoire.</target>
+      </trans-unit>
+      <trans-unit id="missingBackupUrlError">
+        <source xml:lang="en">Backup url is required.</source>
+        <target state="translated">L’URL de Sauvegarde Microsoft Azure est requise.</target>
       </trans-unit>
       <trans-unit id="multipleBackupFilePath">
         <source xml:lang="en">Please enter one or more file paths separated by commas</source>
@@ -8017,6 +9162,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Backup file</source>
         <target state="translated">Fichier de sauvegarde</target>
       </trans-unit>
+      <trans-unit id="restoreDialog.browse">
+        <source xml:lang="en">Browse</source>
+        <target state="translated">Parcourir</target>
+      </trans-unit>
       <trans-unit id="restoreDialog.cancel">
         <source xml:lang="en">Cancel</source>
         <target state="translated">Annuler</target>
@@ -8036,6 +9185,14 @@ Erreur : {1}</target>
       <trans-unit id="restoreDialog.script">
         <source xml:lang="en">Script</source>
         <target state="translated">Script</target>
+      </trans-unit>
+      <trans-unit id="restoreDialog.targetDatabaseAlreadyExists">
+        <source xml:lang="en">Target database already exists</source>
+        <target state="translated">La base de données cible existe déjà</target>
+      </trans-unit>
+      <trans-unit id="restoreDialog.url">
+        <source xml:lang="en">URL</source>
+        <target state="translated">URL</target>
       </trans-unit>
       <trans-unit id="restoreFrom">
         <source xml:lang="en">Restore from</source>
@@ -8068,6 +9225,10 @@ Erreur : {1}</target>
       <trans-unit id="targetDatabase">
         <source xml:lang="en">Target database</source>
         <target state="translated">Base de données cible</target>
+      </trans-unit>
+      <trans-unit id="targetDatabaseTooltip">
+        <source xml:lang="en">Please enter target database name</source>
+        <target state="translated">Veuillez entrer le nom de la base de données cible</target>
       </trans-unit>
     </body>
   </file>
@@ -8129,6 +9290,10 @@ Erreur : {1}</target>
   </file>
   <file original="src/sql/workbench/services/tableDesigner/browser/tableDesignerComponentInput" source-language="en" datatype="plaintext" target-language="fr">
     <body>
+      <trans-unit id="designer.checkConstraint.description.description">
+        <source xml:lang="en">The description of the check constraint.</source>
+        <target state="translated">La description de la contrainte de vérification.</target>
+      </trans-unit>
       <trans-unit id="designer.checkConstraint.description.expression">
         <source xml:lang="en">The expression defining the check constraint.</source>
         <target state="translated">Expression définissant la contrainte de validation.</target>
@@ -8136,6 +9301,10 @@ Erreur : {1}</target>
       <trans-unit id="designer.checkConstraint.description.name">
         <source xml:lang="en">The name of the check constraint.</source>
         <target state="translated">Nom de la contrainte de validation.</target>
+      </trans-unit>
+      <trans-unit id="designer.column.description.advancedType">
+        <source xml:lang="en">Displays the unified data type (including length, scale and precision) for the column</source>
+        <target state="translated">Affiche le type de données unifié (y compris la longueur, l’échelle et la précision) pour la colonne</target>
       </trans-unit>
       <trans-unit id="designer.column.description.allowNulls">
         <source xml:lang="en">Specifies whether the column may have a NULL value.</source>
@@ -8148,6 +9317,10 @@ Erreur : {1}</target>
       <trans-unit id="designer.column.description.defaultValueBinding">
         <source xml:lang="en">A predefined global default value for the column or binding.</source>
         <target state="translated">Valeur globale prédéfinie par défaut pour la colonne ou la liaison.</target>
+      </trans-unit>
+      <trans-unit id="designer.column.description.description">
+        <source xml:lang="en">Displays the description of the column</source>
+        <target state="translated">Affiche la description de la colonne</target>
       </trans-unit>
       <trans-unit id="designer.column.description.length">
         <source xml:lang="en">The maximum length (in characters) that can be stored in this database object.</source>
@@ -8173,6 +9346,10 @@ Erreur : {1}</target>
         <source xml:lang="en">The mapping between foreign key columns and primary key columns.</source>
         <target state="translated">Mappage entre les colonnes de clés étrangères et les colonnes de clé primaire.</target>
       </trans-unit>
+      <trans-unit id="designer.foreignkey.description.description">
+        <source xml:lang="en">The description of the foreign key.</source>
+        <target state="translated">Description de la clé étrangère.</target>
+      </trans-unit>
       <trans-unit id="designer.foreignkey.description.name">
         <source xml:lang="en">The name of the foreign key.</source>
         <target state="translated">Nom de la clé étrangère.</target>
@@ -8197,6 +9374,10 @@ Erreur : {1}</target>
         <source xml:lang="en">The columns of the index.</source>
         <target state="translated">Les colonnes de l'index.</target>
       </trans-unit>
+      <trans-unit id="designer.index.description.description">
+        <source xml:lang="en">The description of the index.</source>
+        <target state="translated">La description de l’indice.</target>
+      </trans-unit>
       <trans-unit id="designer.index.description.name">
         <source xml:lang="en">The name of the index.</source>
         <target state="translated">Nom de l'index.</target>
@@ -8213,9 +9394,21 @@ Erreur : {1}</target>
         <source xml:lang="en">The schema that contains the table.</source>
         <target state="translated">Schéma qui contient la table.</target>
       </trans-unit>
+      <trans-unit id="designer.table.primaryKeyColumns.description">
+        <source xml:lang="en">Columns in the primary key.</source>
+        <target state="translated">Colonnes dans la clé primaire</target>
+      </trans-unit>
+      <trans-unit id="designer.table.primaryKeyDescription.description">
+        <source xml:lang="en">The description of the primary key.</source>
+        <target state="translated">La description de la clé primaire.</target>
+      </trans-unit>
+      <trans-unit id="designer.table.primaryKeyName.description">
+        <source xml:lang="en">Name of the primary key.</source>
+        <target state="translated">Nom de la clé primaire</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.ErrorDialogTitle">
         <source xml:lang="en">Table Designer Error</source>
-        <target state="new">Table Designer Error</target>
+        <target state="translated">Erreur du concepteur de tableaux</target>
       </trans-unit>
       <trans-unit id="tableDesigner.ForeignKeyTypeName">
         <source xml:lang="en">Foreign Key</source>
@@ -8228,6 +9421,46 @@ Erreur : {1}</target>
       <trans-unit id="tableDesigner.IndexTypeName">
         <source xml:lang="en">Index</source>
         <target state="translated">Index</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.PrimaryKeyTabTitle">
+        <source xml:lang="en">Primary Key</source>
+        <target state="translated">Clé primaire</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.TableSchemaValidationError">
+        <source xml:lang="en">Table schema validation failed with error: {0}</source>
+        <target state="translated">Échec de la validation du schéma de table avec l’erreur : {0}</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addForeignKey">
+        <source xml:lang="en">New Foreign Key</source>
+        <target state="translated">Nouvelle clé étrangère</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewCheckConstraint">
+        <source xml:lang="en">New Check Constraint</source>
+        <target state="translated">Nouvelle contrainte CHECK</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumn">
+        <source xml:lang="en">New Column</source>
+        <target state="translated">Nouvelle colonne</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumnMapping">
+        <source xml:lang="en">New Column Mapping</source>
+        <target state="translated">Nouveau mappage de colonnes</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumnToIndex">
+        <source xml:lang="en">Add Column</source>
+        <target state="translated">Ajouter une colonne</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumnToPrimaryKey">
+        <source xml:lang="en">Add Column</source>
+        <target state="translated">Ajouter une colonne</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewIndex">
+        <source xml:lang="en">New Index</source>
+        <target state="translated">Nouvel index</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.checkConstraintDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">Description</target>
       </trans-unit>
       <trans-unit id="tableDesigner.checkConstraintExpressionTitle">
         <source xml:lang="en">Expression</source>
@@ -8245,6 +9478,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Check Constraints</source>
         <target state="translated">Contraintes de validation</target>
       </trans-unit>
+      <trans-unit id="tableDesigner.columnAdvancedTypeTitle">
+        <source xml:lang="en">Type</source>
+        <target state="translated">Type</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.columnAllowNullTitle">
         <source xml:lang="en">Allow Nulls</source>
         <target state="translated">Autoriser les valeurs Null</target>
@@ -8252,6 +9489,10 @@ Erreur : {1}</target>
       <trans-unit id="tableDesigner.columnDefaultValueTitle">
         <source xml:lang="en">Default Value</source>
         <target state="translated">Valeur par défaut</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.columnDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">Description</target>
       </trans-unit>
       <trans-unit id="tableDesigner.columnIsPrimaryKeyTitle">
         <source xml:lang="en">Primary Key</source>
@@ -8290,8 +9531,8 @@ Erreur : {1}</target>
         <target state="translated">Description</target>
       </trans-unit>
       <trans-unit id="tableDesigner.errorInitializingTableDesigner">
-        <source xml:lang="en">An error occured while initializing the table designer: {0}</source>
-        <target state="translated">Une erreur s'est produite lors de l'initialisation du concepteur de tables : {0}</target>
+        <source xml:lang="en">An error occurred while initializing the table designer: {0}</source>
+        <target state="translated">Une erreur s’est produite lors de l’initialisation du concepteur de table : {0}</target>
       </trans-unit>
       <trans-unit id="tableDesigner.errorProcessingEdit">
         <source xml:lang="en">An error occured while processing the change: {0}</source>
@@ -8308,6 +9549,10 @@ Erreur : {1}</target>
       <trans-unit id="tableDesigner.foreignKeyColumns">
         <source xml:lang="en">Columns</source>
         <target state="translated">Colonnes</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.foreignKeyDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">Description</target>
       </trans-unit>
       <trans-unit id="tableDesigner.foreignKeyNameTitle">
         <source xml:lang="en">Name</source>
@@ -8330,7 +9575,7 @@ Erreur : {1}</target>
         <target state="translated">Général</target>
       </trans-unit>
       <trans-unit id="tableDesigner.generatePreviewReportError">
-        <source xml:lang="en">An error occured while generating preview report: {0}</source>
+        <source xml:lang="en">An error occurred while generating preview report: {0}</source>
         <target state="translated">Une erreur s’est produite lors de la génération du rapport d’aperçu : {0}</target>
       </trans-unit>
       <trans-unit id="tableDesigner.generateScriptError">
@@ -8357,6 +9602,10 @@ Erreur : {1}</target>
         <source xml:lang="en">Columns</source>
         <target state="translated">Colonnes</target>
       </trans-unit>
+      <trans-unit id="tableDesigner.indexDescription">
+        <source xml:lang="en">Description</source>
+        <target state="translated">Description</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.indexName">
         <source xml:lang="en">Name</source>
         <target state="translated">Nom</target>
@@ -8365,9 +9614,25 @@ Erreur : {1}</target>
         <source xml:lang="en">Indexes</source>
         <target state="translated">Index</target>
       </trans-unit>
+      <trans-unit id="tableDesigner.inputValidationError">
+        <source xml:lang="en">The input validation failed with error: {0}</source>
+        <target state="translated">Échec de la validation de l’entrée avec l’erreur : {0}</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.nameTitle">
         <source xml:lang="en">Table name</source>
         <target state="translated">Nom de la table</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.primaryKeyColumnsTitle">
+        <source xml:lang="en">Primary Key Columns</source>
+        <target state="translated">Colonnes de clés primaires</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.primaryKeyDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">Description</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.primaryKeyNameTitle">
+        <source xml:lang="en">Name</source>
+        <target state="translated">Nom</target>
       </trans-unit>
       <trans-unit id="tableDesigner.publishChangeError">
         <source xml:lang="en">An error occured while publishing changes: {0}</source>
@@ -8408,6 +9673,19 @@ Erreur : {1}</target>
       <trans-unit id="tableDesigner.previewDatabaseUpdates">
         <source xml:lang="en">Preview Database Updates</source>
         <target state="translated">Aperçu des mises à jour de la base de données</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/tableDesigner/browser/tableDesignerService" source-language="en" datatype="plaintext" target-language="fr">
+    <body>
+      <trans-unit id="TableDesigner.closeApplication">
+        <source xml:lang="en">&amp;&amp;Close Application</source>
+        <note>&amp;&amp; denotes a mnemonic</note>
+        <target state="translated">&amp;&amp;Fermer l'application</target>
+      </trans-unit>
+      <trans-unit id="TableDesigner.saveBeforeExit">
+        <source xml:lang="en">There are unsaved changes in Table Designer that will be lost if you close the application. Do you want to close the application?</source>
+        <target state="translated">Des modifications non enregistrées dans Concepteur de tables seront perdues si vous fermez l’application. Voulez-vous fermer l’application ?</target>
       </trans-unit>
     </body>
   </file>

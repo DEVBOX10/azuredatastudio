@@ -8,13 +8,14 @@ import * as azdata from 'azdata';
 import { Event, Emitter } from 'vs/base/common/event';
 import { IMainContext } from 'vs/workbench/api/common/extHost.protocol';
 import { Disposable } from 'vs/workbench/api/common/extHostTypes';
-import { SqlMainContext, MainThreadDataProtocolShape, ExtHostDataProtocolShape } from 'sql/workbench/api/common/sqlExtHost.protocol';
+import { MainThreadDataProtocolShape, ExtHostDataProtocolShape, MainThreadPerfShape } from 'sql/workbench/api/common/sqlExtHost.protocol';
 import { DataProviderType } from 'sql/workbench/api/common/sqlExtHostTypes';
 import { IURITransformer } from 'vs/base/common/uriIpc';
 import { URI, UriComponents } from 'vs/base/common/uri';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { mapToSerializable } from 'sql/base/common/map';
 import { ITelemetryEventProperties } from 'sql/platform/telemetry/common/telemetry';
+import { SqlMainContext } from 'vs/workbench/api/common/extHost.protocol';
 
 export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 
@@ -23,6 +24,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	readonly onDidChangeLanguageFlavor: Event<azdata.DidChangeLanguageFlavorParams> = this._onDidChangeLanguageFlavor.event;
 
 	private _proxy: MainThreadDataProtocolShape;
+	private _perfProxy: MainThreadPerfShape;
 
 	private static _handlePool: number = 0;
 	private _adapter = new Map<number, azdata.DataProvider>();
@@ -37,6 +39,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 	) {
 		super();
 		this._proxy = mainContext.getProxy(SqlMainContext.MainThreadDataProtocol);
+		this._perfProxy = mainContext.getProxy(SqlMainContext.MainThreadPerf);
 	}
 
 	private _getTransformedUri(uri: string, transformMethod: (uri: UriComponents) => UriComponents): string {
@@ -224,6 +227,13 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		return this._resolveProvider<azdata.ConnectionProvider>(handle).disconnect(connectionUri);
 	}
 
+	override $changePassword(handle: number, connectionUri: string, connection: azdata.ConnectionInfo, newPassword: string): Thenable<azdata.PasswordChangeResult> {
+		if (this.uriTransformer) {
+			connectionUri = this._getTransformedUri(connectionUri, this.uriTransformer.transformIncoming);
+		}
+		return this._resolveProvider<azdata.ConnectionProvider>(handle).changePassword(connectionUri, connection, newPassword);
+	}
+
 	override $cancelConnect(handle: number, connectionUri: string): Thenable<boolean> {
 		return this._resolveProvider<azdata.ConnectionProvider>(handle).cancelConnect(connectionUri);
 	}
@@ -283,19 +293,22 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		if (this.uriTransformer) {
 			ownerUri = this._getTransformedUri(ownerUri, this.uriTransformer.transformIncoming);
 		}
-
+		this._perfProxy.$mark(`sql/query/${ownerUri}/ext_$runQuery`);
 		return this._resolveProvider<azdata.QueryProvider>(handle).runQuery(ownerUri, selection, runOptions);
 	}
 
 	override $runQueryStatement(handle: number, ownerUri: string, line: number, column: number): Thenable<void> {
+		this._perfProxy.$mark(`sql/query/${ownerUri}/ext_$runQueryStatement`);
 		return this._resolveProvider<azdata.QueryProvider>(handle).runQueryStatement(ownerUri, line, column);
 	}
 
 	override $runQueryString(handle: number, ownerUri: string, queryString: string): Thenable<void> {
+		this._perfProxy.$mark(`sql/query/${ownerUri}/ext_$runQueryString`);
 		return this._resolveProvider<azdata.QueryProvider>(handle).runQueryString(ownerUri, queryString);
 	}
 
 	override $runQueryAndReturn(handle: number, ownerUri: string, queryString: string): Thenable<azdata.SimpleExecuteResult> {
+		this._perfProxy.$mark(`sql/query/${ownerUri}/ext_$runQueryAndReturn`);
 		return this._resolveProvider<azdata.QueryProvider>(handle).runQueryAndReturn(ownerUri, queryString);
 	}
 
@@ -341,6 +354,7 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		if (this.uriTransformer) {
 			result.ownerUri = this._getTransformedUri(result.ownerUri, this.uriTransformer.transformOutgoing);
 		}
+		this._perfProxy.$mark(`sql/query/${result.ownerUri}/ext_$onQueryComplete`);
 		// clear messages to maintain the order of things
 		if (this.messageRunner.isScheduled()) {
 			this.messageRunner.cancel();
@@ -398,6 +412,15 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 
 	override $saveResults(handle: number, requestParams: azdata.SaveResultsRequestParams): Thenable<azdata.SaveResultRequestResult> {
 		return this._resolveProvider<azdata.QueryProvider>(handle).saveResults(requestParams);
+	}
+
+	override $copyResults(handle: number, requestParams: azdata.CopyResultsRequestParams): Thenable<void> {
+		const provider = this._resolveProvider<azdata.QueryProvider>(handle);
+		if (provider.copyResults) {
+			return provider.copyResults(requestParams);
+		} else {
+			throw new Error(`copyResults() is not implemented by the provider`);
+		}
 	}
 
 	// Edit Data handlers
@@ -923,8 +946,8 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 		return this._resolveProvider<azdata.designers.TableDesignerProvider>(handle).disposeTableDesigner(table);
 	}
 
-	public override $openTableDesigner(providerId: string, tableInfo: azdata.designers.TableInfo, telemetryInfo?: ITelemetryEventProperties): Promise<void> {
-		this._proxy.$openTableDesigner(providerId, tableInfo, telemetryInfo);
+	public override $openTableDesigner(providerId: string, tableInfo: azdata.designers.TableInfo, telemetryInfo?: ITelemetryEventProperties, objectExplorerContext?: azdata.ObjectExplorerContext): Promise<void> {
+		this._proxy.$openTableDesigner(providerId, tableInfo, telemetryInfo, objectExplorerContext);
 		return Promise.resolve();
 	}
 
@@ -936,5 +959,9 @@ export class ExtHostDataProtocol extends ExtHostDataProtocolShape {
 
 	public override $compareExecutionPlanGraph(handle: number, firstPlanFile: azdata.executionPlan.ExecutionPlanGraphInfo, secondPlanFile: azdata.executionPlan.ExecutionPlanGraphInfo): Thenable<azdata.executionPlan.ExecutionPlanComparisonResult> {
 		return this._resolveProvider<azdata.executionPlan.ExecutionPlanProvider>(handle).compareExecutionPlanGraph(firstPlanFile, secondPlanFile);
+	}
+
+	public override $isExecutionPlan(handle: number, value: string): Thenable<azdata.executionPlan.IsExecutionPlanResult> {
+		return this._resolveProvider<azdata.executionPlan.ExecutionPlanProvider>(handle).isExecutionPlan(value);
 	}
 }

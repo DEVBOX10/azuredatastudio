@@ -3,9 +3,10 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { nb, IConnectionProfile } from 'azdata';
+import * as azdata from 'azdata';
 import * as vsExtTypes from 'vs/workbench/api/common/extHostTypes';
 import { URI } from 'vs/base/common/uri';
+import { TelemetryView } from 'sql/platform/telemetry/common/telemetryKeys';
 
 // SQL added extension host types
 export enum ServiceOptionType {
@@ -119,7 +120,7 @@ export enum AlertType {
 }
 
 export enum FrequencyTypes {
-	Unknown,
+	Unknown = 0,
 	OneTime = 1 << 1,
 	Daily = 1 << 2,
 	Weekly = 1 << 3,
@@ -185,7 +186,8 @@ export enum ModelComponentTypes {
 export enum ModelViewAction {
 	SelectTab = 'selectTab',
 	AppendData = 'appendData',
-	Filter = 'filter'
+	Filter = 'filter',
+	SetActiveCell = 'setActiveCell'
 }
 
 export enum ColumnSizingMode {
@@ -246,7 +248,8 @@ export enum ComponentEventType {
 	onCellAction,
 	onEnterKeyPressed,
 	onInput,
-	onComponentLoaded
+	onComponentLoaded,
+	onChildClick
 }
 
 export interface IComponentEventArgs {
@@ -267,6 +270,9 @@ export interface IModelViewDialogDetails {
 	renderHeader: boolean;
 	renderFooter: boolean;
 	dialogProperties: IDialogProperties;
+	loading: boolean;
+	loadingText: string;
+	loadingCompletedText: string;
 }
 
 export interface IModelViewTabDetails {
@@ -306,6 +312,9 @@ export interface IModelViewWizardDetails {
 	message: DialogMessage;
 	displayPageTitles: boolean;
 	width: DialogWidth;
+	loading: boolean;
+	loadingText: string;
+	loadingCompletedText: string;
 }
 
 export type DialogWidth = 'narrow' | 'medium' | 'wide' | number | string;
@@ -319,6 +328,29 @@ export interface IDialogProperties {
 	yPos: number,
 	width: number,
 	height: number
+}
+
+/**
+ * Provides dialog options to customize modal dialog content and layout
+ */
+export interface IErrorDialogOptions {
+	severity: MessageLevel;
+	headerTitle: string;
+	message: string;
+	messageDetails?: string;
+	telemetryView?: TelemetryView | string;
+	actions?: IDialogAction[];
+	instructionText?: string;
+	readMoreLink?: string;
+}
+
+/**
+ * An action that will be rendered as a button on the dialog.
+ */
+export interface IDialogAction {
+	id: string;
+	label: string;
+	isPrimary: boolean;
 }
 
 export enum MessageLevel {
@@ -442,11 +474,36 @@ export enum AzureResource {
 	MsGraph = 7,
 	AzureLogAnalytics = 8,
 	AzureStorage = 9,
-	AzureKusto = 10
+	AzureKusto = 10,
+	PowerBi = 11,
+	Custom = 12 // Handles custom resource URIs as received from server endpoint.
+}
+
+export enum NodeFilterPropertyDataType {
+	String = 0,
+	Number = 1,
+	Boolean = 2,
+	Date = 3,
+	Choice = 4
+}
+
+export enum NodeFilterOperator {
+	Equals = 0,
+	NotEquals = 1,
+	LessThan = 2,
+	LessThanOrEquals = 3,
+	GreaterThan = 4,
+	GreaterThanOrEquals = 5,
+	Between = 6,
+	NotBetween = 7,
+	Contains = 8,
+	NotContains = 9,
+	IsNull = 10,
+	IsNotNull = 11
 }
 
 export class TreeItem extends vsExtTypes.TreeItem {
-	payload?: IConnectionProfile;
+	payload?: azdata.IConnectionProfile;
 	providerHandle?: string;
 }
 
@@ -544,6 +601,8 @@ export class SqlThemeIcon {
 	static readonly ExternalTable = new SqlThemeIcon('ExternalTable');
 	static readonly ColumnMasterKey = new SqlThemeIcon('ColumnMasterKey');
 	static readonly ColumnEncryptionKey = new SqlThemeIcon('ColumnEncryptionKey');
+	static readonly GraphEdge = new SqlThemeIcon('GraphEdge');
+	static readonly GraphNode = new SqlThemeIcon('GraphNode');
 
 	public readonly id: string;
 
@@ -557,12 +616,6 @@ export interface ICellMetadata {
 	tags?: string[] | undefined;
 	azdata_cell_guid?: string | undefined;
 	connection_name?: string;
-	/**
-	 * .NET Interactive metadata. This is only required for compatibility with the .NET Interactive extension.
-	 */
-	dotnet_interactive?: {
-		language: string;
-	}
 }
 
 export interface ISerializationManagerDetails {
@@ -609,7 +662,7 @@ export enum FutureMessageType {
 export interface INotebookFutureDone {
 	succeeded: boolean;
 	rejectReason: string;
-	message: nb.IShellMessage;
+	message: azdata.nb.IShellMessage;
 }
 
 export interface ICellRange {
@@ -682,7 +735,7 @@ export interface INotebookEditOperation {
 	/**
 	 * The cell metadata to use for the edit operation (only for some edit operations)
 	 */
-	cell: Partial<nb.ICellContents>;
+	cell: Partial<azdata.nb.ICellContents>;
 	/**
 	 * Whether to append the content to the existing content or replace it.
 	 */
@@ -901,7 +954,8 @@ export enum ColumnType {
 	checkBox = 1,
 	button = 2,
 	icon = 3,
-	hyperlink = 4
+	hyperlink = 4,
+	contextMenu = 5
 }
 
 export enum ActionOnCellCheckboxCheck {
@@ -967,12 +1021,16 @@ export namespace designers {
 		ForeignKeys = 'foreignKeys',
 		CheckConstraints = 'checkConstraints',
 		Indexes = 'indexes',
+		PrimaryKey = 'primaryKey',
 		PrimaryKeyName = 'primaryKeyName',
+		PrimaryKeyDescription = 'primaryKeyDescription',
 		PrimaryKeyColumns = 'primaryKeyColumns'
 	}
 
 	export enum TableColumnProperty {
 		Name = 'name',
+		Description = 'description',
+		AdvancedType = 'advancedType',
 		Type = 'type',
 		AllowNulls = 'allowNulls',
 		DefaultValue = 'defaultValue',
@@ -984,6 +1042,7 @@ export namespace designers {
 
 	export enum TableForeignKeyProperty {
 		Name = 'name',
+		Description = 'description',
 		ForeignTable = 'foreignTable',
 		OnDeleteAction = 'onDeleteAction',
 		OnUpdateAction = 'onUpdateAction',
@@ -997,11 +1056,13 @@ export namespace designers {
 
 	export enum TableCheckConstraintProperty {
 		Name = 'name',
+		Description = 'description',
 		Expression = 'expression'
 	}
 
 	export enum TableIndexProperty {
 		Name = 'name',
+		Description = 'description',
 		Columns = 'columns'
 	}
 
@@ -1012,6 +1073,48 @@ export namespace designers {
 	export enum DesignerEditType {
 		Add = 0,
 		Remove = 1,
-		Update = 2
+		Update = 2,
+		Move = 3
+	}
+
+	export enum TableIcon {
+		Basic = 'Basic',
+		Temporal = 'Temporal',
+		GraphEdge = 'GraphEdge',
+		GraphNode = 'GraphNode'
+	}
+}
+
+export namespace executionPlan {
+	export enum BadgeType {
+		Warning = 0,
+		CriticalWarning = 1,
+		Parallelism = 2
+	}
+
+	export enum ExecutionPlanGraphElementPropertyDataType {
+		Number = 0,
+		String = 1,
+		Boolean = 2,
+		Nested = 3
+	}
+
+	export enum ExecutionPlanGraphElementPropertyBetterValue {
+		LowerNumber = 0,
+		HigherNumber = 1,
+		True = 2,
+		False = 3,
+		None = 4
+	}
+}
+
+export namespace env {
+	/**
+	 * Well-known app quality values
+	 */
+	export enum AppQuality {
+		stable = 'stable',
+		insider = 'insider',
+		dev = 'dev'
 	}
 }

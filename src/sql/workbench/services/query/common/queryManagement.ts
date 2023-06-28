@@ -7,6 +7,7 @@ import QueryRunner from 'sql/workbench/services/query/common/queryRunner';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import * as perf from 'vs/base/common/performance';
 import * as azdata from 'azdata';
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import { Event, Emitter } from 'vs/base/common/event';
@@ -17,7 +18,7 @@ import { ResultSetSubset } from 'sql/workbench/services/query/common/query';
 import { isUndefined } from 'vs/base/common/types';
 import { ILogService } from 'vs/platform/log/common/log';
 import * as nls from 'vs/nls';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { CancellationToken } from 'vs/base/common/cancellation';
 
 export const SERVICE_ID = 'queryManagementService';
 
@@ -42,6 +43,7 @@ export interface IQueryManagementService {
 	getRegisteredProviders(): string[];
 	registerRunner(runner: QueryRunner, uri: string): void;
 	getRunner(uri: string): QueryRunner | undefined;
+	getProviderIdFromUri(uri: string): string;
 
 	cancelQuery(ownerUri: string): Promise<QueryCancelResult>;
 	runQuery(ownerUri: string, range?: IRange, runOptions?: ExecutionPlanOptions): Promise<void>;
@@ -49,11 +51,12 @@ export interface IQueryManagementService {
 	runQueryString(ownerUri: string, queryString: string): Promise<void>;
 	runQueryAndReturn(ownerUri: string, queryString: string): Promise<azdata.SimpleExecuteResult>;
 	parseSyntax(ownerUri: string, query: string): Promise<azdata.SyntaxParseResult>;
-	getQueryRows(rowData: azdata.QueryExecuteSubsetParams): Promise<ResultSetSubset>;
+	getQueryRows(rowData: azdata.QueryExecuteSubsetParams, cancellationToken?: CancellationToken, onProgressCallback?: (availableRows: number) => void): Promise<ResultSetSubset>;
 	disposeQuery(ownerUri: string): Promise<void>;
 	changeConnectionUri(newUri: string, oldUri: string): Promise<void>;
 	saveResults(requestParams: azdata.SaveResultsRequestParams): Promise<azdata.SaveResultRequestResult>;
 	setQueryExecutionOptions(uri: string, options: azdata.QueryExecutionOptions): Promise<void>;
+	copyResults(params: azdata.CopyResultsRequestParams): Promise<void>;
 
 	// Callbacks
 	onQueryComplete(result: azdata.QueryExecuteCompleteNotificationResult): void;
@@ -92,6 +95,7 @@ export interface IQueryRequestHandler {
 	disposeQuery(ownerUri: string): Promise<void>;
 	connectionUriChanged(newUri: string, oldUri: string): Promise<void>;
 	saveResults(requestParams: azdata.SaveResultsRequestParams): Promise<azdata.SaveResultRequestResult>;
+	copyResults(requestParams: azdata.CopyResultsRequestParams): Promise<void>;
 	setQueryExecutionOptions(ownerUri: string, options: azdata.QueryExecutionOptions): Promise<void>;
 
 	// Edit Data actions
@@ -120,8 +124,7 @@ export class QueryManagementService implements IQueryManagementService {
 	constructor(
 		@IConnectionManagementService private _connectionService: IConnectionManagementService,
 		@IAdsTelemetryService private _telemetryService: IAdsTelemetryService,
-		@ILogService private _logService: ILogService,
-		@IConfigurationService private _configurationService: IConfigurationService
+		@ILogService private _logService: ILogService
 	) {
 	}
 
@@ -147,6 +150,10 @@ export class QueryManagementService implements IQueryManagementService {
 
 	public getRunner(uri: string): QueryRunner | undefined {
 		return this._queryRunners.get(uri);
+	}
+
+	public getProviderIdFromUri(uri: string): string {
+		return this._connectionService.getProviderIdFromUri(uri);
 	}
 
 	// Handles logic to run the given handlerCallback at the appropriate time. If the given runner is
@@ -231,6 +238,7 @@ export class QueryManagementService implements IQueryManagementService {
 
 	public runQuery(ownerUri: string, range?: IRange, runOptions?: ExecutionPlanOptions): Promise<void> {
 		this.addTelemetry(TelemetryKeys.TelemetryAction.RunQuery, ownerUri, runOptions);
+		perf.mark(`sql/query/${ownerUri}/runQuery`);
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQuery(ownerUri, rangeToSelectionData(range), runOptions);
 		});
@@ -238,6 +246,7 @@ export class QueryManagementService implements IQueryManagementService {
 
 	public runQueryStatement(ownerUri: string, line: number, column: number): Promise<void> {
 		this.addTelemetry(TelemetryKeys.TelemetryAction.RunQueryStatement, ownerUri);
+		perf.mark(`sql/query/${ownerUri}/runQueryStatement`);
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQueryStatement(ownerUri, line - 1, column - 1); // we are taking in a vscode IRange which is 1 indexed, but our api expected a 0 index
 		});
@@ -245,6 +254,7 @@ export class QueryManagementService implements IQueryManagementService {
 
 	public runQueryString(ownerUri: string, queryString: string): Promise<void> {
 		this.addTelemetry(TelemetryKeys.TelemetryAction.RunQueryString, ownerUri);
+		perf.mark(`sql/query/${ownerUri}/runQueryString`);
 		return this._runAction(ownerUri, (runner) => {
 			return runner.runQueryString(ownerUri, queryString);
 		});
@@ -262,9 +272,40 @@ export class QueryManagementService implements IQueryManagementService {
 		});
 	}
 
-	public async getQueryRows(rowData: azdata.QueryExecuteSubsetParams): Promise<ResultSetSubset> {
-		return this._runAction(rowData.ownerUri, (runner) => {
-			return runner.getQueryRows(rowData).then(r => r.resultSubset);
+	public async getQueryRows(rowData: azdata.QueryExecuteSubsetParams, cancellationToken?: CancellationToken, onProgressCallback?: (availableRows: number) => void): Promise<ResultSetSubset> {
+		const pageSize = 500;
+		return this._runAction(rowData.ownerUri, async (runner): Promise<ResultSetSubset> => {
+			const result = [];
+			let start = rowData.rowsStartIndex;
+			this._logService.trace(`Getting ${rowData.rowsCount} rows starting from index: ${rowData.rowsStartIndex}.`);
+			let pageIdx = 1;
+			do {
+				const rowCount = Math.min(pageSize, rowData.rowsStartIndex + rowData.rowsCount - start);
+				this._logService.trace(`Page ${pageIdx} - Getting ${rowCount} rows starting from index: ${start}.`);
+				const rowSet = await runner.getQueryRows({
+					ownerUri: rowData.ownerUri,
+					batchIndex: rowData.batchIndex,
+					resultSetIndex: rowData.resultSetIndex,
+					rowsCount: rowCount,
+					rowsStartIndex: start
+				});
+				this._logService.trace(`Page ${pageIdx} - Received ${rowSet.resultSubset.rows.length} rows starting from index: ${start}.`);
+				result.push(...rowSet.resultSubset.rows);
+				start += rowCount;
+				pageIdx++;
+				if (onProgressCallback) {
+					onProgressCallback(start - rowData.rowsStartIndex);
+				}
+			} while (start < rowData.rowsStartIndex + rowData.rowsCount && (cancellationToken === undefined || !cancellationToken.isCancellationRequested));
+			if (cancellationToken?.isCancellationRequested) {
+				this._logService.trace(`Stop getting more rows since cancellation has been requested.`);
+			} else {
+				this._logService.trace(`Successfully fetched ${result.length} rows. Expected Rows: ${rowData.rowsCount}.`);
+			}
+			return {
+				rows: result,
+				rowCount: result.length
+			};
 		});
 	}
 
@@ -304,6 +345,12 @@ export class QueryManagementService implements IQueryManagementService {
 		});
 	}
 
+	public copyResults(requestParams: azdata.CopyResultsRequestParams): Promise<void> {
+		return this._runAction(requestParams.ownerUri, (runner) => {
+			return runner.copyResults(requestParams);
+		});
+	}
+
 	public onQueryComplete(result: azdata.QueryExecuteCompleteNotificationResult): void {
 		this._notify(result.ownerUri, (runner: QueryRunner) => {
 			runner.handleQueryComplete(result.batchSummaries.map(s => ({ ...s, range: selectionDataToRange(s.selection) })));
@@ -331,7 +378,7 @@ export class QueryManagementService implements IQueryManagementService {
 	public onResultSetUpdated(resultSetInfo: azdata.QueryExecuteResultSetNotificationParams): void {
 		this._notify(resultSetInfo.ownerUri, (runner: QueryRunner) => {
 			runner.handleResultSetUpdated(resultSetInfo.resultSetSummary);
-			if (resultSetInfo.executionPlans && this._configurationService.getValue('workbench.enablePreviewFeatures')) {
+			if (resultSetInfo.executionPlans) {
 				runner.handleExecutionPlanAvailable(resultSetInfo.executionPlans);
 			}
 		});

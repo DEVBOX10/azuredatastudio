@@ -6,6 +6,10 @@
         <source xml:lang="en">All Project Types</source>
         <target state="translated">Todos los tipos de proyecto</target>
       </trans-unit>
+      <trans-unit id="LocalDevInfo">
+        <source xml:lang="en">Click "Learn more" button for more information about local development experience to {0}</source>
+        <target state="translated">Haga clic en el botón "Más información" para informarse sobre la experiencia de desarrollo local para {0}</target>
+      </trans-unit>
       <trans-unit id="SelectProjectFileActionName">
         <source xml:lang="en">Select</source>
         <target state="translated">Seleccionar</target>
@@ -31,8 +35,8 @@
         <target state="translated">Actualizar</target>
       </trans-unit>
       <trans-unit id="dataworkspace.NewProjectDialogTitle">
-        <source xml:lang="en">Create new project</source>
-        <target state="translated">Creación del proyecto</target>
+        <source xml:lang="en">Create new database project</source>
+        <target state="translated">Crear nuevo proyecto de base de datos</target>
       </trans-unit>
       <trans-unit id="dataworkspace.Type">
         <source xml:lang="en">Type</source>
@@ -54,6 +58,10 @@
         <source xml:lang="en">Create</source>
         <target state="translated">Crear</target>
       </trans-unit>
+      <trans-unit id="dataworkspace.default">
+        <source xml:lang="en">Default</source>
+        <target state="translated">Predeterminado</target>
+      </trans-unit>
       <trans-unit id="dataworkspace.enterProjectName">
         <source xml:lang="en">Enter Project Name</source>
         <target state="translated">Escriba el nombre del proyecto.</target>
@@ -70,6 +78,10 @@
         <source xml:lang="en">Git repository URL</source>
         <target state="translated">Dirección URL del repositorio GIT</target>
       </trans-unit>
+      <trans-unit id="dataworkspace.learnMore">
+        <source xml:lang="en">Learn More</source>
+        <target state="translated">Más información</target>
+      </trans-unit>
       <trans-unit id="dataworkspace.localClonePathPlaceholder">
         <source xml:lang="en">Select location to clone repository locally</source>
         <target state="translated">Seleccione la ubicación para clonar el repositorio localmente.</target>
@@ -85,6 +97,10 @@
       <trans-unit id="dataworkspace.nameCannotBeEmpty">
         <source xml:lang="en">Name cannot be empty</source>
         <target state="translated">El nombre no puede estar vacío</target>
+      </trans-unit>
+      <trans-unit id="dataworkspace.no">
+        <source xml:lang="en">No</source>
+        <target state="translated">No</target>
       </trans-unit>
       <trans-unit id="dataworkspace.ok">
         <source xml:lang="en">OK</source>
@@ -118,6 +134,10 @@
         <source xml:lang="en">Select project file</source>
         <target state="translated">Seleccione el archivo del proyecto.</target>
       </trans-unit>
+      <trans-unit id="dataworkspace.projectFileTitle">
+        <source xml:lang="en">Project file</source>
+        <target state="translated">Archivo de proyecto</target>
+      </trans-unit>
       <trans-unit id="dataworkspace.projectLocationPlaceholder">
         <source xml:lang="en">Select location to create project</source>
         <target state="translated">Seleccione la ubicación para crear el proyecto.</target>
@@ -138,10 +158,6 @@
         <source xml:lang="en">The selected project location '{0}' does not exist or is not a directory.</source>
         <target state="translated">La ubicación del proyecto seleccionado, "{0}", no existe o no es un directorio.</target>
       </trans-unit>
-      <trans-unit id="dataworkspace.projectsFailedToLoad">
-        <source xml:lang="en">Some projects failed to load. To view more details, [open the developer console](command:workbench.action.toggleDevTools)</source>
-        <target state="translated">No se pudieron cargar algunos proyectos. Para ver más detalles, [abra la consola de desarrollo](command:workbench.action.toggleDevTools).</target>
-      </trans-unit>
       <trans-unit id="dataworkspace.remoteGitRepo">
         <source xml:lang="en">Remote git repository</source>
         <target state="translated">Repositorio GIT remoto</target>
@@ -149,6 +165,14 @@
       <trans-unit id="dataworkspace.restartConfirmation">
         <source xml:lang="en">Azure Data Studio needs to be restarted for the project to be added to the workspace. Restart now?</source>
         <target state="translated">Azure Data Studio debe reiniciarse para que el proyecto se agregue al área de trabajo. ¿Reiniciar ahora?</target>
+      </trans-unit>
+      <trans-unit id="dataworkspace.sdkLearnMorePlaceholder">
+        <source xml:lang="en">Click "Learn More" button for more information about SDK-style projects</source>
+        <target state="translated">Haga clic en el botón "Más información" para obtener más información sobre los proyectos de estilo SDK</target>
+      </trans-unit>
+      <trans-unit id="dataworkspace.sdkStyleProject">
+        <source xml:lang="en">SDK-style project (Preview)</source>
+        <target state="translated">Proyecto de estilo SDK (versión preliminar)</target>
       </trans-unit>
       <trans-unit id="dataworkspace.select">
         <source xml:lang="en">Select</source>
@@ -159,8 +183,12 @@
         <target state="translated">Seleccionar ubicación del proyecto</target>
       </trans-unit>
       <trans-unit id="dataworkspace.selectProjectType">
-        <source xml:lang="en">Select Project Type</source>
-        <target state="translated">Seleccionar tipo de proyecto</target>
+        <source xml:lang="en">Select Database Project Type</source>
+        <target state="translated">Seleccionar tipo de proyecto de base de datos</target>
+      </trans-unit>
+      <trans-unit id="dataworkspace.selectTargetPlatform">
+        <source xml:lang="en">Select Target Platform</source>
+        <target state="translated">Seleccionar plataforma de destino</target>
       </trans-unit>
       <trans-unit id="dataworkspace.targetPlatform">
         <source xml:lang="en">Target Platform</source>
@@ -170,9 +198,21 @@
         <source xml:lang="en">Select workspace ({0}) file</source>
         <target state="translated">Seleccione el archivo de área de trabajo ({0})</target>
       </trans-unit>
+      <trans-unit id="dataworkspace.yesRecommended">
+        <source xml:lang="en">Yes (Recommended)</source>
+        <target state="translated">Sí (recomendado)</target>
+      </trans-unit>
+      <trans-unit id="dragAndDropNotSupported">
+        <source xml:lang="en">This project type does not support drag and drop.</source>
+        <target state="translated">Este tipo de proyecto no admite arrastrar y colocar.</target>
+      </trans-unit>
       <trans-unit id="fileDoesNotExist">
         <source xml:lang="en">File '{0}' doesn't exist</source>
         <target state="translated">El archivo "{0}" no existe.</target>
+      </trans-unit>
+      <trans-unit id="filenameEndingInPeriodErrorMessage">
+        <source xml:lang="en">File name cannot end with a period</source>
+        <target state="translated">El nombre del archivo no puede terminar con un punto.</target>
       </trans-unit>
       <trans-unit id="gitCloneError">
         <source xml:lang="en">Error during git clone. View git output for more details</source>
@@ -182,17 +222,57 @@
         <source xml:lang="en">Cloning git repository '{0}'...</source>
         <target state="translated">Clonando el repositorio git '{0}'...</target>
       </trans-unit>
+      <trans-unit id="invalidFileCharsErrorMessage">
+        <source xml:lang="en">Invalid file characters</source>
+        <target state="translated">Caracteres de archivo no válidos</target>
+      </trans-unit>
       <trans-unit id="noPreviousData">
         <source xml:lang="en">Prior {0} for the current project will appear here, please run to see the results.</source>
         <target state="translated">Antes de {0}para que el proyecto actual aparezca aquí, ejecútelo para ver los resultados.</target>
+      </trans-unit>
+      <trans-unit id="noProjectProvidingExtensionsInstalled">
+        <source xml:lang="en">No database project extensions are installed. Please install a database project extension to use this feature.</source>
+        <target state="translated">No hay extensiones de proyecto de base de datos instaladas. Instala una para usar esta característica.</target>
+      </trans-unit>
+      <trans-unit id="onlyMovingOneFileIsSupported">
+        <source xml:lang="en">Only moving one file at a time is supported.</source>
+        <target state="translated">Solo se admite mover un archivo a la vez.</target>
       </trans-unit>
       <trans-unit id="openedProjectsUndefinedAfterRefresh">
         <source xml:lang="en">List of opened projects should not be undefined after refresh from disk.</source>
         <target state="translated">La lista de proyectos abiertos no debe ser definida después de actualizar desde el disco.</target>
       </trans-unit>
+      <trans-unit id="projectFailedToLoad">
+        <source xml:lang="en">Project '{0}' failed to load: {1}  To view more details, [open the developer console](command:workbench.action.toggleDevTools).</source>
+        <target state="translated">No se pudo cargar el proyecto ''{0}: {1}''  para ver más detalles, [abra la consola del desarrollador](command:workbench.action.toggleDevTools).</target>
+      </trans-unit>
       <trans-unit id="projectNameNull">
         <source xml:lang="en">Project name is null</source>
         <target state="translated">El nombre del proyecto es nulo.</target>
+      </trans-unit>
+      <trans-unit id="reservedValueErrorMessage">
+        <source xml:lang="en">Reserved file name. Choose another name and try again</source>
+        <target state="translated">Nombre de archivo reservado. Elija otro nombre y vuelva a intentarlo</target>
+      </trans-unit>
+      <trans-unit id="reservedWindowsFilenameErrorMessage">
+        <source xml:lang="en">This file name is reserved for use by Windows. Choose another name and try again</source>
+        <target state="translated">El nombre de este archivo está reservado para Windows. Elija otro nombre e inténtelo de nuevo.</target>
+      </trans-unit>
+      <trans-unit id="tooLongFilenameErrorMessage">
+        <source xml:lang="en">File name cannot be over 255 characters</source>
+        <target state="translated">El nombre de archivo no puede tener más de 255 caracteres</target>
+      </trans-unit>
+      <trans-unit id="trailingWhitespaceErrorMessage">
+        <source xml:lang="en">File name cannot start or end with whitespace</source>
+        <target state="translated">El nombre de archivo no puede comenzar o finalizar con un espacio en blanco</target>
+      </trans-unit>
+      <trans-unit id="undefinedFilenameErrorMessage">
+        <source xml:lang="en">Undefined name</source>
+        <target state="translated">Nombre no definido</target>
+      </trans-unit>
+      <trans-unit id="whitespaceFilenameErrorMessage">
+        <source xml:lang="en">File name cannot be whitespace</source>
+        <target state="translated">El nombre de archivo no puede ser un espacio en blanco.</target>
       </trans-unit>
     </body>
   </file>

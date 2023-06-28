@@ -3,9 +3,12 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IPtyHostProcessReplayEvent, ReplayEntry } from 'vs/platform/terminal/common/terminalProcess';
+import { IPtyHostProcessReplayEvent } from 'vs/platform/terminal/common/capabilities/capabilities';
+import { ReplayEntry } from 'vs/platform/terminal/common/terminalProcess';
 
-const MAX_RECORDER_DATA_SIZE = 1024 * 1024; // 1MB
+const enum Constants {
+	MaxRecorderDataSize = 1024 * 1024 // 1MB
+}
 
 interface RecorderEntry {
 	cols: number;
@@ -17,14 +20,7 @@ export interface IRemoteTerminalProcessReplayEvent {
 	events: ReplayEntry[];
 }
 
-export interface ITerminalSerializer {
-	handleData(data: string): void;
-	handleResize(cols: number, rows: number): void;
-	generateReplayEvent(): Promise<IPtyHostProcessReplayEvent>;
-	setUnicodeVersion?(version: '6' | '11'): void;
-}
-
-export class TerminalRecorder implements ITerminalSerializer {
+export class TerminalRecorder {
 
 	private _entries: RecorderEntry[];
 	private _totalDataLength: number = 0;
@@ -64,9 +60,9 @@ export class TerminalRecorder implements ITerminalSerializer {
 		lastEntry.data.push(data);
 
 		this._totalDataLength += data.length;
-		while (this._totalDataLength > MAX_RECORDER_DATA_SIZE) {
+		while (this._totalDataLength > Constants.MaxRecorderDataSize) {
 			const firstEntry = this._entries[0];
-			const remainingToDelete = this._totalDataLength - MAX_RECORDER_DATA_SIZE;
+			const remainingToDelete = this._totalDataLength - Constants.MaxRecorderDataSize;
 			if (remainingToDelete >= firstEntry.data[0].length) {
 				// the first data piece must be deleted
 				this._totalDataLength -= firstEntry.data[0].length;
@@ -91,7 +87,12 @@ export class TerminalRecorder implements ITerminalSerializer {
 			}
 		});
 		return {
-			events: this._entries.map(entry => ({ cols: entry.cols, rows: entry.rows, data: entry.data[0] ?? '' }))
+			events: this._entries.map(entry => ({ cols: entry.cols, rows: entry.rows, data: entry.data[0] ?? '' })),
+			// No command restoration is needed when relaunching terminals
+			commands: {
+				isWindowsPty: false,
+				commands: []
+			}
 		};
 	}
 

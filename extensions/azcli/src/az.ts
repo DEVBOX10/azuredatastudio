@@ -12,7 +12,7 @@ import * as vscode from 'vscode';
 import { executeCommand, executeSudoCommand, ExitCodeError, ProcessOutput } from './common/childProcess';
 import { HttpClient } from './common/httpClient';
 import Logger from './common/logger';
-import { AzureCLIArcExtError, NoAzureCLIError, searchForCmd } from './common/utils';
+import { NoAzureCLIArcExtError, NoAzureCLIError, searchForCmd } from './common/utils';
 import { azArcdataInstallKey, azConfigSection, azFound, debugConfigKey, latestAzArcExtensionVersion, azCliInstallKey, azArcFound, azHostname, azUri } from './constants';
 import * as loc from './localizedConstants';
 
@@ -90,69 +90,52 @@ export class AzTool implements azExt.IAzApi {
 				show: (namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.DcConfigShowResult>> => {
 					return this.executeCommand<azExt.DcConfigShowResult>(['arcdata', 'dc', 'config', 'show', '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
 				}
-			}
-		}
-	};
+			},
+			listUpgrades: async (namespace: string, usek8s?: boolean, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.DcListUpgradesResult>> => {
+				const argsArray = ['arcdata', 'dc', 'list-upgrades'];
+				if (namespace) { argsArray.push('--k8s-namespace', namespace); }
+				if (usek8s) { argsArray.push('--use-k8s'); }
 
-	public postgres = {
-		arcserver: {
-			delete: (name: string, namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<void>> => {
-				return this.executeCommand<void>(['postgres', 'arc-server', 'delete', '-n', name, '--k8s-namespace', namespace, '--force', '--use-k8s'], additionalEnvVars);
+				const output = await this.executeCommand<string>(argsArray, additionalEnvVars);
+				const versions = <string[]>parseDcListUpgrades(output.stdout);
+				const currentVersion = <string>parseCurrentVersion(output.stdout);
+				let dates: string[] = [];
+				for (let i = 0; i < versions.length; i++) {
+					dates.push(parseReleaseDateFromUpgrade(versions[i]));
+				}
+				return {
+					stdout: {
+						versions: versions,
+						currentVersion: currentVersion,
+						dates: dates
+					},
+					stderr: output.stderr
+				};
 			},
-			list: (namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.PostgresServerListResult[]>> => {
-				return this.executeCommand<azExt.PostgresServerListResult[]>(['postgres', 'arc-server', 'list', '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
-			},
-			show: (name: string, namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.PostgresServerShowResult>> => {
-				return this.executeCommand<azExt.PostgresServerShowResult>(['postgres', 'arc-server', 'show', '-n', name, '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
-			},
-			edit: (
-				name: string,
-				args: {
-					adminPassword?: boolean,
-					coresLimit?: string,
-					coresRequest?: string,
-					coordinatorEngineSettings?: string,
-					engineSettings?: string,
-					extensions?: string,
-					memoryLimit?: string,
-					memoryRequest?: string,
-					noWait?: boolean,
-					port?: number,
-					replaceEngineSettings?: boolean,
-					workerEngineSettings?: string,
-					workers?: number
-				},
-				namespace: string,
-				additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<void>> => {
-				const argsArray = ['postgres', 'arc-server', 'edit', '-n', name, '--k8s-namespace', namespace, '--use-k8s'];
-				if (args.adminPassword) { argsArray.push('--admin-password'); }
-				if (args.coresLimit) { argsArray.push('--cores-limit', args.coresLimit); }
-				if (args.coresRequest) { argsArray.push('--cores-request', args.coresRequest); }
-				if (args.coordinatorEngineSettings) { argsArray.push('--coordinator-settings', args.coordinatorEngineSettings); }
-				if (args.engineSettings) { argsArray.push('--engine-settings', args.engineSettings); }
-				if (args.extensions) { argsArray.push('--extensions', args.extensions); }
-				if (args.memoryLimit) { argsArray.push('--memory-limit', args.memoryLimit); }
-				if (args.memoryRequest) { argsArray.push('--memory-request', args.memoryRequest); }
-				if (args.noWait) { argsArray.push('--no-wait'); }
-				if (args.port) { argsArray.push('--port', args.port.toString()); }
-				if (args.replaceEngineSettings) { argsArray.push('--replace-settings'); }
-				if (args.workerEngineSettings) { argsArray.push('--worker-settings', args.workerEngineSettings); }
-				if (args.workers !== undefined) { argsArray.push('--workers', args.workers.toString()); }
+			upgrade: (desiredVersion: string, name: string, resourceGroup?: string, namespace?: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<void>> => {
+				const argsArray = ['arcdata', 'dc', 'upgrade', '--desired-version', desiredVersion, '--name', name];
+				// Direct mode argument
+				if (resourceGroup) { argsArray.push('--resource-group', resourceGroup); }
+				// K8s API arguments
+				if (namespace) {
+					argsArray.push('--k8s-namespace', namespace);
+					argsArray.push('--use-k8s');
+				}
 				return this.executeCommand<void>(argsArray, additionalEnvVars);
 			}
 		}
 	};
 
-	public sql = {
-		miarc: {
+	public postgres = {
+		serverarc: {
 			delete: (name: string, namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<void>> => {
-				return this.executeCommand<void>(['sql', 'mi-arc', 'delete', '-n', name, '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
+				return this.executeCommand<void>(['postgres', 'server-arc', 'delete', '-n', name, '--k8s-namespace', namespace, '--force', '--use-k8s'], additionalEnvVars);
 			},
-			list: (namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.SqlMiListResult[]>> => {
-				return this.executeCommand<azExt.SqlMiListResult[]>(['sql', 'mi-arc', 'list', '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
+			list: (namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.PostgresServerListResult[]>> => {
+				return this.executeCommand<azExt.PostgresServerListResult[]>(['postgres', 'server-arc', 'list', '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
 			},
-			show: (name: string, namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.SqlMiShowResult>> => {
-				return this.executeCommand<azExt.SqlMiShowResult>(['sql', 'mi-arc', 'show', '-n', name, '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
+			show: (name: string, namespace: string, additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.PostgresServerShowResult>> => {
+				return this.executeCommand<azExt.PostgresServerShowResult>(['postgres', 'server-arc', 'show', '-n', name, '--k8s-namespace', namespace, '--use-k8s'], additionalEnvVars);
 			},
 			update: (
 				name: string,
@@ -162,11 +145,101 @@ export class AzTool implements azExt.IAzApi {
 					memoryLimit?: string,
 					memoryRequest?: string,
 					noWait?: boolean,
-					retentionDays?: string
+					port?: number
 				},
-				// Direct mode arguments
+				namespace: string,
+				additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<void>> => {
+				const argsArray = ['postgres', 'server-arc', 'update', '-n', name, '--k8s-namespace', namespace, '--use-k8s'];
+				if (args.coresLimit) { argsArray.push('--cores-limit', args.coresLimit); }
+				if (args.coresRequest) { argsArray.push('--cores-request', args.coresRequest); }
+				if (args.memoryLimit) { argsArray.push('--memory-limit', args.memoryLimit); }
+				if (args.memoryRequest) { argsArray.push('--memory-request', args.memoryRequest); }
+				if (args.noWait) { argsArray.push('--no-wait'); }
+				if (args.port) { argsArray.push('--port', args.port.toString()); }
+				return this.executeCommand<void>(argsArray, additionalEnvVars);
+			}
+		}
+	};
+
+	public sql = {
+		miarc: {
+			delete: (
+				name: string,
+				args: {
+					// ARM API arguments
+					resourceGroup?: string,
+					// K8s API arguments
+					namespace?: string
+					// Additional arguments
+				},
+				additionalEnvVars?: azExt.AdditionalEnvVars
+			): Promise<azExt.AzOutput<void>> => {
+				const argsArray = ['sql', 'mi-arc', 'delete', '-n', name];
+				if (args.resourceGroup) {
+					argsArray.push('--resource-group', args.resourceGroup);
+				}
+				if (args.namespace) {
+					argsArray.push('--k8s-namespace', args.namespace);
+					argsArray.push('--use-k8s');
+				}
+				return this.executeCommand<void>(argsArray, additionalEnvVars);
+			},
+			list: (
+				args: {
+					// ARM API arguments
+					resourceGroup?: string,
+					// K8s API arguments
+					namespace?: string
+					// Additional arguments
+				},
+				additionalEnvVars?: azExt.AdditionalEnvVars
+			): Promise<azExt.AzOutput<azExt.SqlMiListRawOutput>> => {
+				const argsArray = ['sql', 'mi-arc', 'list'];
+				if (args.resourceGroup) {
+					argsArray.push('--resource-group', args.resourceGroup);
+				}
+				if (args.namespace) {
+					argsArray.push('--k8s-namespace', args.namespace);
+					argsArray.push('--use-k8s');
+				}
+				return this.executeCommand<azExt.SqlMiListRawOutput>(argsArray, additionalEnvVars);
+
+			},
+			show: (
+				name: string,
+				args: {
+					// ARM API arguments
+					resourceGroup?: string,
+					// K8s API arguments
+					namespace?: string
+					// Additional arguments
+				},
+				additionalEnvVars?: azExt.AdditionalEnvVars
+			): Promise<azExt.AzOutput<azExt.SqlMiShowResult>> => {
+				const argsArray = ['sql', 'mi-arc', 'show', '-n', name];
+				if (args.resourceGroup) {
+					argsArray.push('--resource-group', args.resourceGroup);
+				}
+				if (args.namespace) {
+					argsArray.push('--k8s-namespace', args.namespace);
+					argsArray.push('--use-k8s');
+				}
+				return this.executeSqlMiShow(argsArray, additionalEnvVars);
+			},
+			update: (
+				name: string,
+				args: {
+					coresLimit?: string,
+					coresRequest?: string,
+					memoryLimit?: string,
+					memoryRequest?: string,
+					noWait?: boolean,
+					retentionDays?: string,
+					syncSecondaryToCommit?: string
+				},
+				// ARM API arguments
 				resourceGroup?: string,
-				// Indirect mode arguments
+				// K8s API arguments
 				namespace?: string,
 				usek8s?: boolean,
 				// Additional arguments
@@ -179,9 +252,29 @@ export class AzTool implements azExt.IAzApi {
 				if (args.memoryRequest) { argsArray.push('--memory-request', args.memoryRequest); }
 				if (args.noWait) { argsArray.push('--no-wait'); }
 				if (args.retentionDays) { argsArray.push('--retention-days', args.retentionDays); }
+				if (args.syncSecondaryToCommit) { argsArray.push('--sync-secondary-to-commit', args.syncSecondaryToCommit); }
 				if (resourceGroup) { argsArray.push('--resource-group', resourceGroup); }
 				if (namespace) { argsArray.push('--k8s-namespace', namespace); }
 				if (usek8s) { argsArray.push('--use-k8s'); }
+				return this.executeCommand<void>(argsArray, additionalEnvVars);
+			},
+			upgrade: (
+				name: string,
+				args: {
+					// ARM API arguments
+					resourceGroup?: string,
+					// K8s API arguments
+					namespace?: string
+					// Additional arguments
+				},
+				additionalEnvVars?: azExt.AdditionalEnvVars
+			): Promise<azExt.AzOutput<void>> => {
+				const argsArray = ['sql', 'mi-arc', 'upgrade', '--name', name];
+				if (args.resourceGroup) { argsArray.push('--resource-group', args.resourceGroup); }
+				if (args.namespace) {
+					argsArray.push('--k8s-namespace', args.namespace);
+					argsArray.push('--use-k8s');
+				}
 				return this.executeCommand<void>(argsArray, additionalEnvVars);
 			}
 		},
@@ -237,6 +330,64 @@ export class AzTool implements azExt.IAzApi {
 	}
 
 	/**
+	 * Executes az sql mi-arc show and returns a normalized object, SqlMiShowResult, regardless of the indirect or direct mode raw output shape.
+	 * @param args The args to pass to az
+	 * @param additionalEnvVars Additional environment variables to set for this execution
+	 */
+	public async executeSqlMiShow(args: string[], additionalEnvVars?: azExt.AdditionalEnvVars): Promise<azExt.AzOutput<azExt.SqlMiShowResult>> {
+		try {
+			const result = await executeAzCommand(`"${this._path}"`, args.concat(['--output', 'json']), additionalEnvVars);
+
+			let stdout = <unknown>result.stdout;
+			let stderr = <unknown>result.stderr;
+
+			try {
+				// Automatically try parsing the JSON. This is expected to fail for some az commands such as resource delete.
+				stdout = JSON.parse(result.stdout);
+			} catch (err) {
+				// If the output was not pure JSON, catch the error and log it here.
+				Logger.log(loc.azOutputParseErrorCaught(args.concat(['--output', 'json']).toString()));
+				throw err;
+			}
+
+			if ((<azExt.SqlMiShowResultDirect>stdout).properties) {
+				// Then it is direct mode
+				return {
+					stdout: {
+						name: (<azExt.SqlMiShowResultDirect>stdout).name,
+						spec: (<azExt.SqlMiShowResultDirect>stdout).properties.k8SRaw.spec,
+						status: (<azExt.SqlMiShowResultDirect>stdout).properties.k8SRaw.status
+					},
+					stderr: <string[]>stderr
+				};
+			} else {
+				// It must be indirect mode
+				return {
+					stdout: {
+						name: (<azExt.SqlMiShowResultIndirect>stdout).metadata?.name,
+						spec: (<azExt.SqlMiShowResultIndirect>stdout).spec,
+						status: (<azExt.SqlMiShowResultIndirect>stdout).status
+					},
+					stderr: <string[]>stderr
+				};
+			}
+		} catch (err) {
+			if (err instanceof ExitCodeError) {
+				try {
+					await fs.promises.access(this._path);
+					//this.path exists
+				} catch (e) {
+					// this.path does not exist
+					await vscode.commands.executeCommand('setContext', azFound, false);
+					throw new NoAzureCLIError();
+				}
+			}
+			throw err;
+		}
+	}
+
+
+	/**
 	 * Executes the specified az command.
 	 * @param args The args to pass to az
 	 * @param additionalEnvVars Additional environment variables to set for this execution
@@ -284,7 +435,7 @@ export async function checkAndInstallAz(userRequested: boolean = false): Promise
 	try {
 		return await findAzAndArc(); // find currently installed Az
 	} catch (err) {
-		if (err === AzureCLIArcExtError) {
+		if (err instanceof NoAzureCLIArcExtError) {
 			// Az found but arcdata extension not found. Prompt user to install it, then check again.
 			if (await promptToInstallArcdata(userRequested)) {
 				return await findAzAndArc();
@@ -315,7 +466,7 @@ export async function findAzAndArc(): Promise<IAzTool> {
 		Logger.log(loc.foundExistingAz(await azTool.getPath(), (await azTool.getSemVersionAz()).raw, (await azTool.getSemVersionArc()).raw));
 		return azTool;
 	} catch (err) {
-		if (err === AzureCLIArcExtError) {
+		if (err === NoAzureCLIArcExtError) {
 			Logger.log(loc.couldNotFindAzArc(err));
 			Logger.log(loc.noAzArc);
 			await vscode.commands.executeCommand('setContext', azArcFound, false); // save a context key that az was not found so that command for installing az is available in commandPalette and that for updating it is no longer available.
@@ -331,6 +482,7 @@ export async function findAzAndArc(): Promise<IAzTool> {
 /**
  * Find az by searching user's directories. If no az is found, this will error out and no arcdata is found.
  * If az is found, check if arcdata extension exists on it and return true if so, false if not.
+ * Attempt to update arcdata extension.
  * Return the AzTool whether or not an arcdata extension has been found.
  */
 async function findSpecificAzAndArc(): Promise<IAzTool> {
@@ -342,8 +494,11 @@ async function findSpecificAzAndArc(): Promise<IAzTool> {
 	// if no az has been found. If found, check if az arcdata extension exists.
 	const arcVersion = parseArcExtensionVersion(versionOutput.stdout);
 	if (arcVersion === undefined) {
-		throw AzureCLIArcExtError;
+		throw new NoAzureCLIArcExtError;
 	}
+
+	// Quietly attempt to update the arcdata extension to the latest. If it is already the latest, then it will not update.
+	await executeCommand('az', ['extension', 'update', '--name', 'arcdata']);
 
 	return new AzTool(path, <string>parseVersion(versionOutput.stdout), <string>arcVersion);
 }
@@ -553,6 +708,70 @@ function parseArcExtensionVersion(raw: string): string | undefined {
 	// connectedk8s                       1.1.5
 	// ...
 	const exp = /arcdata\s*(\d*.\d*.\d*)/;
+	return exp.exec(raw)?.pop();
+}
+
+/**
+ * Parses out all available upgrades
+ * @param raw The raw version output from az arcdata dc list-upgrades
+ */
+function parseDcListUpgrades(raw: string): string[] | undefined {
+	// Currently the version is a multi-line string that contains other version information such
+	// as the Python installation, with the first line holding the version of az itself.
+	//
+	// Found 6 valid versions.  The current datacontroller version is v1.2.0_2021-12-15.
+	// v1.4.1_2022-03-08
+	// v1.4.0_2022-02-25
+	// v1.3.0_2022-01-27
+	// v1.2.0_2021-12-15 << current version
+	// v1.1.0_2021-11-02
+	// v1.0.0_2021-07-30
+	let versions: string[] = [];
+	const lines = raw.split('\n');
+	const exp = /^(v\d*.\d*.\d*.\d*.\d*.\d*.\d)/;
+	for (let i = 1; i < lines.length; i++) {
+		let result = exp.exec(lines[i])?.pop();
+		if (result) {
+			versions.push(result);
+		}
+	}
+	return versions;
+}
+
+/**
+ * Parses out the release date from the upgrade version number and formats it into MM/DD/YYYY format.
+ * For example: v1.4.1_2022-03-08 ==> 03/08/2022
+ * @param raw The raw upgrade version number, such as: v1.4.1_2022-03-08
+ */
+function parseReleaseDateFromUpgrade(raw: string): string {
+	let formattedDate = '';
+	const exp = /^v\d*.\d*.\d*_(\d*).(\d*).(\d*.\d)/;
+	let rawDate = exp.exec(raw);
+	if (rawDate) {
+		formattedDate += rawDate[2] + '/' + rawDate[3] + '/' + rawDate[1];
+	} else {
+		console.error(loc.releaseDateNotParsed);
+	}
+	return formattedDate;
+}
+
+/**
+ * Parses out the current version number out of all available upgrades
+ * @param raw The raw version output from az arcdata dc list-upgrades
+ */
+function parseCurrentVersion(raw: string): string | undefined {
+	// Currently the version is a multi-line string that contains other version information such
+	// as the Python installation, with the first line holding the version of az itself.
+	//
+	// Found 6 valid versions.  The current datacontroller version is v1.2.0_2021-12-15.
+	// v1.4.1_2022-03-08
+	// v1.4.0_2022-02-25
+	// v1.3.0_2022-01-27
+	// v1.2.0_2021-12-15 << current version
+	// v1.1.0_2021-11-02
+	// v1.0.0_2021-07-30
+
+	const exp = /The current datacontroller version is\s*(v\d*.\d*.\d*.\d*.\d*.\d*.\d)/;
 	return exp.exec(raw)?.pop();
 }
 

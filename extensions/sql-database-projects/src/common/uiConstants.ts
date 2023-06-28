@@ -11,8 +11,14 @@ export namespace cssStyles {
 	export const fontWeightBold = { 'font-weight': 'bold' };
 	export const titleFontSize = 13;
 
+	export const optionsTableHeader = { 'display': 'none', 'border': 'none !important' };
+	export const optionsTableRowLabel = { ...text, 'border-left': 'none', 'border-right': 'none', 'border-top': 'none', 'border-bottom': 'none' }
+	export const optionsTableRowCheckbox = { 'border-left': 'none', 'border-right': 'none', 'border-top': 'none', 'border-bottom': 'none' }
+
 	export const publishDialogLabelWidth = '205px';
 	export const publishDialogTextboxWidth = '190px';
+	export const publishDialogDropdownWidth = '192px';
+	export const PublishingOptionsButtonWidth = '100px';
 
 	export const addDatabaseReferenceDialogLabelWidth = '215px';
 	export const addDatabaseReferenceInputboxWidth = '220px';

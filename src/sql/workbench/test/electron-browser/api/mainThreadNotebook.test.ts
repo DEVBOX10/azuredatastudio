@@ -8,7 +8,6 @@ import * as TypeMoq from 'typemoq';
 import * as azdata from 'azdata';
 
 import { URI, UriComponents } from 'vs/base/common/uri';
-import { IExtHostContext } from 'vs/workbench/api/common/extHost.protocol';
 
 import { MainThreadNotebook } from 'sql/workbench/api/browser/mainThreadNotebook';
 import { NotebookService } from 'sql/workbench/services/notebook/browser/notebookServiceImpl';
@@ -22,6 +21,7 @@ import { TestInstantiationService } from 'vs/platform/instantiation/test/common/
 import { IProductService } from 'vs/platform/product/common/productService';
 import { Disposable, NotebookCell, NotebookController, NotebookDocument, NotebookDocumentContentOptions, NotebookRegistrationData, NotebookRendererScript, NotebookSerializer } from 'vscode';
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
 
 suite('MainThreadNotebook Tests', () => {
 
@@ -34,7 +34,13 @@ suite('MainThreadNotebook Tests', () => {
 	setup(() => {
 		mockProxy = TypeMoq.Mock.ofType<ExtHostNotebookShape>(ExtHostNotebookStub);
 		let extContext = <IExtHostContext>{
-			getProxy: proxyType => mockProxy.object
+			getProxy: proxyType => <any>mockProxy.object,
+			set: () => { return; },
+			assertRegistered: () => { return; },
+			drain: () => { return undefined; },
+			dispose: () => { return; },
+			remoteAuthority: null,
+			extensionHostKind: null
 		};
 		const instantiationService = new TestInstantiationService();
 		instantiationService.stub(IProductService, { quality: 'stable' });
@@ -250,6 +256,9 @@ class ExtHostNotebookStub implements ExtHostNotebookShape {
 		throw new Error('Method not implemented.');
 	}
 	$interruptKernel(kernelId: number): Thenable<void> {
+		throw new Error('Method not implemented.');
+	}
+	$restartKernel(kernelId: number): Thenable<void> {
 		throw new Error('Method not implemented.');
 	}
 	$sendInputReply(futureId: number, content: azdata.nb.IInputReply): void {

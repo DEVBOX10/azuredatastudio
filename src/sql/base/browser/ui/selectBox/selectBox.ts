@@ -17,6 +17,8 @@ import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { SelectBoxList } from 'vs/base/browser/ui/selectBox/selectBoxCustom';
 import { Event, Emitter } from 'vs/base/common/event';
+import { AdsWidget } from 'sql/base/browser/ui/adsWidget';
+import { defaultSelectBoxStyles } from 'vs/platform/theme/browser/defaultStyles';
 
 const $ = dom.$;
 
@@ -39,17 +41,17 @@ export interface ISelectBoxStyles extends vsISelectBoxStyles {
 	inputValidationErrorForeground?: Color;
 }
 
-export class SelectBox extends vsSelectBox {
+export class SelectBox extends vsSelectBox implements AdsWidget {
 	private _optionsDictionary: Map<string, number>;
 	private _dialogOptions: SelectOptionItemSQL[];
 	private _selectedOption: string;
 	private _selectBoxOptions?: ISelectBoxOptions;
-	private enabledSelectBackground?: Color;
-	private enabledSelectForeground?: Color;
-	private enabledSelectBorder?: Color;
-	private disabledSelectBackground?: Color;
-	private disabledSelectForeground?: Color;
-	private disabledSelectBorder?: Color;
+	// private enabledSelectBackground?: Color;
+	// private enabledSelectForeground?: Color;
+	// private enabledSelectBorder?: Color;
+	// private disabledSelectBackground?: Color;
+	// private disabledSelectForeground?: Color;
+	// private disabledSelectBorder?: Color;
 	private contextViewProvider: IContextViewProvider;
 	private message?: IMessage;
 	private _onDidSelect: Emitter<ISelectData>;
@@ -67,9 +69,9 @@ export class SelectBox extends vsSelectBox {
 
 	private element?: HTMLElement;
 
-	constructor(options: SelectOptionItemSQL[] | string[], selectedOption: string, contextViewProvider: IContextViewProvider, container?: HTMLElement, selectBoxOptions?: ISelectBoxOptions) {
+	constructor(options: SelectOptionItemSQL[] | string[], selectedOption: string, contextViewProvider: IContextViewProvider, container?: HTMLElement, selectBoxOptions?: ISelectBoxOptions, id?: string) {
 		let optionItems: SelectOptionItemSQL[] = SelectBox.createOptions(options);
-		super(optionItems, 0, contextViewProvider, undefined, selectBoxOptions);
+		super(optionItems, 0, contextViewProvider, defaultSelectBoxStyles, selectBoxOptions);
 
 		this._onDidSelect = new Emitter<ISelectData>();
 		this._onDidFocus = new Emitter<void>();
@@ -77,7 +79,7 @@ export class SelectBox extends vsSelectBox {
 		this.populateOptionsDictionary(optionItems);
 		this._dialogOptions = optionItems;
 		const option = this._optionsDictionary.get(selectedOption);
-		if (option) {
+		if (option !== undefined) {
 			super.select(option);
 		}
 
@@ -87,17 +89,21 @@ export class SelectBox extends vsSelectBox {
 			this._onDidSelect.fire(newSelect);
 		}));
 
-		this.enabledSelectBackground = this.selectBackground;
-		this.enabledSelectForeground = this.selectForeground;
-		this.enabledSelectBorder = this.selectBorder;
-		this.disabledSelectBackground = Color.transparent;
-		this.disabledSelectForeground = undefined;
-		this.disabledSelectBorder = undefined;
+		// {{SQL CARBON TODO}} - fix styles
+		// this.enabledSelectBackground = this.selectBackground;
+		// this.enabledSelectForeground = this.selectForeground;
+		// this.enabledSelectBorder = this.selectBorder;
+		// this.disabledSelectBackground = Color.transparent;
+		// this.disabledSelectForeground = undefined;
+		// this.disabledSelectBorder = undefined;
 		this.contextViewProvider = contextViewProvider;
 		if (container) {
 			this.element = dom.append(container, $('.monaco-selectbox.idle'));
 		}
 
+		if (id !== undefined) {
+			this.selectElement.id = id;
+		}
 		this._selectBoxOptions = selectBoxOptions;
 		let focusTracker = dom.trackFocus(this.selectElement);
 		this._register(focusTracker);
@@ -174,13 +180,12 @@ export class SelectBox extends vsSelectBox {
 		this._dialogOptions = options;
 	}
 
-	public override style(styles: ISelectBoxStyles): void {
-		super.style(styles);
-		this.enabledSelectBackground = this.selectBackground;
-		this.enabledSelectForeground = this.selectForeground;
-		this.enabledSelectBorder = this.selectBorder;
-		this.disabledSelectBackground = styles.disabledSelectBackground;
-		this.disabledSelectForeground = styles.disabledSelectForeground;
+	public style(styles: ISelectBoxStyles): void {
+		// this.enabledSelectBackground = this.selectBackground;
+		// this.enabledSelectForeground = this.selectForeground;
+		// this.enabledSelectBorder = this.selectBorder;
+		// this.disabledSelectBackground = styles.disabledSelectBackground;
+		// this.disabledSelectForeground = styles.disabledSelectForeground;
 		this.inputValidationInfoBorder = styles.inputValidationInfoBorder;
 		this.inputValidationInfoBackground = styles.inputValidationInfoBackground;
 		this.inputValidationInfoForeground = styles.inputinputValidationInfoForeground;
@@ -190,25 +195,25 @@ export class SelectBox extends vsSelectBox {
 		this.inputValidationErrorBorder = styles.inputValidationErrorBorder;
 		this.inputValidationErrorBackground = styles.inputValidationErrorBackground;
 		this.inputValidationErrorForeground = styles.inputValidationErrorForeground;
-		this.applyStyles();
+		//this.applyStyles();
 	}
 
-	public selectWithOptionName(optionName?: string): void {
+	public selectWithOptionName(optionName?: string, selectFirstByDefault: boolean = true, forceSelectionEvent: boolean = false): void {
 		let option: number | undefined;
-		if (optionName) {
+		if (optionName !== undefined) {
 			option = this._optionsDictionary.get(optionName);
 		}
-		if (option) {
-			this.select(option);
-		} else {
-			this.select(0);
+		if (option !== undefined) {
+			this.select(option, forceSelectionEvent);
+		} else if (selectFirstByDefault) {
+			this.select(0, forceSelectionEvent);
 		}
 	}
 
-	public override select(index: number): void {
+	public override select(index: number, forceSelectionEvent: boolean = false): void {
 		super.select(index);
 		let selectedOptionIndex = this._optionsDictionary.get(this._selectedOption);
-		if (selectedOptionIndex === index) { // Not generating an event if the same value is selected.
+		if (!forceSelectionEvent && selectedOptionIndex === index) { // Not generating an event if the same value is selected.
 			return;
 		}
 		if (this._dialogOptions !== undefined) {
@@ -219,7 +224,6 @@ export class SelectBox extends vsSelectBox {
 			index: index
 		});
 	}
-
 
 	public override setOptions(options: string[] | SelectOptionItemSQL[] | ISelectOptionItem[], selected?: number): void {
 		let selectOptions: SelectOptionItemSQL[] = SelectBox.createOptions(options);
@@ -241,18 +245,26 @@ export class SelectBox extends vsSelectBox {
 
 	public enable(): void {
 		this.selectElement.disabled = false;
-		this.selectBackground = this.enabledSelectBackground;
-		this.selectForeground = this.enabledSelectForeground;
-		this.selectBorder = this.enabledSelectBorder;
-		this.applyStyles();
+		// this.selectBackground = this.enabledSelectBackground;
+		// this.selectForeground = this.enabledSelectForeground;
+		// this.selectBorder = this.enabledSelectBorder;
+		//this.applyStyles();
 	}
 
 	public disable(): void {
 		this.selectElement.disabled = true;
-		this.selectBackground = this.disabledSelectBackground;
-		this.selectForeground = this.disabledSelectForeground;
-		this.selectBorder = this.disabledSelectBorder;
-		this.applyStyles();
+		// this.selectBackground = this.disabledSelectBackground;
+		// this.selectForeground = this.disabledSelectForeground;
+		// this.selectBorder = this.disabledSelectBorder;
+		//this.applyStyles();
+	}
+
+	public getAriaLabel(): string {
+		return this.selectElem.ariaLabel;
+	}
+
+	public get id(): string {
+		return this.selectElem.id;
 	}
 
 	public hasFocus(): boolean {
@@ -332,7 +344,7 @@ export class SelectBox extends vsSelectBox {
 		}
 
 		this._hideMessage();
-		this.applyStyles();
+		//this.applyStyles();
 
 		this.message = undefined;
 	}

@@ -13,19 +13,23 @@
 			"azure.cacheErrorAdd": "Erro ao adicionar a sua conta ao cache.",
 			"azure.cacheErrorGet": "Erro ao obter a sua conta do cache",
 			"azure.cacheErrorParse": "Erro ao analisar a sua conta do cache",
-			"azure.cacheErrrorRemove": "Erro ao remover a sua conta do cache.",
 			"azure.microsoftAccountDisplayName": "Conta Microsoft",
 			"azure.microsoftCorpAccount": "Microsoft Corp",
 			"azure.noBaseToken": "Ocorreu um erro com a autenticação ou os tokens foram excluídos do sistema. Tente adicionar a sua conta no Azure Data Studio novamente.",
 			"azure.noUniqueIdentifier": "O usuário não tinha um identificador exclusivo no AAD",
+			"azure.owningTenantNotFound": "As informações do locatário não foram encontradas para a conta.",
 			"azure.responseError": "Falha na recuperação de token com um erro. [Abrir ferramentas para desenvolvedores] ({0}) para obter mais detalhes.",
 			"azure.tenantNotFound": "Locatário especificado com ID '{0}' não encontrado.",
-			"azureAuth.unidentifiedError": "Erro não identificado com a autenticação do Azure",
-			"azureWorkAccountDisplayName": "Conta corporativa ou de estudante",
-			"azurecore.consentDialog.body": "O locatário '{0} ({1})' requer que você seja autenticado novamente para acessar os recursos de {2}. Pressione Abrir para iniciar o processo de autenticação.",
+			"azurecore.confirmIgnoreTenantDialog.body": "O Azure Data Studio não acionará mais a autenticação para este locatário {0} ({1}) e os recursos não estarão acessíveis.\r\n\r\nPara permitir o acesso aos recursos para este inquilino novamente, você precisará remover o inquilino da lista de exclusão na configuração '{2}'.\r\n\r\nVocê deseja continuar?",
+			"azurecore.confirmIgnoreTenantDialog.confirm": "Confirmar",
+			"azurecore.consentDialog.authenticate": "Cancelar e autenticar",
+			"azurecore.consentDialog.body": "Seu locatário {0} ({1}) exige que você se autentique novamente para acessar os {2} recursos. Pressione Abrir para iniciar o processo de autenticação.",
 			"azurecore.consentDialog.cancel": "Cancelar",
 			"azurecore.consentDialog.ignore": "Ignorar Locatário",
-			"azurecore.consentDialog.open": "Abrir"
+			"azurecore.consentDialog.open": "Abrir",
+			"msal.accountNotFoundError": "Não foi possível encontrar as informações da conta ao adquirir o token.",
+			"msal.resourceNotFoundError": "Não é possível encontrar a configuração para o Azure Resource {0}",
+			"noMicrosoftResource": "O provedor '{0}' não tem um ponto de extremidade de recurso da Microsoft definido."
 		},
 		"dist/account-provider/auths/azureAuthCodeGrant": {
 			"azure.azureAuthCodeGrantName": "Concessão de Código de Autenticação do Azure",
@@ -42,7 +46,10 @@
 		"dist/account-provider/azureAccountProvider": {
 			"azure.NoAuthMethod.Available": "Nenhum método de autenticação do Azure disponível. Você precisa habilitar os métodos de autenticação na configuração do ADS.",
 			"azure.NoAuthMethod.Selected": "Nenhum método de autenticação do Azure selecionado. Você precisa selecionar o método de autenticação que deseja usar.",
-			"azure.deprecatedGetSecurityToken": "Uma chamada foi realizada para azdata.accounts.getSecurityToken. Esse método foi preterido e será removido em versões futuras. Em vez disso, use getAccountSecurityToken."
+			"azure.deprecatedGetSecurityToken": "Uma chamada foi realizada para azdata.accounts.getSecurityToken. Esse método foi preterido e será removido em versões futuras. Em vez disso, use getAccountSecurityToken.",
+			"genericTokenError": "Falha ao obter o token",
+			"msalTokenError": "{0} ocorreu ao adquirir o token. \r\n{1}",
+			"tenantIgnoredError": "Inquilino encontrado na lista de ignorados, autenticação não tentada. Você pode remover o locatário {0} da lista de ignorados no arquivo settings.json: {1} se desejar acessar os recursos deste inquilino."
 		},
 		"dist/account-provider/azureAccountProviderService": {
 			"clearTokenCacheFailure": "Falha ao limpar o cache do token",
@@ -50,10 +57,8 @@
 		},
 		"dist/account-provider/providerSettings": {
 			"chinaCloudDisplayName": "Azure (China)",
-			"germanyCloud": "Azure (Alemanha)",
 			"publicCloudDisplayName": "Azure",
-			"usGovCloudDisplayName": "Azure (Governo dos EUA)",
-			"usNatCloudDisplayName": "Azure (Nacional dos EUA)"
+			"usGovCloudDisplayName": "Azure (Governo dos EUA)"
 		},
 		"dist/azureResource/commands": {
 			"azure.accountNotSelectedError": "Você precisa selecionar uma conta do Azure para que este recurso funcione.",
@@ -71,6 +76,9 @@
 		"dist/azureResource/providers/azuremonitor/azuremonitorTreeDataProvider": {
 			"azure.resource.providers.AzureMonitorContainerLabel": "Espaço de trabalho do Log Analytics"
 		},
+		"dist/azureResource/providers/cosmosdb/mongo/cosmosDbMongoTreeDataProvider": {
+			"azure.resource.providers.databaseServer.treeDataProvider.cosmosDbMongoContainerLabel": "CosmosDB para Mongo"
+		},
 		"dist/azureResource/providers/database/databaseTreeDataProvider": {
 			"azure.resource.providers.database.treeDataProvider.databaseContainerLabel": "Banco de dados SQL"
 		},
@@ -79,6 +87,9 @@
 		},
 		"dist/azureResource/providers/kusto/kustoTreeDataProvider": {
 			"azure.resource.providers.KustoContainerLabel": "Cluster do Azure Data Explorer"
+		},
+		"dist/azureResource/providers/mysqlFlexibleServer/mysqlFlexibleServerTreeDataProvider": {
+			"azure.resource.providers.databaseServer.treeDataProvider.mysqlFlexibleServerContainerLabel": "Banco de dados do Azure para o servidor MySQL Flexível"
 		},
 		"dist/azureResource/providers/postgresArcServer/postgresServerTreeDataProvider": {
 			"azure.resource.providers.postgresArcServer.treeDataProvider.postgresServerContainerLabel": "Hiperescala do PostgreSQL – Azure Arc"
@@ -92,11 +103,18 @@
 		"dist/azureResource/providers/sqlinstanceArc/sqlInstanceArcTreeDataProvider": {
 			"azure.resource.providers.sqlInstanceArcContainerLabel": "Instância gerenciada de SQL – Azure Arc"
 		},
+		"dist/azureResource/providers/synapseSqlPool/synapseSqlPoolTreeDataProvider": {
+			"azure.resource.providers.synapseSqlPool.treeDataProvider.synapseSqlPoolContainerLabel": "Pool de SQL Dedicados"
+		},
+		"dist/azureResource/providers/synapseWorkspace/synapseWorkspaceTreeDataProvider": {
+			"azure.resource.providers.synapseWorkspace.treeDataProvider.synapseWorkspaceContainerLabel": "Azure Synapse Analytics"
+		},
 		"dist/azureResource/resourceTreeNode": {
 			"azure.resource.resourceTreeNode.noResourcesLabel": "Nenhum recurso encontrado"
 		},
 		"dist/azureResource/services/subscriptionService": {
-			"azure.resource.tenantSubscriptionsError": "Falha ao obter assinaturas da conta {0} (locatário '{1}'). {2}"
+			"azure.resource.tenantSubscriptionsError": "Falha ao obter assinaturas da conta {0} (locatário '{1}'). {2}",
+			"azure.resource.tenantTokenError": "Falha ao adquirir o token de acesso para a conta '{0}' (locatário '{1}')."
 		},
 		"dist/azureResource/services/terminalService": {
 			"azure.cloudShell": "Azure Cloud Shell (Versão Prévia) {0} ({1})",
@@ -120,6 +138,7 @@
 			"azure.resource.tree.treeProvider.openAccountsDialog": "Mostrar contas do Azure"
 		},
 		"dist/azureResource/tree/flatAccountTreeNode": {
+			"azure.resource.flatAccountTreeNode.noResourcesLabel": "Nenhum Recurso encontrado.",
 			"azure.resource.throttleerror": "Solicitações desta conta foram limitadas. Para tentar novamente, selecione um número menor de assinaturas.",
 			"azure.resource.tree.accountTreeNode.title": "{0} ({1}/{2} assinaturas)",
 			"azure.resource.tree.accountTreeNode.titleLoading": "{0} – Carregando...",
@@ -141,6 +160,7 @@
 		},
 		"dist/localizedConstants": {
 			"azure.azureResourcesGridTitle": "Recursos do Azure (Versão Prévia)",
+			"azure.credStoreSaveFailedError": "As chaves para cache de token não puderam ser salvas no armazenamento de credenciais, isso pode causar problemas de persistência de token de acesso do Azure e instabilidades de conexão. É provável que o SqlTools tenha atingido o limite de armazenamento de credenciais no Windows, limpe pelo menos 2 credenciais que comecem com \"Microsoft.SqlTools|\" no Gerenciador de Credenciais do Windows e recarregue.",
 			"azure.unableToOpenAzureLink": "Não é possível abrir o link, os valores necessários estão ausentes",
 			"azurecore.australiacentral": "Austrália Central",
 			"azurecore.australiacentral2": "Austrália Central 2",
@@ -156,6 +176,9 @@
 			"azurecore.centralindia": "Índia Central",
 			"azurecore.centralus": "EUA Central",
 			"azurecore.centraluseuap": "EUA Central EUAP",
+			"azurecore.deprecated": "Aviso: a ADAL foi preterida e está agendada para ser removida em uma versão futura. Em vez disso, use a MSAL.",
+			"azurecore.disable": "Desativar",
+			"azurecore.dismiss": "Liberar",
 			"azurecore.eastasia": "Leste da Ásia",
 			"azurecore.eastus": "Leste dos EUA",
 			"azurecore.eastus2": "Leste dos EUA 2",
@@ -177,8 +200,11 @@
 			"azurecore.northeurope": "Norte da Europa",
 			"azurecore.norwayeast": "Leste da Noruega",
 			"azurecore.norwaywest": "Oeste da Noruega",
+			"azurecore.piiLogging.warning": "Aviso: o Log de PII do Azure está habilitado. Habilitar essa opção permite que informações de identificação pessoal sejam registradas em log e só devem ser usadas para fins de depuração.",
 			"azurecore.postgresServer": "Servidor do Banco de Dados do Azure para PostgreSQL",
 			"azurecore.reload": "Recarregar",
+			"azurecore.reloadChoice": "Recarregar o Azure Data Studio",
+			"azurecore.reloadPrompt": "A Biblioteca de Autenticação foi alterada, recarregue o Azure Data Studio.",
 			"azurecore.requiresReload": "Modificar esta configuração requer o recarregamento da janela para que todas as alterações entrem em vigor.",
 			"azurecore.resourceGroup": "Grupo de recursos",
 			"azurecore.resourceType": "Tipo de recurso",
@@ -222,8 +248,9 @@
 			"azure.resource.signin.title": "Azure: Entrar",
 			"azure.resource.startterminal.title": "Iniciar Cloud Shell",
 			"azure.resource.view.title": "Azure (Versão Prévia)",
-			"azure.tenant.config.filter.description": "A lista de IDs de locatário a serem ignoradas ao consultar os recursos do Azure. Cada elemento é uma ID de locatário.",
+			"azure.tenant.config.filter.description": "A lista de IDs de locatário que serão ignoradas ao consultar recursos do Azure ou solicitar tokens de autenticação.",
 			"azure.title": "Azure",
+			"config.authenticationLibrary": "A biblioteca usada para o fluxo de autenticação do AAD. Reinicie o ADS após alterar esta opção.",
 			"config.azureAccountConfigurationSection": "Configuração da Conta do Azure",
 			"config.azureAuthMethodConfigurationSection": "Método de Autenticação do Azure",
 			"config.azureCodeGrantMethod": "Método de Concessão de Código",

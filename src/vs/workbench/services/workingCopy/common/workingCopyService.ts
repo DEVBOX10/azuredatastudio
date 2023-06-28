@@ -4,15 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { Event, Emitter } from 'vs/base/common/event';
 import { URI } from 'vs/base/common/uri';
 import { Disposable, IDisposable, toDisposable, DisposableStore, dispose } from 'vs/base/common/lifecycle';
 import { ResourceMap } from 'vs/base/common/map';
-import { IWorkingCopy, IWorkingCopyIdentifier } from 'vs/workbench/services/workingCopy/common/workingCopy';
+import { IWorkingCopy, IWorkingCopyIdentifier, IWorkingCopySaveEvent as IBaseWorkingCopySaveEvent } from 'vs/workbench/services/workingCopy/common/workingCopy';
 import { Schemas } from 'vs/base/common/network'; // {{SQL CARBON EDIT}} @chlafreniere need to block working copies of notebook editors from being tracked
+import { CELL_URI_PATH_PREFIX } from 'sql/workbench/common/constants';
 
 export const IWorkingCopyService = createDecorator<IWorkingCopyService>('workingCopyService');
+
+export interface IWorkingCopySaveEvent extends IBaseWorkingCopySaveEvent {
+
+	/**
+	 * The working copy that was saved.
+	 */
+	readonly workingCopy: IWorkingCopy;
+}
 
 export interface IWorkingCopyService {
 
@@ -41,6 +50,11 @@ export interface IWorkingCopyService {
 	 */
 	readonly onDidChangeContent: Event<IWorkingCopy>;
 
+	/**
+	 * An event for when a working copy was saved.
+	 */
+	readonly onDidSave: Event<IWorkingCopySaveEvent>;
+
 	//#endregion
 
 
@@ -55,6 +69,18 @@ export interface IWorkingCopyService {
 	 * All dirty working copies that are registered.
 	 */
 	readonly dirtyWorkingCopies: readonly IWorkingCopy[];
+
+	/**
+	 * The number of modified working copies that are registered,
+	 * including scratchpads, which are never dirty.
+	 */
+	readonly modifiedCount: number;
+
+	/**
+	 * All working copies with unsaved changes,
+	 * including scratchpads, which are never dirty.
+	 */
+	readonly modifiedWorkingCopies: readonly IWorkingCopy[];
 
 	/**
 	 * Whether there is any registered working copy that is dirty.
@@ -104,6 +130,12 @@ export interface IWorkingCopyService {
 	 */
 	get(identifier: IWorkingCopyIdentifier): IWorkingCopy | undefined;
 
+	/**
+	 * Returns all working copies with the given resource or `undefined`
+	 * if no such working copy exists.
+	 */
+	getAll(resource: URI): readonly IWorkingCopy[] | undefined;
+
 	//#endregion
 }
 
@@ -125,6 +157,9 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 	private readonly _onDidChangeContent = this._register(new Emitter<IWorkingCopy>());
 	readonly onDidChangeContent = this._onDidChangeContent.event;
 
+	private readonly _onDidSave = this._register(new Emitter<IWorkingCopySaveEvent>());
+	readonly onDidSave = this._onDidSave.event;
+
 	//#endregion
 
 
@@ -138,11 +173,11 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 	registerWorkingCopy(workingCopy: IWorkingCopy): IDisposable {
 		let workingCopiesForResource = this.mapResourceToWorkingCopies.get(workingCopy.resource);
 		if (workingCopiesForResource?.has(workingCopy.typeId)) {
-			throw new Error(`Cannot register more than one working copy with the same resource ${workingCopy.resource.toString(true)} and type ${workingCopy.typeId}.`);
+			throw new Error(`Cannot register more than one working copy with the same resource ${workingCopy.resource.toString()} and type ${workingCopy.typeId}.`);
 		}
 
 		// {{SQL CARBON EDIT}} @chlafreniere need to block working copies of notebook editors from being tracked
-		if (workingCopy.resource.path.includes('notebook-editor-') && workingCopy.resource.scheme === Schemas.untitled) {
+		if (workingCopy.resource.path.includes(CELL_URI_PATH_PREFIX) && workingCopy.resource.scheme === Schemas.untitled) {
 			return new DisposableStore();
 		}
 
@@ -160,6 +195,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 		const disposables = new DisposableStore();
 		disposables.add(workingCopy.onDidChangeContent(() => this._onDidChangeContent.fire(workingCopy)));
 		disposables.add(workingCopy.onDidChangeDirty(() => this._onDidChangeDirty.fire(workingCopy)));
+		disposables.add(workingCopy.onDidSave(e => this._onDidSave.fire({ workingCopy, ...e })));
 
 		// Send some initial events
 		this._onDidRegister.fire(workingCopy);
@@ -176,7 +212,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 		});
 	}
 
-	private unregisterWorkingCopy(workingCopy: IWorkingCopy): void {
+	protected unregisterWorkingCopy(workingCopy: IWorkingCopy): void {
 
 		// Registry (all)
 		this._workingCopies.delete(workingCopy);
@@ -206,6 +242,15 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 
 	get(identifier: IWorkingCopyIdentifier): IWorkingCopy | undefined {
 		return this.mapResourceToWorkingCopies.get(identifier.resource)?.get(identifier.typeId);
+	}
+
+	getAll(resource: URI): readonly IWorkingCopy[] | undefined {
+		const workingCopies = this.mapResourceToWorkingCopies.get(resource);
+		if (!workingCopies) {
+			return undefined;
+		}
+
+		return Array.from(workingCopies.values());
 	}
 
 	//#endregion
@@ -239,6 +284,22 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 		return this.workingCopies.filter(workingCopy => workingCopy.isDirty());
 	}
 
+	get modifiedCount(): number {
+		let totalModifiedCount = 0;
+
+		for (const workingCopy of this._workingCopies) {
+			if (workingCopy.isModified()) {
+				totalModifiedCount++;
+			}
+		}
+
+		return totalModifiedCount;
+	}
+
+	get modifiedWorkingCopies(): IWorkingCopy[] {
+		return this.workingCopies.filter(workingCopy => workingCopy.isModified());
+	}
+
 	isDirty(resource: URI, typeId?: string): boolean {
 		const workingCopies = this.mapResourceToWorkingCopies.get(resource);
 		if (workingCopies) {
@@ -264,4 +325,4 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
 	//#endregion
 }
 
-registerSingleton(IWorkingCopyService, WorkingCopyService, true);
+registerSingleton(IWorkingCopyService, WorkingCopyService, InstantiationType.Delayed);

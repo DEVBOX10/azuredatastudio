@@ -10,7 +10,7 @@ import { URI } from 'vs/base/common/uri';
 
 export type ValueCallback<T = any> = (value: T | Promise<T>) => void;
 
-export function toResource(this: any, path: string) {
+export function toResource(this: any, path: string): URI {
 	if (isWindows) {
 		return URI.file(join('C:\\', btoa(this.test.fullTitle()), path));
 	}
@@ -47,7 +47,7 @@ interface DisposableData {
 	isSingleton: boolean;
 }
 
-class DisposableTracker implements IDisposableTracker {
+export class DisposableTracker implements IDisposableTracker {
 	private readonly livingDisposables = new Map<IDisposable, DisposableData>();
 
 	private getDisposableData(d: IDisposable) {
@@ -90,6 +90,17 @@ class DisposableTracker implements IDisposableTracker {
 		return result;
 	}
 
+	getTrackedDisposables() {
+		const rootParentCache = new Map<DisposableData, DisposableData>();
+
+		const leaking = [...this.livingDisposables.entries()]
+			.filter(([, v]) => v.source !== null && !this.getRootParent(v, rootParentCache).isSingleton)
+			.map(([k]) => k)
+			.flat();
+
+		return leaking;
+	}
+
 	ensureNoLeakingDisposables() {
 		const rootParentCache = new Map<DisposableData, DisposableData>();
 		const leaking = [...this.livingDisposables.values()]
@@ -109,6 +120,7 @@ class DisposableTracker implements IDisposableTracker {
 			throw new Error(`These disposables were not disposed:\n${s}`);
 		}
 	}
+
 }
 
 /**
@@ -124,9 +136,12 @@ export function ensureNoDisposablesAreLeakedInTestSuite() {
 		setDisposableTracker(tracker);
 	});
 
-	teardown(() => {
+	teardown(function (this: import('mocha').Context) {
 		setDisposableTracker(null);
-		tracker!.ensureNoLeakingDisposables();
+
+		if (this.currentTest?.state !== 'failed') {
+			tracker!.ensureNoLeakingDisposables();
+		}
 	});
 }
 
@@ -145,4 +160,3 @@ export async function throwIfDisposablesAreLeakedAsync(body: () => Promise<void>
 	setDisposableTracker(null);
 	tracker.ensureNoLeakingDisposables();
 }
-

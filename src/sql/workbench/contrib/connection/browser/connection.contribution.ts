@@ -7,16 +7,13 @@ import { IConfigurationRegistry, Extensions as ConfigExtensions } from 'vs/platf
 import { Registry } from 'vs/platform/registry/common/platform';
 import { ClearRecentConnectionsAction, GetCurrentConnectionStringAction } from 'sql/workbench/services/connection/browser/connectionActions';
 import * as azdata from 'azdata';
-import { IWorkbenchActionRegistry, Extensions } from 'vs/workbench/common/actions';
-import { MenuId, MenuRegistry, SyncActionDescriptor } from 'vs/platform/actions/common/actions';
+import { Action2, MenuId, MenuRegistry, registerAction2 } from 'vs/platform/actions/common/actions';
 import { localize } from 'vs/nls';
 import { ConnectionStatusbarItem } from 'sql/workbench/contrib/connection/browser/connectionStatus';
 import { CommandsRegistry } from 'vs/platform/commands/common/commands';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
 import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilitiesService';
-import { integrated, azureMFA } from 'sql/platform/connection/common/constants';
-import { AuthenticationType } from 'sql/workbench/services/connection/browser/connectionWidget';
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
 import { ConnectionViewletPanel } from 'sql/workbench/contrib/dataExplorer/browser/connectionViewletPanel';
@@ -30,52 +27,27 @@ const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(Workbench
 workbenchRegistry.registerWorkbenchContribution(ConnectionStatusbarItem, LifecyclePhase.Restored);
 
 import 'sql/workbench/contrib/connection/common/connectionTreeProviderExentionPoint';
-import { ServerTreeViewView } from 'sql/workbench/services/objectExplorer/browser/objectExplorerService';
+import { IObjectExplorerService, ServerTreeViewView } from 'sql/workbench/services/objectExplorer/browser/objectExplorerService';
+import { AuthenticationType } from 'sql/platform/connection/common/constants';
+import { Codicon } from 'vs/base/common/codicons';
+import { ServicesAccessor } from 'vs/editor/browser/editorExtensions';
 
 // Connection Dashboard registration
 
-const actionRegistry = <IWorkbenchActionRegistry>Registry.as(Extensions.WorkbenchActions);
 
 // Connection Actions
-actionRegistry.registerWorkbenchAction(
-	SyncActionDescriptor.create(
-		ClearRecentConnectionsAction,
-		ClearRecentConnectionsAction.ID,
-		ClearRecentConnectionsAction.LABEL
-	),
-	ClearRecentConnectionsAction.LABEL
-);
 
-actionRegistry.registerWorkbenchAction(
-	SyncActionDescriptor.create(
-		AddServerGroupAction,
-		AddServerGroupAction.ID,
-		AddServerGroupAction.LABEL
-	),
-	AddServerGroupAction.LABEL
-);
+registerAction2(ClearRecentConnectionsAction);
 
-actionRegistry.registerWorkbenchAction(
-	SyncActionDescriptor.create(
-		ActiveConnectionsFilterAction,
-		ActiveConnectionsFilterAction.ID,
-		ActiveConnectionsFilterAction.SHOW_ACTIVE_CONNECTIONS_LABEL
-	),
-	ActiveConnectionsFilterAction.SHOW_ACTIVE_CONNECTIONS_LABEL
-);
+registerAction2(AddServerGroupAction);
 
-actionRegistry.registerWorkbenchAction(
-	SyncActionDescriptor.create(
-		AddServerAction,
-		AddServerAction.ID,
-		AddServerAction.LABEL
-	),
-	AddServerAction.LABEL
-);
+registerAction2(ActiveConnectionsFilterAction);
+
+registerAction2(AddServerAction);
 
 MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 	group: 'navigation',
-	order: 10,
+	order: 1,
 	command: {
 		id: AddServerAction.ID,
 		title: AddServerAction.LABEL,
@@ -86,7 +58,7 @@ MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 
 MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 	group: 'navigation',
-	order: 20,
+	order: 2,
 	command: {
 		id: AddServerGroupAction.ID,
 		title: AddServerGroupAction.LABEL,
@@ -97,7 +69,7 @@ MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 
 MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 	group: 'navigation',
-	order: 30,
+	order: 3,
 	command: {
 		id: ActiveConnectionsFilterAction.ID,
 		title: ActiveConnectionsFilterAction.SHOW_ACTIVE_CONNECTIONS_LABEL,
@@ -112,6 +84,26 @@ MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
 	when: ContextKeyEqualsExpr.create('view', ConnectionViewletPanel.ID),
 });
 
+registerAction2(class extends Action2 {
+	constructor() {
+		super({
+			id: 'registeredServers.collapseAll',
+			title: localize('registeredServers.collapseAll', "Collapse All Connections"),
+			menu: {
+				id: MenuId.ViewTitle,
+				when: ContextKeyEqualsExpr.create('view', ConnectionViewletPanel.ID),
+				group: 'navigation',
+				order: Number.MAX_SAFE_INTEGER - 1,
+			},
+			icon: Codicon.collapseAll
+		});
+	}
+	async run(accessor: ServicesAccessor): Promise<void> {
+		const objectExplorerService = accessor.get(IObjectExplorerService);
+		await objectExplorerService.getServerTreeView().collapseAllConnections();
+	}
+});
+
 CommandsRegistry.registerCommand('azdata.connect',
 	function (accessor, args: {
 		serverName: string,
@@ -119,13 +111,14 @@ CommandsRegistry.registerCommand('azdata.connect',
 		authenticationType?: AuthenticationType,
 		userName?: string,
 		password?: string,
-		databaseName?: string
+		databaseName?: string,
+		options?: { [name: string]: any }
 	}) {
 		const capabilitiesServices = accessor.get(ICapabilitiesService);
 		const connectionManagementService = accessor.get(IConnectionManagementService);
 		if (args && args.serverName && args.providerName
-			&& (args.authenticationType === integrated
-				|| args.authenticationType === azureMFA
+			&& (args.authenticationType === AuthenticationType.Integrated
+				|| args.authenticationType === AuthenticationType.AzureMFA
 				|| (args.userName && args.password))) {
 			const profile: azdata.IConnectionProfile = {
 				serverName: args.serverName,
@@ -140,30 +133,27 @@ CommandsRegistry.registerCommand('azdata.connect',
 				saveProfile: true,
 				id: undefined,
 				groupId: undefined,
-				options: {}
+				options: args.options
 			};
 			const connectionProfile = ConnectionProfile.fromIConnectionProfile(capabilitiesServices, profile);
 
 			connectionManagementService.connect(connectionProfile, undefined, {
 				saveTheConnection: true,
 				showDashboard: true,
-				params: undefined,
 				showConnectionDialogOnError: true,
 				showFirewallRuleOnError: true
 			});
 		} else {
-			connectionManagementService.showConnectionDialog();
+			connectionManagementService.showConnectionDialog(undefined, {
+				saveTheConnection: true,
+				showDashboard: true,
+				showConnectionDialogOnError: true,
+				showFirewallRuleOnError: true
+			});
 		}
 	});
 
-actionRegistry.registerWorkbenchAction(
-	SyncActionDescriptor.create(
-		GetCurrentConnectionStringAction,
-		GetCurrentConnectionStringAction.ID,
-		GetCurrentConnectionStringAction.LABEL
-	),
-	GetCurrentConnectionStringAction.LABEL
-);
+registerAction2(GetCurrentConnectionStringAction);
 
 const configurationRegistry = <IConfigurationRegistry>Registry.as(ConfigExtensions.Configuration);
 configurationRegistry.registerConfiguration({
@@ -178,7 +168,7 @@ configurationRegistry.registerConfiguration({
 		},
 		'sql.defaultAuthenticationType': {
 			'type': 'string',
-			'enum': ['SqlLogin', 'AzureMFA', `AzureMFAAndUser`, 'Integrated'],
+			'enum': [AuthenticationType.SqlLogin, AuthenticationType.AzureMFA, AuthenticationType.AzureMFAAndUser, AuthenticationType.Integrated],
 			'description': localize('sql.defaultAuthenticationTypeDescription', "Default authentication type to use when connecting to Azure resources. "),
 			'enumDescriptions': [
 				localize('sql.defaultAuthenticationType.SqlLogin', "Sql Login"),
@@ -186,17 +176,12 @@ configurationRegistry.registerConfiguration({
 				localize('sql.defaultAuthenticationType.AzureMFAAndUser', "Azure Active Directory - Password"),
 				localize('sql.defaultAuthenticationType.Integrated', "Windows Authentication"),
 			],
-			'default': 'AzureMFA'
+			'default': AuthenticationType.AzureMFA
 		},
 		'sql.defaultEngine': {
 			'type': 'string',
 			'description': localize('sql.defaultEngineDescription', "Default SQL Engine to use. This drives default language provider in .sql files and the default to use when creating a new connection."),
 			'default': 'MSSQL'
-		},
-		'connection.parseClipboardForConnectionString': {
-			'type': 'boolean',
-			'default': true,
-			'description': localize('connection.parseClipboardForConnectionStringDescription', "Attempt to parse the contents of the clipboard when the connection dialog is opened or a paste is performed.")
 		},
 		'connection.showUnsupportedServerVersionWarning': {
 			'type': 'boolean',

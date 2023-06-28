@@ -12,7 +12,7 @@ import { IContextMenuService } from 'vs/platform/contextview/browser/contextView
 import { IMenuService, MenuId, MenuItemAction, registerAction2, Action2, SubmenuItemAction } from 'vs/platform/actions/common/actions';
 import { MenuEntryActionViewItem, createAndFillInContextMenuActions, SubmenuEntryActionViewItem } from 'vs/platform/actions/browser/menuEntryActionViewItem';
 import { IContextKeyService, ContextKeyExpr, ContextKeyEqualsExpr, RawContextKey, IContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { TreeItemCollapsibleState, ITreeViewDataProvider, TreeViewItemHandleArg, ITreeItemLabel, IViewDescriptorService, ViewContainer, ViewContainerLocation } from 'vs/workbench/common/views';
+import { TreeItemCollapsibleState, ITreeViewDataProvider, TreeViewItemHandleArg, ITreeItemLabel, IViewDescriptorService, ViewContainer, ViewContainerLocation, IViewBadge } from 'vs/workbench/common/views';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 import { IProgressService } from 'vs/platform/progress/common/progress';
@@ -23,7 +23,7 @@ import { ResourceLabels, IResourceLabel } from 'vs/workbench/browser/labels';
 import { ActionBar, IActionViewItemProvider } from 'vs/base/browser/ui/actionbar/actionbar';
 import { URI } from 'vs/base/common/uri';
 import { dirname, basename } from 'vs/base/common/resources';
-import { FileThemeIcon, FolderThemeIcon, registerThemingParticipant, ThemeIcon, IThemeService } from 'vs/platform/theme/common/themeService';
+import { FileThemeIcon, FolderThemeIcon, registerThemingParticipant, IThemeService } from 'vs/platform/theme/common/themeService';
 import { FileKind } from 'vs/platform/files/common/files';
 import { WorkbenchAsyncDataTree } from 'vs/platform/list/browser/listService';
 import { localize } from 'vs/nls';
@@ -43,6 +43,7 @@ import { IOEShimService } from 'sql/workbench/services/objectExplorer/browser/ob
 import { NodeContextKey } from 'sql/workbench/contrib/views/browser/nodeContext';
 import { ActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
 import { ColorScheme } from 'vs/platform/theme/common/theme';
+import { ThemeIcon } from 'vs/base/common/themables';
 
 class Root implements ITreeItem {
 	label = { label: 'root' };
@@ -75,6 +76,9 @@ export class TreeView extends Disposable implements ITreeView {
 	private messageElement!: HTMLDivElement;
 	private tree: Tree | undefined;
 	private treeLabels: ResourceLabels | undefined;
+	readonly badge: IViewBadge | undefined = undefined;
+	readonly container: any | undefined = undefined;
+	private _manuallyManageCheckboxes: boolean = false;
 
 	public readonly root: ITreeItem;
 	private elementsToRefresh: ITreeItem[] = [];
@@ -102,6 +106,12 @@ export class TreeView extends Disposable implements ITreeView {
 
 	private readonly _onDidChangeDescription: Emitter<string | undefined> = this._register(new Emitter<string | undefined>());
 	readonly onDidChangeDescription: Event<string | undefined> = this._onDidChangeDescription.event;
+
+	private readonly _onDidChangeCheckboxState: Emitter<readonly ITreeItem[]> = this._register(new Emitter<readonly ITreeItem[]>());
+	readonly onDidChangeCheckboxState: Event<readonly ITreeItem[]> = this._onDidChangeCheckboxState.event;
+
+	private _onDidChangeFocus: Emitter<ITreeItem> = this._register(new Emitter<ITreeItem>());
+	readonly onDidChangeFocus: Event<ITreeItem> = this._onDidChangeFocus.event;
 
 	private readonly _onDidCompleteRefresh: Emitter<void> = this._register(new Emitter<void>());
 
@@ -183,7 +193,7 @@ export class TreeView extends Disposable implements ITreeView {
 				}
 
 				async getChildren(node: ITreeItem): Promise<ITreeItem[]> {
-					let children: ITreeItem[];
+					let children: ITreeItem[] | undefined = undefined;
 					if (node && node.children) {
 						children = node.children;
 					} else {
@@ -192,12 +202,12 @@ export class TreeView extends Disposable implements ITreeView {
 					}
 					if (node instanceof Root) {
 						const oldEmpty = this._isEmpty;
-						this._isEmpty = children.length === 0;
+						this._isEmpty = !children || children.length === 0;
 						if (oldEmpty !== this._isEmpty) {
 							this._onDidChangeEmpty.fire();
 						}
 					}
-					return children;
+					return children ?? [];
 				}
 			};
 			if (this._dataProvider.onDidChangeEmpty) {
@@ -278,6 +288,14 @@ export class TreeView extends Disposable implements ITreeView {
 
 	set showRefreshAction(showRefreshAction: boolean) {
 		this.refreshContext.set(showRefreshAction);
+	}
+
+	get manuallyManageCheckboxes(): boolean {
+		return this._manuallyManageCheckboxes;
+	}
+
+	set manuallyManageCheckboxes(manuallyManageCheckboxes: boolean) {
+		this._manuallyManageCheckboxes = manuallyManageCheckboxes;
 	}
 
 	private registerActions() {
@@ -434,7 +452,7 @@ export class TreeView extends Disposable implements ITreeView {
 
 		this.tree.contextKeyService.createKey<boolean>(this.id, true);
 		this._register(this.tree.onContextMenu(e => this.onContextMenu(treeMenus, e, actionRunner)));
-		this._register(this.tree.onDidChangeSelection(e => this._onDidChangeSelection.fire(e.elements)));
+		this._register(this.tree.onDidChangeSelection(e => this._onDidChangeSelection.fire(<any>e.elements)));
 		this._register(this.tree.onDidChangeCollapseState(e => {
 			if (!e.node.element) {
 				return;
@@ -558,6 +576,10 @@ export class TreeView extends Disposable implements ITreeView {
 		return 0;
 	}
 
+	isCollapsed(item: ITreeItem): boolean {
+		return !!this.tree?.isCollapsed(item);
+	}
+
 	async refresh(elements?: ITreeItem[]): Promise<void> {
 		if (this.dataProvider && this.tree) {
 			if (this.refreshing) {
@@ -604,6 +626,10 @@ export class TreeView extends Disposable implements ITreeView {
 		if (this.tree) {
 			this.tree.setSelection(items);
 		}
+	}
+
+	getSelection(): ITreeItem[] {
+		return this.tree?.getSelection() ?? [];
 	}
 
 	setFocus(item: ITreeItem): void {
@@ -806,7 +832,8 @@ class TreeRenderer extends Disposable implements ITreeRenderer<ITreeItem, FuzzyS
 			}
 			return ({ start, end });
 		}) : undefined;
-		const icon = this.themeService.getColorTheme().type === ColorScheme.LIGHT ? node.icon : node.iconDark;
+		const isLightTheme = [ColorScheme.LIGHT, ColorScheme.HIGH_CONTRAST_LIGHT].includes(this.themeService.getColorTheme().type);
+		const icon = isLightTheme ? node.icon : node.iconDark;
 		const iconUrl = icon ? URI.revive(icon) : null;
 		const title = node.tooltip ? isString(node.tooltip) ? node.tooltip : undefined : resource ? undefined : label;
 		const sqlIcon = node.sqlIcon;
@@ -914,7 +941,8 @@ class Aligner extends Disposable {
 	}
 
 	private hasIcon(node: ITreeItem): boolean {
-		const icon = this.themeService.getColorTheme().type === ColorScheme.LIGHT ? node.icon : node.iconDark;
+		const isLightTheme = [ColorScheme.LIGHT, ColorScheme.HIGH_CONTRAST_LIGHT].includes(this.themeService.getColorTheme().type);
+		const icon = isLightTheme ? node.icon : node.iconDark;
 		if (icon) {
 			return true;
 		}
@@ -941,7 +969,7 @@ class MultipleSelectionActionRunner extends ActionRunner {
 		}));
 	}
 
-	override async runAction(action: IAction, context: TreeViewItemHandleArg): Promise<void> {
+	protected override async runAction(action: IAction, context: TreeViewItemHandleArg): Promise<void> {
 		const selection = this.getSelectedResources();
 		let selectionHandleArgs: TreeViewItemHandleArg[] | undefined = undefined;
 		let actionInSelected: boolean = false;
@@ -1003,7 +1031,6 @@ class TreeMenus extends Disposable implements IDisposable {
 		createAndFillInContextMenuActions(menu, { shouldForwardArgs: true }, result, 'inline');
 
 		menu.dispose();
-		contextKeyService.dispose();
 
 		return result;
 	}

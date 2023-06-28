@@ -8,7 +8,6 @@ import { IClipboardService } from 'sql/platform/clipboard/common/clipboardServic
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { Modal } from 'sql/workbench/browser/modal/modal';
 import { attachModalDialogStyler } from 'sql/workbench/common/styler';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
 import { ILogService } from 'vs/platform/log/common/log';
@@ -25,11 +24,11 @@ import { bootstrapAngular } from 'sql/workbench/services/bootstrap/browser/boots
 import { localize } from 'vs/nls';
 import { NotebookViewsExtension } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViewsExtension';
 import { InsertCellsModule } from 'sql/workbench/contrib/notebook/browser/notebookViews/insertCellsModal.module';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { truncate } from 'vs/base/common/strings';
 import { toJpeg } from 'html-to-image';
 import { IComponentEventArgs } from 'sql/platform/dashboard/browser/interfaces';
 import { Thumbnail } from 'sql/workbench/contrib/notebook/browser/notebookViews/insertCellsScreenshots.component';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
 
 type CellOption = {
 	optionMetadata: ServiceOption,
@@ -97,7 +96,6 @@ export class InsertCellsModal extends Modal {
 	public viewModel: CellOptionsModel;
 
 	private _submitButton: Button;
-	private _cancelButton: Button;
 	private _maxTitleLength: number = 20;
 	private _moduleRef?: NgModuleRef<typeof InsertCellsModule>;
 
@@ -210,10 +208,7 @@ export class InsertCellsModal extends Modal {
 		super.render();
 
 		this._submitButton = this.addFooterButton(localize('insertCellsModal.Insert', "Insert"), () => this.onSubmitHandler());
-		this._cancelButton = this.addFooterButton(localize('insertCellsModal.Cancel', "Cancel"), () => this.onCancelHandler(), 'right', true);
-
-		this._register(attachButtonStyler(this._submitButton, this._themeService));
-		this._register(attachButtonStyler(this._cancelButton, this._themeService));
+		this.addFooterButton(localize('insertCellsModal.Cancel', "Cancel"), () => this.onCancelHandler(), 'right', true);
 
 		attachModalDialogStyler(this, this._themeService);
 		this.validate();

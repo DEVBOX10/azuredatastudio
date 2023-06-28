@@ -5,826 +5,583 @@
 
 import * as azdata from 'azdata';
 import * as vscode from 'vscode';
-import { MigrationContext, MigrationLocalStorage } from '../models/migrationLocalStorage';
-import { logError, TelemetryViews } from '../telemtery';
+import { promises as fs } from 'fs';
+import { DatabaseMigration, deleteMigration, getMigrationDetails, getMigrationErrors, retryMigration } from '../api/azure';
+import { MenuCommands, SqlMigrationExtensionId } from '../api/utils';
+import { canCancelMigration, canCutoverMigration, canDeleteMigration, canRestartMigrationWizard, canRetryMigration } from '../constants/helper';
+import { IconPathHelper } from '../constants/iconPathHelper';
+import { MigrationNotebookInfo, NotebookPathHelper } from '../constants/notebookPathHelper';
 import * as loc from '../constants/strings';
-import { IconPath, IconPathHelper } from '../constants/iconPathHelper';
-import { MigrationStatusDialog } from '../dialog/migrationStatus/migrationStatusDialog';
-import { AdsMigrationStatus } from '../dialog/migrationStatus/migrationStatusDialogModel';
-import { filterMigrations, SupportedAutoRefreshIntervals } from '../api/utils';
-import * as styles from '../constants/styles';
-import * as nls from 'vscode-nls';
-const localize = nls.loadMessageBundle();
+import { SavedAssessmentDialog } from '../dialog/assessment/savedAssessmentDialog';
+import { ConfirmCutoverDialog } from '../dialog/migrationCutover/confirmCutoverDialog';
+import { MigrationCutoverDialogModel } from '../dialog/migrationCutover/migrationCutoverDialogModel';
+import { RestartMigrationDialog } from '../dialog/restartMigration/restartMigrationDialog';
+import { SqlMigrationServiceDetailsDialog } from '../dialog/sqlMigrationService/sqlMigrationServiceDetailsDialog';
+import { MigrationLocalStorage } from '../models/migrationLocalStorage';
+import { MigrationStateModel, SavedInfo } from '../models/stateMachine';
+import { logError, TelemetryViews } from '../telemetry';
+import { WizardController } from '../wizard/wizardController';
+import { DashboardStatusBar, ErrorEvent } from './DashboardStatusBar';
+import { DashboardTab } from './dashboardTab';
+import { MigrationsTab, MigrationsTabId } from './migrationsTab';
+import { AdsMigrationStatus, MigrationDetailsEvent, ServiceContextChangeEvent } from './tabBase';
+import { migrationServiceProvider } from '../service/provider';
+import { ApiType, SqlMigrationService } from '../service/features';
+import { getSourceConnectionId, getSourceConnectionProfile } from '../api/sqlUtils';
+import { openRetryMigrationDialog } from '../dialog/retryMigration/retryMigrationDialog';
 
-interface IActionMetadata {
-	title?: string,
-	description?: string,
-	link?: string,
-	iconPath?: azdata.ThemedIconPath,
-	command?: string;
-}
-
-const maxWidth = 800;
-const refreshFrequency: SupportedAutoRefreshIntervals = 180000;
-
-interface StatusCard {
-	container: azdata.DivContainer;
-	count: azdata.TextComponent,
-	textContainer?: azdata.FlexContainer,
-	warningContainer?: azdata.FlexContainer,
-	warningText?: azdata.TextComponent,
+export interface MenuCommandArgs {
+	connectionId: string,
+	migrationId: string,
+	migrationOperationId: string,
 }
 
 export class DashboardWidget {
-	private _context: vscode.ExtensionContext;
-
-	private _migrationStatusCardsContainer!: azdata.FlexContainer;
-	private _migrationStatusCardLoadingContainer!: azdata.LoadingComponent;
-	private _view!: azdata.ModelView;
-
-	private _inProgressMigrationButton!: StatusCard;
-	private _inProgressWarningMigrationButton!: StatusCard;
-	private _successfulMigrationButton!: StatusCard;
-	private _failedMigrationButton!: StatusCard;
-	private _completingMigrationButton!: StatusCard;
-	private _notStartedMigrationCard!: StatusCard;
-	private _migrationStatusMap: Map<string, MigrationContext[]> = new Map();
-	private _viewAllMigrationsButton!: azdata.ButtonComponent;
-
-	private _autoRefreshHandle!: NodeJS.Timeout;
-	private _disposables: vscode.Disposable[] = [];
-
-	private isRefreshing: boolean = false;
+	public stateModel!: MigrationStateModel;
+	private readonly _context: vscode.ExtensionContext;
+	private readonly _onServiceContextChanged: vscode.EventEmitter<ServiceContextChangeEvent>;
+	private readonly _migrationDetailsEvent: vscode.EventEmitter<MigrationDetailsEvent>;
+	private readonly _errorEvent: vscode.EventEmitter<ErrorEvent>;
+	private _migrationsTab!: MigrationsTab;
 
 	constructor(context: vscode.ExtensionContext) {
 		this._context = context;
+		NotebookPathHelper.setExtensionContext(context);
+		IconPathHelper.setExtensionContext(context);
+		MigrationLocalStorage.setExtensionContext(context);
+
+		this._onServiceContextChanged = new vscode.EventEmitter<ServiceContextChangeEvent>();
+		this._errorEvent = new vscode.EventEmitter<ErrorEvent>();
+		this._migrationDetailsEvent = new vscode.EventEmitter<MigrationDetailsEvent>();
+
+		context.subscriptions.push(this._onServiceContextChanged);
+		context.subscriptions.push(this._errorEvent);
+		context.subscriptions.push(this._migrationDetailsEvent);
 	}
 
-	private async getCurrentMigrations(): Promise<MigrationContext[]> {
-		const connectionId = (await azdata.connection.getCurrentConnection()).connectionId;
-		return this._migrationStatusMap.get(connectionId)!;
-	}
+	public async register(): Promise<void> {
+		await this._registerCommands();
 
-	private async setCurrentMigrations(migrations: MigrationContext[]): Promise<void> {
-		const connectionId = (await azdata.connection.getCurrentConnection()).connectionId;
-		this._migrationStatusMap.set(connectionId, migrations);
-	}
+		azdata.ui.registerModelViewProvider('migration-dashboard', async (view) => {
+			const disposables: vscode.Disposable[] = [];
+			const _view = view;
 
-	public register(): void {
-		azdata.ui.registerModelViewProvider('migration.dashboard', async (view) => {
-			this._view = view;
+			const statusInfoBox = view.modelBuilder.infoBox()
+				.withProps({
+					style: 'error',
+					text: '',
+					clickableButtonAriaLabel: loc.ERROR_DIALOG_ARIA_CLICK_VIEW_ERROR_DETAILS,
+					announceText: true,
+					isClickable: true,
+					display: 'none',
+					CSSStyles: { 'font-size': '14px', 'display': 'none', },
+				}).component();
 
-			const container = view.modelBuilder.flexContainer().withLayout({
-				flexFlow: 'column',
-				width: '100%',
-				height: '100%'
-			}).component();
+			const statusBar = new DashboardStatusBar(
+				this._context,
+				await getSourceConnectionId(),
+				statusInfoBox,
+				this._errorEvent);
 
-			const header = this.createHeader(view);
-			// Files need to have the vscode-file scheme to be loaded by ADS
-			const watermarkUri = vscode.Uri.file(<string>IconPathHelper.migrationDashboardHeaderBackground.light).with({ scheme: 'vscode-file' });
-			container.addItem(header, {
-				CSSStyles: {
-					'background-image': `
-						url(${watermarkUri}),
-						linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0) 100%)
-					`,
-					'background-repeat': 'no-repeat',
-					'background-position': '91.06% 100%',
-					'margin-bottom': '20px'
+			disposables.push(
+				statusInfoBox.onDidClick(
+					async e => await statusBar.openErrorDialog()));
+
+			disposables.push(
+				_view.onClosed(e =>
+					disposables.forEach(
+						d => { try { d.dispose(); } catch { } })));
+
+			const openMigrationFcn = async (filter: AdsMigrationStatus): Promise<void> => {
+				if (!migrationsTabInitialized) {
+					migrationsTabInitialized = true;
+					tabs.selectTab(MigrationsTabId);
+					await this._migrationsTab.setMigrationFilter(AdsMigrationStatus.ALL);
+					await this._migrationsTab.refresh();
+					await this._migrationsTab.setMigrationFilter(filter);
+				} else {
+					const promise = this._migrationsTab.setMigrationFilter(filter);
+					tabs.selectTab(MigrationsTabId);
+					await promise;
 				}
-			});
+			};
 
-			const tasksContainer = await this.createTasks(view);
-			header.addItem(tasksContainer, {
-				CSSStyles: {
-					'width': `${maxWidth}px`,
-					'margin': '24px'
-				}
-			});
-			container.addItem(await this.createFooter(view), {
-				CSSStyles: {
-					'margin': '0 24px'
-				}
-			});
-			this._disposables.push(this._view.onClosed(e => {
-				clearInterval(this._autoRefreshHandle);
-				this._disposables.forEach(
-					d => { try { d.dispose(); } catch { } });
-			}));
+			const dashboardTab = await new DashboardTab().create(
+				view,
+				async (filter: AdsMigrationStatus) => await openMigrationFcn(filter),
+				this._onServiceContextChanged,
+				statusBar);
+			disposables.push(dashboardTab);
 
-			await view.initializeModel(container);
-			await this.refreshMigrations();
+			this._migrationsTab = await new MigrationsTab().create(
+				this._context,
+				view,
+				this._onServiceContextChanged,
+				this._migrationDetailsEvent,
+				statusBar);
+			disposables.push(this._migrationsTab);
+
+			const tabs = view.modelBuilder.tabbedPanel()
+				.withTabs([dashboardTab, this._migrationsTab])
+				.withLayout({ alwaysShowTabs: true, orientation: azdata.TabOrientation.Horizontal })
+				.withProps({
+					CSSStyles: {
+						'margin': '0px',
+						'padding': '0px',
+						'width': '100%'
+					}
+				})
+				.component();
+
+			let migrationsTabInitialized = false;
+			disposables.push(
+				tabs.onTabChanged(async tabId => {
+					await this.clearError(await getSourceConnectionId());
+					if (tabId === MigrationsTabId && !migrationsTabInitialized) {
+						migrationsTabInitialized = true;
+						await this._migrationsTab.refresh();
+					}
+				}));
+
+			const flexContainer = view.modelBuilder.flexContainer()
+				.withLayout({ flexFlow: 'column' })
+				.withItems([statusInfoBox, tabs])
+				.component();
+			await view.initializeModel(flexContainer);
+			await dashboardTab.refresh();
 		});
 	}
 
-	private createHeader(view: azdata.ModelView): azdata.FlexContainer {
-		this.setAutoRefresh(refreshFrequency);
+	private async _registerCommands(): Promise<void> {
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.Cutover,
+				async (args: MenuCommandArgs) => {
+					try {
+						await this.clearError(args.connectionId);
+						const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+						if (canCutoverMigration(migration)) {
+							const cutoverDialogModel = new MigrationCutoverDialogModel(
+								await MigrationLocalStorage.getMigrationServiceContext(),
+								migration!);
+							await cutoverDialogModel.fetchStatus();
+							const dialog = new ConfirmCutoverDialog(cutoverDialogModel);
+							await dialog.initialize();
+							if (cutoverDialogModel.CutoverError) {
+								void vscode.window.showErrorMessage(loc.MIGRATION_CUTOVER_ERROR);
+								logError(TelemetryViews.MigrationsTab, MenuCommands.Cutover, cutoverDialogModel.CutoverError);
+							}
+						} else {
+							await vscode.window.showInformationMessage(loc.MIGRATION_CANNOT_CUTOVER);
+						}
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.MIGRATION_CUTOVER_ERROR,
+							loc.MIGRATION_CUTOVER_ERROR,
+							e.message);
 
-		const header = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'column',
-			width: maxWidth,
-		}).component();
-		const titleComponent = view.modelBuilder.text().withProps({
-			value: loc.DASHBOARD_TITLE,
-			width: '750px',
-			CSSStyles: {
-				...styles.DASHBOARD_TITLE_CSS
-			}
-		}).component();
+						logError(TelemetryViews.MigrationsTab, MenuCommands.Cutover, e);
+					}
+				}));
 
-		const descriptionComponent = view.modelBuilder.text().withProps({
-			value: loc.DASHBOARD_DESCRIPTION,
-			CSSStyles: {
-				...styles.NOTE_CSS
-			}
-		}).component();
-		header.addItems([titleComponent, descriptionComponent], {
-			CSSStyles: {
-				'width': `${maxWidth}px`,
-				'padding-left': '24px'
-			}
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.ViewDatabase,
+				async (args: MenuCommandArgs) => {
+					try {
+						await this.clearError(args.connectionId);
+						this._migrationDetailsEvent.fire({
+							connectionId: args.connectionId,
+							migrationId: args.migrationId,
+							migrationOperationId: args.migrationOperationId,
+						});
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.OPEN_MIGRATION_DETAILS_ERROR,
+							loc.OPEN_MIGRATION_DETAILS_ERROR,
+							e.message);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.ViewDatabase, e);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.ViewTarget,
+				async (args: MenuCommandArgs) => {
+					try {
+						const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+						if (migration) {
+							const url = 'https://portal.azure.com/#resource/' + migration.properties.scope;
+							await vscode.env.openExternal(vscode.Uri.parse(url));
+						}
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.OPEN_MIGRATION_TARGET_ERROR,
+							loc.OPEN_MIGRATION_TARGET_ERROR,
+							e.message);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.ViewTarget, e);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.ViewService,
+				async (args: MenuCommandArgs) => {
+					try {
+						await this.clearError(args.connectionId);
+						const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+						const serviceContext = await MigrationLocalStorage.getMigrationServiceContext();
+						if (migration && serviceContext) {
+							const dialog = new SqlMigrationServiceDetailsDialog(
+								serviceContext,
+								migration);
+							await dialog.initialize();
+						}
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.OPEN_MIGRATION_SERVICE_ERROR,
+							loc.OPEN_MIGRATION_SERVICE_ERROR,
+							e.message);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.ViewService, e);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.CopyMigration,
+				async (args: MenuCommandArgs) => {
+					await this.clearError(args.connectionId);
+					const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+					if (migration) {
+						const cutoverDialogModel = new MigrationCutoverDialogModel(
+							await MigrationLocalStorage.getMigrationServiceContext(),
+							migration);
+						try {
+							await cutoverDialogModel.fetchStatus();
+						} catch (e) {
+							await this.showError(
+								args.connectionId,
+								loc.MIGRATION_STATUS_REFRESH_ERROR,
+								loc.MIGRATION_STATUS_REFRESH_ERROR,
+								e.message);
+							logError(TelemetryViews.MigrationsTab, MenuCommands.CopyMigration, e);
+						}
+
+						await vscode.env.clipboard.writeText(JSON.stringify(cutoverDialogModel.migration, undefined, 2));
+						await vscode.window.showInformationMessage(loc.DETAILS_COPIED);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.CancelMigration,
+				async (args: MenuCommandArgs) => {
+					try {
+						await this.clearError(args.connectionId);
+						const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+						if (migration && canCancelMigration(migration)) {
+							void vscode.window
+								.showInformationMessage(loc.CANCEL_MIGRATION_CONFIRMATION, loc.YES, loc.NO)
+								.then(async (v) => {
+									if (v === loc.YES) {
+										const cutoverDialogModel = new MigrationCutoverDialogModel(
+											await MigrationLocalStorage.getMigrationServiceContext(),
+											migration!);
+										await cutoverDialogModel.fetchStatus();
+										await cutoverDialogModel.cancelMigration();
+
+										if (cutoverDialogModel.CancelMigrationError) {
+											void vscode.window.showErrorMessage(loc.MIGRATION_CANNOT_CANCEL);
+											logError(TelemetryViews.MigrationsTab, MenuCommands.CancelMigration, cutoverDialogModel.CancelMigrationError);
+										}
+									}
+								});
+						} else {
+							await vscode.window.showInformationMessage(loc.MIGRATION_CANNOT_CANCEL);
+						}
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.MIGRATION_CANCELLATION_ERROR,
+							loc.MIGRATION_CANCELLATION_ERROR,
+							e.message);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.CancelMigration, e);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.DeleteMigration,
+				async (args: MenuCommandArgs) => {
+					await this.clearError(args.connectionId);
+					try {
+						const service = await MigrationLocalStorage.getMigrationServiceContext();
+						const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+						// get migration details can return undefined when the migration has been auto-cleaned
+						// however, since the migration is still returned in getlist,  we make a best effort to delete by id.
+						if (service && (
+							(migration && canDeleteMigration(migration)) ||
+							(migration === undefined && args.migrationId?.length > 0))) {
+							const response = await vscode.window.showInformationMessage(
+								loc.DELETE_MIGRATION_CONFIRMATION,
+								{ modal: true },
+								loc.YES,
+								loc.NO);
+							if (response === loc.YES) {
+								await deleteMigration(
+									service.azureAccount!,
+									service.subscription!,
+									args.migrationId);
+								await this._migrationsTab.refresh();
+							}
+						} else {
+							await vscode.window.showInformationMessage(loc.MIGRATION_CANNOT_DELETE);
+							logError(TelemetryViews.MigrationsTab, MenuCommands.DeleteMigration, "cannot delete migration");
+						}
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.MIGRATION_DELETE_ERROR,
+							loc.MIGRATION_DELETE_ERROR,
+							e.message);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.DeleteMigration, e);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.RetryMigration,
+				async (args: MenuCommandArgs) => {
+					await this.clearError(args.connectionId);
+					const service = await MigrationLocalStorage.getMigrationServiceContext();
+					const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+					if (service && migration && canRetryMigration(migration)) {
+						const errorMessage = getMigrationErrors(migration);
+						openRetryMigrationDialog(
+							errorMessage,
+							async () => {
+								try {
+									await retryMigration(
+										service.azureAccount!,
+										service.subscription!,
+										migration);
+									await this._migrationsTab.refresh();
+								} catch (e) {
+									await this.showError(
+										args.connectionId,
+										loc.MIGRATION_RETRY_ERROR,
+										loc.MIGRATION_RETRY_ERROR,
+										e.message);
+									logError(TelemetryViews.MigrationsTab, MenuCommands.RetryMigration, e);
+								}
+							});
+					}
+					else {
+						await vscode.window.showInformationMessage(loc.MIGRATION_CANNOT_RETRY);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.RetryMigration, "cannot retry migration");
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.RestartMigration,
+				async (args: MenuCommandArgs) => {
+					try {
+						await this.clearError(args.connectionId);
+						const migration = await this._getMigrationById(args.migrationId, args.migrationOperationId);
+						if (migration && canRestartMigrationWizard(migration)) {
+							const restartMigrationDialog = new RestartMigrationDialog(
+								this._context,
+								await MigrationLocalStorage.getMigrationServiceContext(),
+								migration,
+								this._onServiceContextChanged);
+							await restartMigrationDialog.openDialog();
+						}
+						else {
+							await vscode.window.showInformationMessage(loc.MIGRATION_CANNOT_RESTART);
+						}
+					} catch (e) {
+						await this.showError(
+							args.connectionId,
+							loc.MIGRATION_RESTART_ERROR,
+							loc.MIGRATION_RESTART_ERROR,
+							e.message);
+						logError(TelemetryViews.MigrationsTab, MenuCommands.RestartMigration, e);
+					}
+				}));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.StartMigration,
+				async () => await this.launchMigrationWizard()));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.StartLoginMigration,
+				async () => await this.launchLoginMigrationWizard()));
+
+		this._context.subscriptions.push(
+			vscode.commands.registerCommand(
+				MenuCommands.OpenNotebooks,
+				async () => {
+					const input = vscode.window.createQuickPick<MigrationNotebookInfo>();
+					input.placeholder = loc.NOTEBOOK_QUICK_PICK_PLACEHOLDER;
+					input.items = NotebookPathHelper.getAllMigrationNotebooks();
+
+					this._context.subscriptions.push(
+						input.onDidAccept(async (e) => {
+							const selectedNotebook = input.selectedItems[0];
+							if (selectedNotebook) {
+								try {
+									await azdata.nb.showNotebookDocument(vscode.Uri.parse(`untitled: ${selectedNotebook.label}`), {
+										preview: false,
+										initialContent: (await fs.readFile(selectedNotebook.notebookPath)).toString(),
+										initialDirtyState: false
+									});
+								} catch (e) {
+									void vscode.window.showErrorMessage(`${loc.NOTEBOOK_OPEN_ERROR} - ${e.toString()}`);
+								}
+								input.hide();
+							}
+						}));
+
+					input.show();
+				}));
+
+		this._context.subscriptions.push(azdata.tasks.registerTask(
+			MenuCommands.StartMigration,
+			async () => await this.launchMigrationWizard()));
+
+		this._context.subscriptions.push(azdata.tasks.registerTask(
+			MenuCommands.StartLoginMigration,
+			async () => await this.launchLoginMigrationWizard()));
+
+
+		this._context.subscriptions.push(
+			azdata.tasks.registerTask(
+				MenuCommands.NewSupportRequest,
+				async () => await this.launchNewSupportRequest()));
+
+		this._context.subscriptions.push(
+			azdata.tasks.registerTask(
+				MenuCommands.SendFeedback,
+				async () => {
+					const actionId = MenuCommands.IssueReporter;
+					const args = {
+						extensionId: SqlMigrationExtensionId,
+						issueTitle: loc.FEEDBACK_ISSUE_TITLE,
+					};
+					return await vscode.commands.executeCommand(actionId, args);
+				}));
+	}
+
+	private async clearError(connectionId: string): Promise<void> {
+		this._errorEvent.fire({
+			connectionId: connectionId,
+			title: '',
+			label: '',
+			message: '',
 		});
-		return header;
 	}
 
-	private async createTasks(view: azdata.ModelView): Promise<azdata.Component> {
-		const tasksContainer = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'row',
-			width: '100%',
-		}).component();
-
-		const migrateButtonMetadata: IActionMetadata = {
-			title: loc.DASHBOARD_MIGRATE_TASK_BUTTON_TITLE,
-			description: loc.DASHBOARD_MIGRATE_TASK_BUTTON_DESCRIPTION,
-			iconPath: IconPathHelper.sqlMigrationLogo,
-			command: 'sqlmigration.start'
-		};
-
-		const preRequisiteListTitle = view.modelBuilder.text().withProps({
-			value: loc.PRE_REQ_TITLE,
-			CSSStyles: {
-				...styles.BODY_CSS,
-				'margin': '0px',
-			}
-		}).component();
-
-		const migrateButton = this.createTaskButton(view, migrateButtonMetadata);
-
-		const preRequisiteListElement = view.modelBuilder.text().withProps({
-			value: [
-				loc.PRE_REQ_1,
-				loc.PRE_REQ_2,
-				loc.PRE_REQ_3
-			],
-			CSSStyles: {
-				...styles.SMALL_NOTE_CSS,
-				'padding-left': '12px',
-				'margin': '-0.5em 0px',
-			}
-		}).component();
-
-		const preRequisiteLearnMoreLink = view.modelBuilder.hyperlink().withProps({
-			label: loc.LEARN_MORE,
-			ariaLabel: loc.LEARN_MORE_ABOUT_PRE_REQS,
-			url: 'https://aka.ms/azuresqlmigrationextension',
-		}).component();
-
-		const preReqContainer = view.modelBuilder.flexContainer().withItems([
-			preRequisiteListTitle,
-			preRequisiteListElement,
-			preRequisiteLearnMoreLink
-		]).withLayout({
-			flexFlow: 'column'
-		}).component();
-
-		tasksContainer.addItem(migrateButton, {});
-		tasksContainer.addItems([preReqContainer], {
-			CSSStyles: {
-				'margin-left': '20px'
-			}
+	private async showError(connectionId: string, title: string, label: string, message: string): Promise<void> {
+		this._errorEvent.fire({
+			connectionId: connectionId,
+			title: title,
+			label: label,
+			message: message,
 		});
-		return tasksContainer;
 	}
 
-	private createTaskButton(view: azdata.ModelView, taskMetaData: IActionMetadata): azdata.Component {
-		const maxHeight: number = 84;
-		const maxWidth: number = 236;
-		const buttonContainer = view.modelBuilder.button().withProps({
-			buttonType: azdata.ButtonType.Informational,
-			description: taskMetaData.description,
-			height: maxHeight,
-			iconHeight: 32,
-			iconPath: taskMetaData.iconPath,
-			iconWidth: 32,
-			label: taskMetaData.title,
-			title: taskMetaData.title,
-			width: maxWidth,
-			CSSStyles: {
-				'border': '1px solid',
-				'display': 'flex',
-				'flex-direction': 'column',
-				'justify-content': 'flex-start',
-				'border-radius': '4px',
-				'transition': 'all .5s ease',
+	private async _getMigrationById(migrationId: string, migrationOperationId: string): Promise<DatabaseMigration | undefined> {
+		const context = await MigrationLocalStorage.getMigrationServiceContext();
+		if (context.azureAccount && context.subscription) {
+			try {
+				const migration = getMigrationDetails(
+					context.azureAccount,
+					context.subscription,
+					migrationId,
+					migrationOperationId);
+				return migration;
+			} catch (error) {
+				logError(TelemetryViews.MigrationsTab, "_getMigrationById", error);
 			}
-		}).component();
-		this._disposables.push(buttonContainer.onDidClick(async () => {
-			if (taskMetaData.command) {
-				await vscode.commands.executeCommand(taskMetaData.command);
-			}
-		}));
-		return view.modelBuilder.divContainer().withItems([buttonContainer]).component();
+		}
+		return undefined;
 	}
 
-	private setAutoRefresh(interval: SupportedAutoRefreshIntervals): void {
-		const classVariable = this;
-		clearInterval(this._autoRefreshHandle);
-		if (interval !== -1) {
-			this._autoRefreshHandle = setInterval(async function () { await classVariable.refreshMigrations(); }, interval);
+	public async launchMigrationWizard(): Promise<void> {
+		const activeConnection = await getSourceConnectionProfile();
+		let serverName: string = '';
+		if (!activeConnection) {
+			const connection = await azdata.connection.openConnectionDialog();
+			if (connection) {
+				serverName = connection.options.server;
+			}
+		} else {
+			serverName = activeConnection.serverName;
+		}
+		if (serverName) {
+			const migrationService = <SqlMigrationService>await migrationServiceProvider.getService(ApiType.SqlMigrationProvider);
+
+			if (migrationService) {
+				this.stateModel = new MigrationStateModel(this._context, migrationService);
+				this._context.subscriptions.push(this.stateModel);
+				const savedInfo = this.checkSavedInfo(serverName);
+				if (savedInfo) {
+					this.stateModel.savedInfo = savedInfo;
+					this.stateModel.serverName = serverName;
+					const savedAssessmentDialog = new SavedAssessmentDialog(
+						this._context,
+						this.stateModel,
+						this._onServiceContextChanged);
+					await savedAssessmentDialog.openDialog();
+				} else {
+					const wizardController = new WizardController(
+						this._context,
+						this.stateModel,
+						this._onServiceContextChanged);
+					await wizardController.openWizard();
+				}
+			}
 		}
 	}
 
-	private async refreshMigrations(): Promise<void> {
-		if (this.isRefreshing) {
-			return;
+	public async launchLoginMigrationWizard(): Promise<void> {
+		const activeConnection = await getSourceConnectionProfile();
+		let serverName: string = '';
+		if (!activeConnection) {
+			const connection = await azdata.connection.openConnectionDialog();
+			if (connection) {
+				serverName = connection.options.server;
+			}
+		} else {
+			serverName = activeConnection.serverName;
 		}
-
-		this.isRefreshing = true;
-		this._viewAllMigrationsButton.enabled = false;
-		this._migrationStatusCardLoadingContainer.loading = true;
-		try {
-			await this.setCurrentMigrations(await this.getMigrations());
-			const migrations = await this.getCurrentMigrations();
-			const inProgressMigrations = filterMigrations(migrations, AdsMigrationStatus.ONGOING);
-			let warningCount = 0;
-			for (let i = 0; i < inProgressMigrations.length; i++) {
-				if (
-					inProgressMigrations[i].asyncOperationResult?.error?.message ||
-					inProgressMigrations[i].migrationContext.properties.migrationFailureError?.message ||
-					inProgressMigrations[i].migrationContext.properties.migrationStatusDetails?.fileUploadBlockingErrors ||
-					inProgressMigrations[i].migrationContext.properties.migrationStatusDetails?.restoreBlockingReason
-				) {
-					warningCount += 1;
-				}
-			}
-			if (warningCount > 0) {
-				this._inProgressWarningMigrationButton.warningText!.value = loc.MIGRATION_INPROGRESS_WARNING(warningCount);
-				this._inProgressMigrationButton.container.display = 'none';
-				this._inProgressWarningMigrationButton.container.display = '';
-			} else {
-				this._inProgressMigrationButton.container.display = '';
-				this._inProgressWarningMigrationButton.container.display = 'none';
-			}
-
-			this._inProgressMigrationButton.count.value = inProgressMigrations.length.toString();
-			this._inProgressWarningMigrationButton.count.value = inProgressMigrations.length.toString();
-
-			const successfulMigration = filterMigrations(migrations, AdsMigrationStatus.SUCCEEDED);
-
-			this._successfulMigrationButton.count.value = successfulMigration.length.toString();
-
-			const failedMigrations = filterMigrations(migrations, AdsMigrationStatus.FAILED);
-			const failedCount = failedMigrations.length;
-			if (failedCount > 0) {
-				this._failedMigrationButton.container.display = '';
-				this._failedMigrationButton.count.value = failedCount.toString();
-			} else {
-				this._failedMigrationButton.container.display = 'none';
-			}
-
-			const completingCutoverMigrations = filterMigrations(migrations, AdsMigrationStatus.COMPLETING);
-			const cutoverCount = completingCutoverMigrations.length;
-			if (cutoverCount > 0) {
-				this._completingMigrationButton.container.display = '';
-				this._completingMigrationButton.count.value = cutoverCount.toString();
-			} else {
-				this._completingMigrationButton.container.display = 'none';
-			}
-
-		} catch (error) {
-			logError(TelemetryViews.SqlServerDashboard, 'RefreshgMigrationFailed', error);
-
-		} finally {
-			this.isRefreshing = false;
-			this._migrationStatusCardLoadingContainer.loading = false;
-			this._viewAllMigrationsButton.enabled = true;
-		}
-
-	}
-
-	private async getMigrations(): Promise<MigrationContext[]> {
-		const currentConnection = (await azdata.connection.getCurrentConnection());
-		return await MigrationLocalStorage.getMigrationsBySourceConnections(currentConnection, true);
-	}
-
-	private createStatusCard(
-		cardIconPath: IconPath,
-		cardTitle: string,
-		hasSubtext: boolean = false
-	): StatusCard {
-		const buttonWidth = '400px';
-		const buttonHeight = hasSubtext ? '70px' : '50px';
-		const statusCard = this._view.modelBuilder.flexContainer()
-			.withProps({
-				CSSStyles: {
-					'width': buttonWidth,
-					'height': buttonHeight,
-					'align-items': 'center',
-				}
-			}).component();
-
-		const statusIcon = this._view.modelBuilder.image().withProps({
-			iconPath: cardIconPath!.light,
-			iconHeight: 24,
-			iconWidth: 24,
-			height: 32,
-			CSSStyles: {
-				'margin': '0 8px'
-			}
-		}).component();
-
-		const textContainer = this._view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'column'
-		}).component();
-
-		const cardTitleText = this._view.modelBuilder.text().withProps({ value: cardTitle }).withProps({
-			CSSStyles: {
-				...styles.SECTION_HEADER_CSS,
-				'width': '240px'
-			}
-		}).component();
-		textContainer.addItem(cardTitleText);
-
-		const cardCount = this._view.modelBuilder.text().withProps({
-			value: '0',
-			CSSStyles: {
-				...styles.BIG_NUMBER_CSS,
-				'margin': '0 0 0 8px',
-				'text-align': 'center',
-			}
-		}).component();
-
-		let warningContainer;
-		let warningText;
-		if (hasSubtext) {
-			const warningIcon = this._view.modelBuilder.image().withProps({
-				iconPath: IconPathHelper.warning,
-				iconWidth: 12,
-				iconHeight: 12,
-				width: 12,
-				height: 18
-			}).component();
-
-			const warningDescription = '';
-			warningText = this._view.modelBuilder.text().withProps({ value: warningDescription }).withProps({
-				CSSStyles: {
-					...styles.BODY_CSS,
-					'padding-left': '8px',
-				}
-			}).component();
-
-			warningContainer = this._view.modelBuilder.flexContainer().withItems([
-				warningIcon,
-				warningText
-			], {
-				flex: '0 0 auto'
-			}).withProps({
-				CSSStyles: {
-					'align-items': 'center'
-				}
-			}).component();
-
-			textContainer.addItem(warningContainer);
-		}
-
-		statusCard.addItems([
-			statusIcon,
-			textContainer,
-			cardCount,
-		]);
-
-		const compositeButton = this._view.modelBuilder.divContainer()
-			.withItems([statusCard])
-			.withProps({
-				ariaRole: 'button',
-				ariaLabel: loc.SHOW_STATUS,
-				clickable: true,
-				CSSStyles: {
-					'height': buttonHeight,
-					'margin-bottom': '16px',
-					'border': '1px solid',
-					'display': 'flex',
-					'flex-direction': 'column',
-					'justify-content': 'flex-start',
-					'border-radius': '4px',
-					'transition': 'all .5s ease',
-				}
-			}).component();
-		return {
-			container: compositeButton,
-			count: cardCount,
-			textContainer: textContainer,
-			warningContainer: warningContainer,
-			warningText: warningText
-		};
-	}
-
-	private async createFooter(view: azdata.ModelView): Promise<azdata.Component> {
-		const footerContainer = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'row',
-			width: maxWidth,
-			justifyContent: 'flex-start'
-		}).component();
-		const statusContainer = await this.createMigrationStatusContainer(view);
-		const videoLinksContainer = this.createVideoLinks(view);
-		footerContainer.addItem(statusContainer);
-		footerContainer.addItem(videoLinksContainer, {
-			CSSStyles: {
-				'padding-left': '8px',
-			}
-		});
-
-		return footerContainer;
-	}
-
-	private async createMigrationStatusContainer(view: azdata.ModelView): Promise<azdata.FlexContainer> {
-		const statusContainer = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'column',
-			width: '400px',
-			height: '360px',
-			justifyContent: 'flex-start',
-		}).withProps({
-			CSSStyles: {
-				'border': '1px solid rgba(0, 0, 0, 0.1)',
-				'padding': '16px'
-			}
-		}).component();
-
-		const statusContainerTitle = view.modelBuilder.text().withProps({
-			value: loc.DATABASE_MIGRATION_STATUS,
-			CSSStyles: {
-				...styles.SECTION_HEADER_CSS
-			}
-		}).component();
-
-		this._viewAllMigrationsButton = view.modelBuilder.hyperlink().withProps({
-			label: loc.VIEW_ALL,
-			url: '',
-			CSSStyles: {
-				...styles.BODY_CSS
-			}
-		}).component();
-
-		this._disposables.push(this._viewAllMigrationsButton.onDidClick(async (e) => {
-			const migrationStatus = await this.getCurrentMigrations();
-			new MigrationStatusDialog(this._context, migrationStatus ? migrationStatus : await this.getMigrations(), AdsMigrationStatus.ALL).initialize();
-		}));
-
-		const refreshButton = view.modelBuilder.hyperlink().withProps({
-			label: loc.REFRESH,
-			url: '',
-			ariaRole: 'button',
-			CSSStyles: {
-				...styles.BODY_CSS,
-				'text-align': 'right',
-			}
-		}).component();
-
-		this._disposables.push(refreshButton.onDidClick(async (e) => {
-			refreshButton.enabled = false;
-			await this.refreshMigrations();
-			refreshButton.enabled = true;
-		}));
-
-		const buttonContainer = view.modelBuilder.flexContainer().withLayout({
-			justifyContent: 'flex-end',
-		}).component();
-
-		buttonContainer.addItem(this._viewAllMigrationsButton, {
-			CSSStyles: {
-				'padding-right': '8px',
-				'border-right': '1px solid',
-			}
-		});
-
-		buttonContainer.addItem(refreshButton, {
-			CSSStyles: {
-				'padding-left': '8px',
-			}
-		});
-
-		const addAccountImage = view.modelBuilder.image().withProps({
-			iconPath: IconPathHelper.addAzureAccount,
-			iconHeight: 100,
-			iconWidth: 100,
-			width: 96,
-			height: 96,
-			CSSStyles: {
-				'opacity': '50%',
-				'margin': '15% auto 10% auto',
-				'filter': 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))',
-				'display': 'none'
-			}
-		}).component();
-
-		const addAccountText = view.modelBuilder.text().withProps({
-			value: loc.ADD_ACCOUNT_MESSAGE,
-			width: 198,
-			height: 34,
-			CSSStyles: {
-				...styles.NOTE_CSS,
-				'margin': 'auto',
-				'text-align': 'center',
-				'display': 'none'
-			}
-		}).component();
-
-		const addAccountButton = view.modelBuilder.button().withProps({
-			label: loc.ADD_ACCOUNT,
-			width: '100px',
-			enabled: true,
-			CSSStyles: {
-				'margin': '5% 40%',
-				'display': 'none'
-			}
-		}).component();
-
-		this._disposables.push(addAccountButton.onDidClick(async (e) => {
-			await vscode.commands.executeCommand('workbench.actions.modal.linkedAccount');
-			addAccountButton.enabled = false;
-			let accounts = await azdata.accounts.getAllAccounts();
-
-			if (accounts.length !== 0) {
-				await addAccountImage.updateCssStyles({
-					'display': 'none'
-				});
-				await addAccountText.updateCssStyles({
-					'display': 'none'
-				});
-				await addAccountButton.updateCssStyles({
-					'display': 'none'
-				});
-				await this._migrationStatusCardsContainer.updateCssStyles({ 'visibility': 'visible' });
-				await this._viewAllMigrationsButton.updateCssStyles({ 'visibility': 'visible' });
-			}
-			await this.refreshMigrations();
-		}));
-
-		const header = view.modelBuilder.flexContainer().withItems(
-			[
-				statusContainerTitle,
-				buttonContainer
-			]
-		).withLayout({
-			flexFlow: 'row',
-			alignItems: 'center'
-		}).component();
-
-		this._migrationStatusCardsContainer = view.modelBuilder.flexContainer().withLayout({ flexFlow: 'column' }).component();
-
-		let accounts = await azdata.accounts.getAllAccounts();
-
-		if (accounts.length === 0) {
-			await addAccountImage.updateCssStyles({
-				'display': 'block'
-			});
-			await addAccountText.updateCssStyles({
-				'display': 'block'
-			});
-			await addAccountButton.updateCssStyles({
-				'display': 'block'
-			});
-			await this._migrationStatusCardsContainer.updateCssStyles({ 'visibility': 'hidden' });
-			await this._viewAllMigrationsButton.updateCssStyles({ 'visibility': 'hidden' });
-		}
-
-		this._inProgressMigrationButton = this.createStatusCard(
-			IconPathHelper.inProgressMigration,
-			loc.MIGRATION_IN_PROGRESS
-		);
-		this._disposables.push(this._inProgressMigrationButton.container.onDidClick(async (e) => {
-			const dialog = new MigrationStatusDialog(this._context, await this.getCurrentMigrations(), AdsMigrationStatus.ONGOING);
-			dialog.initialize();
-		}));
-
-		this._migrationStatusCardsContainer.addItem(
-			this._inProgressMigrationButton.container
-		);
-
-		this._inProgressWarningMigrationButton = this.createStatusCard(
-			IconPathHelper.inProgressMigration,
-			loc.MIGRATION_IN_PROGRESS,
-			true
-		);
-		this._disposables.push(this._inProgressWarningMigrationButton.container.onDidClick(async (e) => {
-			const dialog = new MigrationStatusDialog(this._context, await this.getCurrentMigrations(), AdsMigrationStatus.ONGOING);
-			dialog.initialize();
-		}));
-
-		this._migrationStatusCardsContainer.addItem(
-			this._inProgressWarningMigrationButton.container
-		);
-
-		this._successfulMigrationButton = this.createStatusCard(
-			IconPathHelper.completedMigration,
-			loc.MIGRATION_COMPLETED
-		);
-		this._disposables.push(this._successfulMigrationButton.container.onDidClick(async (e) => {
-			const dialog = new MigrationStatusDialog(this._context, await this.getCurrentMigrations(), AdsMigrationStatus.SUCCEEDED);
-			dialog.initialize();
-		}));
-		this._migrationStatusCardsContainer.addItem(
-			this._successfulMigrationButton.container
-		);
-
-
-		this._completingMigrationButton = this.createStatusCard(
-			IconPathHelper.completingCutover,
-			loc.MIGRATION_CUTOVER_CARD
-		);
-		this._disposables.push(this._completingMigrationButton.container.onDidClick(async (e) => {
-			const dialog = new MigrationStatusDialog(this._context, await this.getCurrentMigrations(), AdsMigrationStatus.COMPLETING);
-			dialog.initialize();
-		}));
-		this._migrationStatusCardsContainer.addItem(
-			this._completingMigrationButton.container
-		);
-
-		this._failedMigrationButton = this.createStatusCard(
-			IconPathHelper.error,
-			loc.MIGRATION_FAILED
-		);
-		this._disposables.push(this._failedMigrationButton.container.onDidClick(async (e) => {
-			const dialog = new MigrationStatusDialog(this._context, await this.getCurrentMigrations(), AdsMigrationStatus.FAILED);
-			dialog.initialize();
-		}));
-		this._migrationStatusCardsContainer.addItem(
-			this._failedMigrationButton.container
-		);
-
-		this._notStartedMigrationCard = this.createStatusCard(
-			IconPathHelper.notStartedMigration,
-			loc.MIGRATION_NOT_STARTED
-		);
-		this._disposables.push(this._notStartedMigrationCard.container.onDidClick((e) => {
-			void vscode.window.showInformationMessage('Feature coming soon');
-		}));
-
-		this._migrationStatusCardLoadingContainer = view.modelBuilder.loadingComponent().withItem(this._migrationStatusCardsContainer).component();
-
-		statusContainer.addItem(
-			header, {
-			CSSStyles: {
-				'margin-bottom': '16px'
+		if (serverName) {
+			const migrationService = <SqlMigrationService>await migrationServiceProvider.getService(ApiType.SqlMigrationProvider);
+			if (migrationService) {
+				this.stateModel = new MigrationStateModel(this._context, migrationService);
+				this._context.subscriptions.push(this.stateModel);
+				const wizardController = new WizardController(
+					this._context,
+					this.stateModel,
+					this._onServiceContextChanged);
+				await wizardController.openLoginWizard();
 			}
 		}
-		);
-
-		statusContainer.addItem(addAccountImage, {});
-		statusContainer.addItem(addAccountText, {});
-		statusContainer.addItem(addAccountButton, {});
-		statusContainer.addItem(this._migrationStatusCardLoadingContainer, {});
-		return statusContainer;
 	}
 
-	private createVideoLinks(view: azdata.ModelView): azdata.Component {
-		const linksContainer = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'column',
-			width: '400px',
-			height: '360px',
-			justifyContent: 'flex-start',
-		}).withProps({
-			CSSStyles: {
-				'border': '1px solid rgba(0, 0, 0, 0.1)',
-				'padding': '16px',
-				'overflow': 'scroll',
-			}
-		}).component();
-		const titleComponent = view.modelBuilder.text().withProps({
-			value: loc.HELP_TITLE,
-			CSSStyles: {
-				...styles.SECTION_HEADER_CSS
-			}
-		}).component();
-
-		linksContainer.addItems([titleComponent], {
-			CSSStyles: {
-				'margin-bottom': '16px'
-			}
-		});
-
-		const links = [
-			{
-				title: localize('sql.migration.dashboard.help.link.migrateUsingADS', 'Migrate databases using Azure Data Studio'),
-				description: localize('sql.migration.dashboard.help.description.migrateUsingADS', 'The Azure SQL Migration extension for Azure Data Studio provides capabilities to assess, get right-sized Azure recommendations and migrate SQL Server databases to Azure.'),
-				link: 'https://docs.microsoft.com/azure/dms/migration-using-azure-data-studio'
-			},
-			{
-				title: localize('sql.migration.dashboard.help.link.mi', 'Tutorial:  Migrate to Azure SQL Managed Instance (online)'),
-				description: localize('sql.migration.dashboard.help.description.mi', 'A step-by-step tutorial to migrate databases from a SQL Server instance (on-premises or Azure Virtual Machines) to Azure SQL Managed Instance with minimal downtime.'),
-				link: 'https://docs.microsoft.com/azure/dms/tutorial-sql-server-managed-instance-online-ads'
-			},
-			{
-				title: localize('sql.migration.dashboard.help.link.vm', 'Tutorial:  Migrate to SQL Server on Azure Virtual Machines (online)'),
-				description: localize('sql.migration.dashboard.help.description.vm', 'A step-by-step tutorial to migrate databases from a SQL Server instance (on-premises) to SQL Server on Azure Virtual Machines with minimal downtime.'),
-				link: 'https://docs.microsoft.com/azure/dms/tutorial-sql-server-to-virtual-machine-online-ads'
-			},
-			{
-				title: localize('sql.migration.dashboard.help.link.dmsGuide', 'Azure Database Migration Guides'),
-				description: localize('sql.migration.dashboard.help.description.dmsGuide', 'A hub of migration articles that provides step-by-step guidance for migrating and modernizing your data assets in Azure.'),
-				link: 'https://docs.microsoft.com/data-migration/'
-			},
-		];
-
-		linksContainer.addItems(links.map(l => this.createLink(view, l)), {});
-
-		const videoLinks: IActionMetadata[] = [];
-		const videosContainer = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'row',
-			width: maxWidth,
-		}).component();
-		videosContainer.addItems(videoLinks.map(l => this.createVideoLink(view, l)), {});
-		linksContainer.addItem(videosContainer);
-
-		return linksContainer;
+	private checkSavedInfo(serverName: string): SavedInfo | undefined {
+		return this._context.globalState.get<SavedInfo>(`${this.stateModel.mementoString}.${serverName}`);
 	}
 
-	private createLink(view: azdata.ModelView, linkMetaData: IActionMetadata): azdata.Component {
-		const maxWidth = 400;
-		const labelsContainer = view.modelBuilder.flexContainer().withProps({
-			CSSStyles: {
-				'flex-direction': 'column',
-				'width': `${maxWidth}px`,
-				'justify-content': 'flex-start',
-				'margin-bottom': '12px'
-			}
-		}).component();
-		const linkContainer = view.modelBuilder.flexContainer().withProps({
-			CSSStyles: {
-				'flex-direction': 'row',
-				'width': `${maxWidth}px`,
-				'justify-content': 'flex-start',
-				'margin-bottom': '4px'
-			}
-
-		}).component();
-		const descriptionComponent = view.modelBuilder.text().withProps({
-			value: linkMetaData.description,
-			width: maxWidth,
-			CSSStyles: {
-				...styles.NOTE_CSS
-			}
-		}).component();
-		const linkComponent = view.modelBuilder.hyperlink().withProps({
-			label: linkMetaData.title!,
-			url: linkMetaData.link!,
-			showLinkIcon: true,
-			CSSStyles: {
-				...styles.BODY_CSS
-			}
-		}).component();
-		linkContainer.addItem(linkComponent);
-		labelsContainer.addItems([linkContainer, descriptionComponent]);
-		return labelsContainer;
-	}
-
-	private createVideoLink(view: azdata.ModelView, linkMetaData: IActionMetadata): azdata.Component {
-		const maxWidth = 150;
-		const videosContainer = view.modelBuilder.flexContainer().withLayout({
-			flexFlow: 'column',
-			width: maxWidth,
-			justifyContent: 'flex-start'
-		}).component();
-		const video1Container = view.modelBuilder.divContainer().withProps({
-			clickable: true,
-			width: maxWidth,
-			height: '100px'
-		}).component();
-		const descriptionComponent = view.modelBuilder.text().withProps({
-			value: linkMetaData.description,
-			width: maxWidth,
-			height: '50px',
-			CSSStyles: {
-				...styles.BODY_CSS
-			}
-		}).component();
-		this._disposables.push(video1Container.onDidClick(async () => {
-			if (linkMetaData.link) {
-				await vscode.env.openExternal(vscode.Uri.parse(linkMetaData.link));
-			}
-		}));
-		videosContainer.addItem(video1Container, {
-			CSSStyles: {
-				'background-image': `url(${vscode.Uri.file(<string>linkMetaData.iconPath?.light)})`,
-				'background-repeat': 'no-repeat',
-				'background-position': 'top',
-				'width': `${maxWidth}px`,
-				'height': '104px',
-				'background-size': `${maxWidth}px 120px`
-			}
-		});
-		videosContainer.addItem(descriptionComponent);
-		return videosContainer;
+	public async launchNewSupportRequest(): Promise<void> {
+		await vscode.env.openExternal(vscode.Uri.parse(
+			`https://portal.azure.com/#blade/Microsoft_Azure_Support/HelpAndSupportBlade/newsupportrequest`));
 	}
 }

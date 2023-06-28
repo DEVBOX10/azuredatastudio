@@ -1,5 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="src/sql/base/browser/ui/editableDropdown/browser/dropdown" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="editableDropdown.errorValidate">
+        <source xml:lang="en">Must be an option from the list</source>
+        <target state="translated">必須是清單中的選項</target>
+      </trans-unit>
+      <trans-unit id="selectBox">
+        <source xml:lang="en">Select Box</source>
+        <target state="translated">選取方塊</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/base/browser/ui/loadingSpinner/loadingSpinner" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="loadingCompletedMessage">
@@ -88,6 +100,14 @@
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/base/browser/ui/table/plugins/contextMenuColumn.plugin" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="table.showActions">
+        <source xml:lang="en">Show Actions</source>
+        <target state="translated">顯示動作</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/base/browser/ui/table/plugins/headerFilter.plugin" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="headerFilter.cancel">
@@ -126,6 +146,14 @@
         <source xml:lang="en">Sort Descending</source>
         <target state="translated">遞減排序</target>
       </trans-unit>
+      <trans-unit id="tableFilter.blankStringDisplayText">
+        <source xml:lang="en">(Blanks)</source>
+        <target state="translated">(空白)</target>
+      </trans-unit>
+      <trans-unit id="tableFilter.nullDisplayText">
+        <source xml:lang="en">(NULL)</source>
+        <target state="translated">(NULL)</target>
+      </trans-unit>
       <trans-unit id="tableFilter.selectedCount">
         <source xml:lang="en">{0} Selected</source>
         <note>This tells the user how many items are selected in the list</note>
@@ -151,6 +179,22 @@
       <trans-unit id="rowDetailView.loadError">
         <source xml:lang="en">Loading Error...</source>
         <target state="translated">正在載入錯誤...</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/base/browser/ui/table/table" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="table.resizeColumn">
+        <source xml:lang="en">Provide new column width</source>
+        <target state="translated">提供新的資料行寬度</target>
+      </trans-unit>
+      <trans-unit id="table.resizeColumn.invalid">
+        <source xml:lang="en">Invalid column width</source>
+        <target state="translated">資料行寬度無效</target>
+      </trans-unit>
+      <trans-unit id="table.resizeColumn.negativeSize">
+        <source xml:lang="en">Size cannot be 0 or negative</source>
+        <target state="translated">大小不可以是 0 或負數</target>
       </trans-unit>
     </body>
   </file>
@@ -180,9 +224,25 @@
         <source xml:lang="en">In order to use Azure Data Studio in {0}, Azure Data Studio needs to restart.</source>
         <target state="translated">若要在 {0} 中使用 Azure Data Studio，Azure Data Studio 需要重新啟動。</target>
       </trans-unit>
+      <trans-unit id="appName">
+        <source xml:lang="en">`${appName}`: e.g. Azure Data Studio.</source>
+        <target state="translated">'${appName}': 例如 Azure Data Studio。</target>
+      </trans-unit>
       <trans-unit id="azuredatastudio">
         <source xml:lang="en">Azure Data Studio</source>
         <target state="translated">Azure Data Studio</target>
+      </trans-unit>
+      <trans-unit id="azuredatastudio.download">
+        <source xml:lang="en">Download</source>
+        <target state="translated">下載</target>
+      </trans-unit>
+      <trans-unit id="azuredatastudio.downloadTooltip">
+        <source xml:lang="en">Download this extension from an external source</source>
+        <target state="translated">從外部來源下載此延伸模組</target>
+      </trans-unit>
+      <trans-unit id="azuredatastudio.installTooltip">
+        <source xml:lang="en">Install this extension</source>
+        <target state="translated">安裝此延伸模組</target>
       </trans-unit>
       <trans-unit id="connectionDialogBrowseTree.context">
         <source xml:lang="en">The connection dialog's browse tree context menu</source>
@@ -225,8 +285,8 @@
         <target state="translated">設定下載延伸模組的安全性原則。</target>
       </trans-unit>
       <trans-unit id="incompatible">
-        <source xml:lang="en">Unable to install extension '{0}' as it is not compatible with Azure Data Studio '{1}'.</source>
-        <target state="translated">由於延伸模組 ‘{0}’ 與 Azure Data Studio '{1}' 不相容，所以無法安裝延伸模組。</target>
+        <source xml:lang="en">Unable to install version '{0}' of extension '{1}' as it is not compatible with Azure Data Studio '{2}'. Update to Azure Data Studio {3} to install the extension.</source>
+        <target state="translated">無法安裝延伸模組 '{1}' 的版本 '{0}'，因為它與 Azure Data Studio '{2}' 不相容。更新為 Azure Data Studio {3} 以安裝延伸模組。</target>
       </trans-unit>
       <trans-unit id="installExtensionCompletedAndReloadRequired">
         <source xml:lang="en">Installing extension {0} is completed. Please reload Azure Data Studio to enable it.</source>
@@ -235,6 +295,11 @@
       <trans-unit id="maxMemoryForLargeFilesMB">
         <source xml:lang="en">Controls the memory available to Azure Data Studio after restart when trying to open large files. Same effect as specifying `--max-memory=NEWSIZE` on the command line.</source>
         <target state="translated">控制當嘗試開啟大型檔案時，Azure Data Studio 在重新啟動後可用的記憶體。效果與在命令列上指定 `--max-memory=NEWSIZE` 相同。</target>
+      </trans-unit>
+      <trans-unit id="miNewDeployment">
+        <source xml:lang="en">New &amp;&amp;Deployment...</source>
+        <note>&amp;&amp; denotes a mnemonic</note>
+        <target state="translated">新部署(&amp;&amp;D)…</target>
       </trans-unit>
       <trans-unit id="miNewNotebook">
         <source xml:lang="en">&amp;&amp;New Notebook</source>
@@ -259,9 +324,93 @@
         <source xml:lang="en">The notebook cell title menu</source>
         <target state="translated">筆記本儲存格標題功能表</target>
       </trans-unit>
-      <trans-unit id="notebook.cellToolbarLocation.compatibilityDescription">
-        <source xml:lang="en">Where the cell toolbar should be shown, or whether it should be hidden. Note: This setting is only enabled for extension compatibility purposes, and so does not affect anything.</source>
-        <target state="translated">儲存格工具列應顯示在何處，或是否應隱藏。注意: 此設定僅針對延伸模組相容性目的啟用，因此不會影響任何項目。</target>
+      <trans-unit id="notebook.cellToolbarLocation.description">
+        <source xml:lang="en">Where the cell toolbar should be shown, or whether it should be hidden. (for VS Code Notebooks only)</source>
+        <target state="translated">應顯示儲存格工具列的位置，或是否應隱藏。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.cellToolbarVisibility.description">
+        <source xml:lang="en">Whether the cell toolbar should appear on hover or click. (for VS Code Notebooks only)</source>
+        <target state="translated">當游標停留或按一下時，是否要顯示儲存格工具列。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.compactView.description">
+        <source xml:lang="en">Control whether the notebook editor should be rendered in a compact form. For example, when turned on, it will decrease the left margin width. (for VS Code Notebooks only)</source>
+        <target state="translated">控制筆記本編輯器是否應以精簡格式轉譯。例如，開啟時減少左邊界寬度。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.consolidatedOutputButton.description">
+        <source xml:lang="en">Control whether outputs action should be rendered in the output toolbar. (for VS Code Notebooks only)</source>
+        <target state="translated">控制輸出動作是否應該在輸出工具列中轉譯。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.consolidatedRunButton.description">
+        <source xml:lang="en">Control whether extra actions are shown in a dropdown next to the run button. (for VS Code Notebooks only)</source>
+        <target state="translated">控制執行按鈕旁的下拉式清單是否顯示額外的動作。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.diff.enablePreview.description">
+        <source xml:lang="en">Whether to use the enhanced text diff editor for notebook. (for VS Code Notebooks only)</source>
+        <target state="translated">是否要為筆記本使用增強的文字 Diff 編輯器。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.displayOrder.description">
+        <source xml:lang="en">Priority list for output mime types. (for VS Code Notebooks only)</source>
+        <target state="translated">輸出 MIME 類型的優先順序清單。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.dragAndDrop.description">
+        <source xml:lang="en">Control whether the notebook editor should allow moving cells through drag and drop. (for VS Code Notebooks only)</source>
+        <target state="translated">控制筆記本編輯器是否應該允許透過拖放移動儲存格。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.editorOptions.experimentalCustomization">
+        <source xml:lang="en">Settings for code editors used in notebooks. This can be used to customize most editor.* settings. (for VS Code Notebooks only)</source>
+        <target state="translated">筆記本中使用的程式碼編輯器設定。這可用來自訂大部分的編輯器。* 設定。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.focusIndicator.description">
+        <source xml:lang="en">Controls where the focus indicator is rendered, either along the cell borders or on the left gutter. (for VS Code Notebooks only)</source>
+        <target state="translated">控制焦點指標的轉譯位置是沿著儲存格框線，或左裝訂邊。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.globalToolbar.description">
+        <source xml:lang="en">Control whether to render a global toolbar inside the notebook editor. (for VS Code Notebooks only)</source>
+        <target state="translated">控制是否要在筆記本編輯器內轉譯全域工具列。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.globalToolbarShowLabel">
+        <source xml:lang="en">Control whether the actions on the notebook toolbar should render label or not. (for VS Code Notebooks only)</source>
+        <target state="translated">控制筆記本工具列上的動作是否應轉譯標籤。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.insertToolbarPosition.description">
+        <source xml:lang="en">Control where the insert cell actions should appear. (for VS Code Notebooks only)</source>
+        <target state="translated">控制插入儲存格動作應出現的位置。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.interactiveWindow.collapseCodeCells">
+        <source xml:lang="en">Controls whether code cells in the interactive window are collapsed by default. (for VS Code Notebooks only)</source>
+        <target state="translated">控制互動視窗中的程式碼儲存格是否預設為已摺疊。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.markup.fontSize">
+        <source xml:lang="en">Controls the font size in pixels of rendered markup in notebooks. When set to `0`, 120% of `#editor.fontSize#` is used. (for VS Code Notebooks only)</source>
+        <target state="translated">控制筆記本中轉譯標記的字型大小 (像素)。設定為 `0` 時，會使用 120% 的 '#editor.fontSize#'。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.outputFontFamily">
+        <source xml:lang="en">The font family for the output text for notebook cells. When set to empty, the `#editor.fontFamily#` is used. (for VS Code Notebooks only)</source>
+        <target state="translated">筆記本儲存格輸出文字的字型系列。設定為空白時，會使用 '#editor.fontFamily#'。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.outputFontSize">
+        <source xml:lang="en">Font size for the output text for notebook cells. When set to 0 `#editor.fontSize#` is used. (for VS Code Notebooks only)</source>
+        <target state="translated">筆記本儲存格輸出文字的字型大小。當設為 0 時，會使用 '#editor.fontSize#'。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.outputLineHeight">
+        <source xml:lang="en">Line height of the output text for notebook cells.
+ - Values between 0 and 8 will be used as a multiplier with the font size.
+ - Values greater than or equal to 8 will be used as effective values. (for VS Code Notebooks only)</source>
+        <target state="translated">筆記本儲存格輸出文字的行高。
+ - 介於 0 到 8 之間的值會用來做為字型大小的乘數。
+ - 大於或等於 8 的值將做為有效值。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.showCellStatusbar.description">
+        <source xml:lang="en">Whether the cell status bar should be shown. (for VS Code Notebooks only)</source>
+        <target state="translated">是否應顯示儲存格狀態列。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.showFoldingControls.description">
+        <source xml:lang="en">Controls when the Markdown header folding arrow is shown. (for VS Code Notebooks only)</source>
+        <target state="translated">控制何時顯示 Markdown 標題摺疊箭頭。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
+      <trans-unit id="notebook.textOutputLineLimit">
+        <source xml:lang="en">Control how many lines of text in a text output is rendered. (for VS Code Notebooks only)</source>
+        <target state="translated">控制文字輸出中要轉譯多少行文字。(僅適用於 VS Code Notebooks)</target>
       </trans-unit>
       <trans-unit id="notebook.title">
         <source xml:lang="en">The notebook title menu</source>
@@ -271,9 +420,21 @@
         <source xml:lang="en">The notebook toolbar menu</source>
         <target state="translated">筆記本工具列功能表</target>
       </trans-unit>
+      <trans-unit id="notebook.undoRedoPerCell.description">
+        <source xml:lang="en">Whether to use separate undo/redo stack for each cell. (for VS Code Notebooks only)</source>
+        <target state="translated">是否要針對每個儲存格使用個別的復原/取消復原堆疊。(僅適用於 VS Code Notebooks)</target>
+      </trans-unit>
       <trans-unit id="objectExplorer.context">
         <source xml:lang="en">The object explorer item context menu</source>
         <target state="translated">物件總管項目操作功能表</target>
+      </trans-unit>
+      <trans-unit id="openDefaultSettingsJson">
+        <source xml:lang="en">open the default settings JSON</source>
+        <target state="translated">開啟預設設定 JSON</target>
+      </trans-unit>
+      <trans-unit id="openDefaultSettingsJson.capitalized">
+        <source xml:lang="en">Open Default Settings (JSON)</source>
+        <target state="translated">開啟預設設定 (JSON)</target>
       </trans-unit>
       <trans-unit id="postDisableTooltip">
         <source xml:lang="en">Please reload Azure Data Studio to disable this extension.</source>
@@ -303,9 +464,99 @@
         <source xml:lang="en">Show Release Notes after an update. The Release Notes are opened in a new web browser window.</source>
         <target state="translated">在更新後顯示版本資訊。版本資訊會在新的網頁瀏覽器視窗中開啟。</target>
       </trans-unit>
+      <trans-unit id="sql.versionMismatch">
+        <source xml:lang="en">Extension is not compatible with Azure Data Studio {0}. Extension requires: {1}.</source>
+        <target state="translated">延伸模組與 Azure Data Studio {0} 不相容。延伸模組需要: {1}。</target>
+      </trans-unit>
+      <trans-unit id="sql.versionMismatchVsCode">
+        <source xml:lang="en">Extension is not compatible with Azure Data Studio {0}. Extension requires a newer VS Code Engine Version {1}, which is newer than what is currently supported ({2}).</source>
+        <target state="translated">延伸模組與 Azure Data Studio {0} 不相容。延伸模組需要更新的 VS Code 引擎版本 {1}，該版本較目前支援的版本 ({2}) 更新。</target>
+      </trans-unit>
+      <trans-unit id="sql.versionSyntax">
+        <source xml:lang="en">Could not parse `{0}` value {1}. Please use, for example: ^1.22.0, ^1.22.x, etc.</source>
+        <target state="translated">無法解析 `{0}` 值 {1}。請使用範例: ^1.22.0、^1.22.x 等。</target>
+      </trans-unit>
       <trans-unit id="sql.watcherExclude">
         <source xml:lang="en">Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths, i.e. prefix with `**/` or the full path to match properly and suffix with `/**` to match files within a path (for example `**/build/output/**` or `/Users/name/workspaces/project/build/output/**`). Changing this setting requires a restart. When you experience Azure Data Studio consuming lots of CPU time on startup, you can exclude large folders to reduce the initial load.</source>
         <target state="translated">設定檔案路徑的 Glob 模式以從檔案監看排除。模式必須符合絕對路徑，即以 `**/` 或完整路徑為前置詞以正確符合，並以 `/**` 為後置詞以符合路徑中的檔案 (例如 `**/build/output/**` 或 `/Users/name/workspaces/project/build/output/**`)。必須先重新開機才能變更此設定。若是發生 Azure Data Studio 在啟動時耗用大量 CPU 時間的情況，可以排除較大的資料夾以降低起始負載。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.allowChords">
+        <source xml:lang="en">Whether or not to allow chord keybindings in the terminal. Note that when this is true and the keystroke results in a chord it will bypass `#terminal.integrated.commandsToSkipShell#`, setting this to false is particularly useful when you want ctrl+k to go to your shell (not Azure Data Studio).</source>
+        <target state="translated">是否允許在終端內同步選取按鍵繫結關係。請注意，當此設定為 true 時，同步選取的按鍵輸入結果會跳過 `#terminal.integrated.commandsToSkipShell#`，如果希望按 ctrl+k 能前往殼層 (不是 Azure Data Studio)，請將此項設定為 false。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.autoReplies">
+        <source xml:lang="en">A set of messages that when encountered in the terminal will be automatically responded to. Provided the message is specific enough, this can help automate away common responses.
+
+Remarks:
+
+- Use {0} to automatically respond to the terminate batch job prompt on Windows.
+- The message includes escape sequences so the reply might not happen with styled text.
+- Each reply can only happen once every second.
+- Use {1} in the reply to mean the enter key.
+- To unset a default key, set the value to null.
+- Restart Azured Data Studio if new don't apply.</source>
+        <target state="translated">在終端中遇到這一組訊息時，系統將會自動回覆。如果訊息夠具體，有助於自動處理常見的回覆。
+
+備註:
+
+- 使用 {0} 自動回應 Windows 上的終端批次工作提示。
+- 該訊息包含逸出序列，因此可能不會使用樣式文字進行回覆。
+- 每個回覆每秒只能發生一次。
+- 在回覆中使用 {1} 表示輸入索引鍵。
+- 若要取消設定預設索引鍵，請將值設定為 null。
+- 若新的不適用，請重新啟動 Azure Data Studio。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.commandsToSkipShell">
+        <source xml:lang="en">A set of command IDs whose keybindings will not be sent to the shell but instead always be handled by Azure Data Studio. This allows keybindings that would normally be consumed by the shell to act instead the same as when the terminal is not focused, for example `Ctrl+P` to launch Quick Open.
+
+&amp;nbsp;
+
+Many commands are skipped by default. To override a default and pass that command's keybinding to the shell instead, add the command prefixed with the `-` character. For example add `-workbench.action.quickOpen` to allow `Ctrl+P` to reach the shell.
+
+&amp;nbsp;
+
+The following list of default skipped commands is truncated when viewed in Settings Editor. To see the full list, {1} and search for the first command from the list below.
+
+&amp;nbsp;
+
+Default Skipped Commands:
+
+{0}</source>
+        <target state="translated">一組命令識別碼，其按鍵繫結關係一律由 Azure Data Studio 處理，而不會傳送到殼層。如此一來，通常由殼層取用的按鍵繫結關係，將能像焦點不在終端機時般地運作。例如 `Ctrl+P` 會啟動 Quick Open。
+
+&amp;nbsp;
+
+根據預設，會跳過許多命令。若要覆寫預設，並將命令的按鍵繫結關係改為傳遞給殼層，請新增命令，並在其字首加上 `-` 字元。例如，新增 `-workbench.action.quickOpen` 可讓 `Ctrl+P` 傳送到殼層。
+
+&amp;nbsp;
+
+在設定編輯器中檢視下列預設會跳過的命令清單時，會有截斷情形。若要查看完整的清單，{1}，然後從下面的清單中搜尋第一個命令。
+
+&amp;nbsp;
+
+預設會跳過的命令:
+
+{0}</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.detectLocale">
+        <source xml:lang="en">Controls whether to detect and set the `$LANG` environment variable to a UTF-8 compliant option since Azure Data Studio's terminal only supports UTF-8 encoded data coming from the shell.</source>
+        <target state="translated">因為 Azure Data Studio 的終端只支援來自殼層的 UTF-8 編碼資料，所以控制是否要偵測 `$LANG` 環境變數，並將其設為 UTF-8 相容選項。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.env.linux">
+        <source xml:lang="en">Object with environment variables that will be added to the Azure Data Studio process to be used by the terminal on Linux. Set to `null` to delete the environment variable.</source>
+        <target state="translated">具有環境變數的物件，會新增至 Linux 終端使用的 Azure Data Studio 處理序。設為 `null` 可刪除環境變數。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.env.osx">
+        <source xml:lang="en">Object with environment variables that will be added to the Azure Data Studio process to be used by the terminal on macOS. Set to `null` to delete the environment variable.</source>
+        <target state="translated">具有環境變數的物件，會新增至 macOS 終端使用的 Azure Data Studio 處理序。設為 `null` 可刪除環境變數。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.env.windows">
+        <source xml:lang="en">Object with environment variables that will be added to the Azure Data Studio process to be used by the terminal on Windows. Set to `null` to delete the environment variable.</source>
+        <target state="translated">具有環境變數的物件，會新增至 Windows 終端使用的 Azure Data Studio 處理序。設為 `null` 可刪除環境變數。</target>
+      </trans-unit>
+      <trans-unit id="terminal.integrated.inheritEnv">
+        <source xml:lang="en">Whether new shells should inherit their environment from Azure Data Studio, which may source a login shell to ensure $PATH and other development variables are initialized. This has no effect on Windows.</source>
+        <target state="translated">新殼層是否應該從 Azure Data Studio 繼承其環境，而 VS Code 可能會提供登入殼層，以確保 $PATH 和其他開發變數已初始化。這對 Windows 沒有影響。</target>
       </trans-unit>
       <trans-unit id="uninstallExtensionComplete">
         <source xml:lang="en">Please reload Azure Data Studio to complete the uninstallation of the extension {0}.</source>
@@ -315,13 +566,9 @@
         <source xml:lang="en">Would you like to change Azure Data Studio's UI language to {0} and restart?</source>
         <target state="translated">您想要變更 Azure Data Studio 的 UI 語言為 {0} 並重新啟動嗎?</target>
       </trans-unit>
-      <trans-unit id="vscodeFunctionalityNotSupportedError">
-        <source xml:lang="en">This VS Code functionality is not supported in Azure Data Studio.</source>
-        <target state="translated">Azure Data Studio 不支持此 VS Code 功能。</target>
-      </trans-unit>
-      <trans-unit id="vscodeInvalidArgumentsError">
-        <source xml:lang="en">Invalid arguments</source>
-        <target state="translated">引數無效</target>
+      <trans-unit id="vscodeNotebooksNotSupportedError">
+        <source xml:lang="en">VS Code notebook extensions are not supported in Azure Data Studio.</source>
+        <target state="translated">Azure Data Studio 中不支援 VS Code 筆記本延伸模組。</target>
       </trans-unit>
       <trans-unit id="watermark.newNotebook">
         <source xml:lang="en">New Notebook</source>
@@ -341,15 +588,11 @@
       </trans-unit>
     </body>
   </file>
-  <file original="src/sql/base/parts/editableDropdown/browser/dropdown" source-language="en" datatype="plaintext" target-language="zh-Hant">
+  <file original="src/sql/base/parts/tree/browser/treeDefaults" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
-      <trans-unit id="editableDropdown.errorValidate">
-        <source xml:lang="en">Must be an option from the list</source>
-        <target state="translated">必須是清單中的選項</target>
-      </trans-unit>
-      <trans-unit id="selectBox">
-        <source xml:lang="en">Select Box</source>
-        <target state="translated">選取方塊</target>
+      <trans-unit id="collapse all">
+        <source xml:lang="en">Collapse All</source>
+        <target state="translated">全部摺疊</target>
       </trans-unit>
     </body>
   </file>
@@ -421,6 +664,18 @@
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/platform/connection/common/providerConnectionInfo" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="connection.unsupported">
+        <source xml:lang="en">Unsupported connection</source>
+        <target state="translated">不支援的連線</target>
+      </trans-unit>
+      <trans-unit id="loading">
+        <source xml:lang="en">Loading...</source>
+        <target state="translated">正在載入...</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/platform/dashboard/browser/insightRegistry" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="schema.dashboardWidgets.InsightsRegistry">
@@ -447,6 +702,10 @@
   </file>
   <file original="src/sql/platform/serialization/common/serializationService" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="missingSerializationProviderError">
+        <source xml:lang="en">Could not find a serialization provider with the specified ID '{0}'</source>
+        <target state="translated">找不到具有指定識別碼 '{0}' 的序列化提供者</target>
+      </trans-unit>
       <trans-unit id="noSerializationProvider">
         <source xml:lang="en">Cannot serialize data as no provider has been registered</source>
         <target state="translated">因為未註冊任何提供者，所以無法序列化資料</target>
@@ -463,13 +722,13 @@
   </file>
   <file original="src/sql/platform/theme/common/colorRegistry" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="buttonDropdo0wnBoxShadow">
+        <source xml:lang="en">The button dropdown box shadow color</source>
+        <target state="translated">按鈕下拉式清單方塊陰影色彩</target>
+      </trans-unit>
       <trans-unit id="buttonDropdownBackgroundHover">
         <source xml:lang="en">The button dropdown background hover color</source>
         <target state="translated">按鈕下拉式清單背景暫留色彩</target>
-      </trans-unit>
-      <trans-unit id="buttonDropdownBoxShadow">
-        <source xml:lang="en">The button dropdown box shadow color</source>
-        <target state="translated">按鈕下拉式清單方塊陰影色彩</target>
       </trans-unit>
       <trans-unit id="calloutDialogBodyBackground">
         <source xml:lang="en">Callout dialog body background.</source>
@@ -646,6 +905,10 @@
       <trans-unit id="notebookFindRangeHighlight">
         <source xml:lang="en">Color of the range limiting the search. The color must not be opaque so as not to hide underlying decorations.</source>
         <target state="translated">限制搜尋之範圍的色彩。其不得為不透明色彩，以免隱藏底層裝飾。</target>
+      </trans-unit>
+      <trans-unit id="queryEditorNullBackground">
+        <source xml:lang="en">The background color for null values in the query editor results grid. To disable the background color, you can use a transparent color like {0}.</source>
+        <target state="translated">查詢編輯器結果方格中 Null 值的背景色彩。若要停用背景色彩，您可以使用透明色彩，例如 {0}。</target>
       </trans-unit>
       <trans-unit id="tileBorder">
         <source xml:lang="en">The border color of tiles</source>
@@ -841,14 +1104,6 @@
       </trans-unit>
     </body>
   </file>
-  <file original="src/sql/workbench/api/common/notebooks/vscodeExecuteProvider" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="errorStartBeforeReady">
-        <source xml:lang="en">Cannot start a session, the manager is not yet initialized</source>
-        <target state="translated">無法啟動工作階段，管理員尚未初始化</target>
-      </trans-unit>
-    </body>
-  </file>
   <file original="src/sql/workbench/browser/actions" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="clearSavedAccounts">
@@ -891,10 +1146,22 @@
         <source xml:lang="en">Show connect dialog on startup</source>
         <target state="translated">啟動時顯示連線對話方塊</target>
       </trans-unit>
+      <trans-unit id="useVSCodeNotebooks">
+        <source xml:lang="en">(Preview) Use VS Code notebooks as the default notebook experience. Note: Azure Data Studio will need to be restarted to enable this setting.</source>
+        <target state="translated">(預覽) 使用 VS Code Notebooks 做為預設筆記本體驗。注意: 必須重新啟動 Azure Data Studio 才能啟用此設定。</target>
+      </trans-unit>
+      <trans-unit id="useVSCodeNotebooksTitle">
+        <source xml:lang="en">Use VS Code notebooks</source>
+        <target state="translated">使用 VS Code Notebooks</target>
+      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/browser/designer/designer" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="designer.actions">
+        <source xml:lang="en">More Actions</source>
+        <target state="translated">更多動作</target>
+      </trans-unit>
       <trans-unit id="designer.defaultRemoveRowConfirmationMessage">
         <source xml:lang="en">Are you sure you want to remove the row?</source>
         <target state="translated">確定要移除列嗎?</target>
@@ -902,6 +1169,14 @@
       <trans-unit id="designer.generalGroupName">
         <source xml:lang="en">General</source>
         <target state="translated">一般</target>
+      </trans-unit>
+      <trans-unit id="designer.issueCountAlert">
+        <source xml:lang="en">{0} validation issues found.</source>
+        <target state="translated">找到 {0} 個驗證問題。</target>
+      </trans-unit>
+      <trans-unit id="designer.issuesTabTitle">
+        <source xml:lang="en">Issues ({0})</source>
+        <target state="translated">問題 ({0})</target>
       </trans-unit>
       <trans-unit id="designer.loadingDesigner">
         <source xml:lang="en">Loading designer...</source>
@@ -911,9 +1186,9 @@
         <source xml:lang="en">Designer is loaded</source>
         <target state="translated">設計工具已載入</target>
       </trans-unit>
-      <trans-unit id="designer.newRowText">
-        <source xml:lang="en">Add New</source>
-        <target state="translated">新增</target>
+      <trans-unit id="designer.moveRowText">
+        <source xml:lang="en">Move</source>
+        <target state="translated">移動</target>
       </trans-unit>
       <trans-unit id="designer.processing">
         <source xml:lang="en">Processing...</source>
@@ -943,9 +1218,25 @@
         <source xml:lang="en">Remove</source>
         <target state="translated">移除</target>
       </trans-unit>
-      <trans-unit id="tableDesigner.unknownComponentType">
+      <trans-unit id="designer.scriptTabTitle">
+        <source xml:lang="en">Scripts</source>
+        <target state="translated">指令碼</target>
+      </trans-unit>
+      <trans-unit id="designer.unknownComponentType">
         <source xml:lang="en">The component type: {0} is not supported</source>
         <target state="translated">不支援元件類型 {0}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/browser/designer/designerIssuesTabPanelView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="designer.IssueListAriaLabel">
+        <source xml:lang="en">Issues</source>
+        <target state="translated">問題</target>
+      </trans-unit>
+      <trans-unit id="designer.moreInfoLink">
+        <source xml:lang="en">More information</source>
+        <target state="translated">詳細資訊</target>
       </trans-unit>
     </body>
   </file>
@@ -967,6 +1258,42 @@
       <trans-unit id="designer.textEditorAriaLabel">
         <source xml:lang="en">Designer text editor.</source>
         <target state="translated">設計工具文字編輯器。</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/browser/designer/tableActions" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="designer.addColumnAction">
+        <source xml:lang="en">Add New</source>
+        <target state="translated">新增</target>
+      </trans-unit>
+      <trans-unit id="designer.insertAfterSelectedColumn">
+        <source xml:lang="en">Insert After</source>
+        <target state="translated">插入此項目之後:</target>
+      </trans-unit>
+      <trans-unit id="designer.insertBeforeSelectedRow">
+        <source xml:lang="en">Insert Before</source>
+        <target state="translated">插入此項目之前:</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowDownAction">
+        <source xml:lang="en">Move Down</source>
+        <target state="translated">下移</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowDownButtonAriaLabel">
+        <source xml:lang="en">Move selected row down one position</source>
+        <target state="translated">將選取的列下移一個位置</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowUpAction">
+        <source xml:lang="en">Move Up</source>
+        <target state="translated">上移</target>
+      </trans-unit>
+      <trans-unit id="designer.moveRowUpButtonAriaLabel">
+        <source xml:lang="en">Move selected row up one position</source>
+        <target state="translated">將選取的列上移一個位置</target>
+      </trans-unit>
+      <trans-unit id="designer.newRowButtonAriaLabel">
+        <source xml:lang="en">Add new row to '{0}' table</source>
+        <target state="translated">將新資料列新增至 '{0}' 資料表</target>
       </trans-unit>
     </body>
   </file>
@@ -1020,10 +1347,6 @@
         <source xml:lang="en">The operation cannot be performed while another operation is in progress.</source>
         <target state="translated">另一個作業正在進行中時，無法執行作業。</target>
       </trans-unit>
-      <trans-unit id="tableDesigner.newTable">
-        <source xml:lang="en">New Table</source>
-        <target state="translated">新增資料表</target>
-      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/browser/modal/modal" source-language="en" datatype="plaintext" target-language="zh-Hant">
@@ -1076,6 +1399,14 @@
   </file>
   <file original="src/sql/workbench/browser/modal/optionsDialogHelper" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="boolean.false">
+        <source xml:lang="en">False</source>
+        <target state="translated">False</target>
+      </trans-unit>
+      <trans-unit id="boolean.true">
+        <source xml:lang="en">True</source>
+        <target state="translated">True</target>
+      </trans-unit>
       <trans-unit id="optionsDialog.defaultGroupName">
         <source xml:lang="en">General</source>
         <target state="translated">一般</target>
@@ -1232,10 +1563,6 @@
         <source xml:lang="en">No script was returned when scripting as {0} on object {1}</source>
         <target state="translated">在物件 {1} 指令碼為 {0} 時無回傳任何指令碼</target>
       </trans-unit>
-      <trans-unit id="scriptSelectNotFound">
-        <source xml:lang="en">No script was returned when calling select script on object </source>
-        <target state="translated">在物件上呼叫選取的指令碼時沒有回傳任何指令碼</target>
-      </trans-unit>
       <trans-unit id="scriptingFailed">
         <source xml:lang="en">Scripting Failed</source>
         <target state="translated">指令碼失敗</target>
@@ -1244,9 +1571,25 @@
         <source xml:lang="en">Select</source>
         <target state="translated">選擇</target>
       </trans-unit>
+      <trans-unit id="selectScriptForEditNotGeneratedError">
+        <source xml:lang="en">Failed to generate script for Edit Data editor.</source>
+        <target state="translated">無法為「編輯資料」編輯器產生指令碼。</target>
+      </trans-unit>
+      <trans-unit id="selectScriptNotGeneratedError">
+        <source xml:lang="en">Failed to generate select script for the selected object.</source>
+        <target state="translated">無法為選取的物件產生選取指令碼。</target>
+      </trans-unit>
       <trans-unit id="updateOperationName">
         <source xml:lang="en">Update</source>
         <target state="translated">更新</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/common/constants" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="notebookMultipleRequestsError">
+        <source xml:lang="en">Cannot execute code cell. Another cell is currently being executed.</source>
+        <target state="translated">無法執行程式碼儲存格。目前正在執行另一個儲存格。</target>
       </trans-unit>
     </body>
   </file>
@@ -1489,8 +1832,12 @@
   <file original="src/sql/workbench/contrib/backup/browser/backup.component" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="addFile">
-        <source xml:lang="en">Add a file</source>
-        <target state="translated">增加檔案</target>
+        <source xml:lang="en">Add File</source>
+        <target state="translated">新增檔案</target>
+      </trans-unit>
+      <trans-unit id="addUrl">
+        <source xml:lang="en">Add URL</source>
+        <target state="translated">新增 URL</target>
       </trans-unit>
       <trans-unit id="backup.advancedConfiguration">
         <source xml:lang="en">Advanced Configuration</source>
@@ -1519,6 +1866,10 @@
       <trans-unit id="backup.backupType">
         <source xml:lang="en">Backup type</source>
         <target state="translated">備份類型</target>
+      </trans-unit>
+      <trans-unit id="backup.backupUrl">
+        <source xml:lang="en">Backup URL</source>
+        <target state="translated">備份 URL</target>
       </trans-unit>
       <trans-unit id="backup.certificateOrAsymmetricKey">
         <source xml:lang="en">Certificate or Asymmetric key</source>
@@ -1604,6 +1955,10 @@
         <source xml:lang="en">Set backup retain days</source>
         <target state="translated">設定備份保留天數</target>
       </trans-unit>
+      <trans-unit id="backup.toUrl">
+        <source xml:lang="en">Save backup to URL</source>
+        <target state="translated">將備份儲存至 URL</target>
+      </trans-unit>
       <trans-unit id="backup.transactionLog">
         <source xml:lang="en">Transaction log</source>
         <target state="translated">交易記錄</target>
@@ -1615,6 +1970,10 @@
       <trans-unit id="backup.verifyContainer">
         <source xml:lang="en">Verify backup when finished</source>
         <target state="translated">完成後驗證備份</target>
+      </trans-unit>
+      <trans-unit id="backupBrowseButton">
+        <source xml:lang="en">Browse</source>
+        <target state="translated">瀏覽</target>
       </trans-unit>
       <trans-unit id="backupComponent.backup">
         <source xml:lang="en">Backup</source>
@@ -2004,10 +2363,6 @@
   </file>
   <file original="src/sql/workbench/contrib/connection/browser/connection.contribution" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
-      <trans-unit id="connection.parseClipboardForConnectionStringDescription">
-        <source xml:lang="en">Attempt to parse the contents of the clipboard when the connection dialog is opened or a paste is performed.</source>
-        <target state="translated">嘗試在連線對話方塊開啟或已執行貼上時剖析剪貼簿的內容。</target>
-      </trans-unit>
       <trans-unit id="connection.showUnsupportedServerVersionWarning">
         <source xml:lang="en">Whether to show the warning message when user connects to a server version that is not supported by Azure Data Studio.</source>
         <target state="translated">當使用者連接到 Azure Data Studio 不支援的伺服器版本時，是否要顯示警告訊息。</target>
@@ -2052,6 +2407,10 @@
   </file>
   <file original="src/sql/workbench/contrib/connection/common/connectionProviderExtension" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="schema.azureResource">
+        <source xml:lang="en">Azure resource endpoint for the provider.</source>
+        <target state="translated">提供者的 Azure 資源端點。</target>
+      </trans-unit>
       <trans-unit id="schema.connectionOptions">
         <source xml:lang="en">Options for connection</source>
         <target state="translated">連線選項</target>
@@ -2059,6 +2418,10 @@
       <trans-unit id="schema.displayName">
         <source xml:lang="en">Display Name for the provider</source>
         <target state="translated">提供者的顯示名稱</target>
+      </trans-unit>
+      <trans-unit id="schema.enableConnectionStringOption">
+        <source xml:lang="en">Whether the provider supports connection string as an input option. The default value is false.</source>
+        <target state="translated">提供者是否支援連接字串作為輸入選項。預設值為 false。</target>
       </trans-unit>
       <trans-unit id="schema.iconPath">
         <source xml:lang="en">Icon path for the server type</source>
@@ -2075,6 +2438,10 @@
       <trans-unit id="schema.providerId">
         <source xml:lang="en">Common id for the provider</source>
         <target state="translated">提供者的通用識別碼。</target>
+      </trans-unit>
+      <trans-unit id="schema.useConnectionStringAsDefaultOption">
+        <source xml:lang="en">Whether the connection provider uses connection string as the default option to connect. The default value is false.</source>
+        <target state="translated">連接提供者是否使用連接字串作為連線的預設選項。預設值為 false。</target>
       </trans-unit>
     </body>
   </file>
@@ -2280,6 +2647,10 @@
   </file>
   <file original="src/sql/workbench/contrib/dashboard/browser/core/dashboardPage.component" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="dashboard.configureDashboardTooltip">
+        <source xml:lang="en">Learn more about how to configure the dashboard</source>
+        <target state="translated">深入了解如何設定儀表板</target>
+      </trans-unit>
       <trans-unit id="dashboard.generalTabGroupHeader">
         <source xml:lang="en">General</source>
         <target state="translated">一般</target>
@@ -2315,6 +2686,10 @@
       <trans-unit id="azdata.extension.contributes.dashboard.tab.group">
         <source xml:lang="en">The unique identifier of the group this tab belongs to, value for home group: home.</source>
         <target state="translated">此索引標籤所屬群組的唯一識別碼，常用 (群組) 的值: 常用。</target>
+      </trans-unit>
+      <trans-unit id="azdata.extension.contributes.dashboard.tab.hideRefreshTask">
+        <source xml:lang="en">Flag used to show/hide refresh button in toolbar. By default, the value is false</source>
+        <target state="translated">用於在工具列中顯示/隱藏重新整理按鈕的旗標。根據預設，此值為 False</target>
       </trans-unit>
       <trans-unit id="azdata.extension.contributes.dashboard.tab.icon.dark">
         <source xml:lang="en">Icon path when a dark theme is used</source>
@@ -3056,6 +3431,10 @@
   </file>
   <file original="src/sql/workbench/contrib/dataExplorer/browser/dataExplorerViewlet" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="ads-connections">
+        <source xml:lang="en">Icon represent a server.</source>
+        <target state="translated">代表伺服器的圖示。</target>
+      </trans-unit>
       <trans-unit id="dataExplorer.servers">
         <source xml:lang="en">Servers</source>
         <target state="translated">伺服器</target>
@@ -3134,6 +3513,14 @@
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/editData/browser/editDataGridPanel" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="editData.cellWithNullCharMessage">
+        <source xml:lang="en">This cell contains the Unicode null character which is currently not supported for editing.</source>
+        <target state="translated">此儲存格包含 Unicode Null 字元，目前不支援編輯。</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/contrib/editData/browser/gridActions" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="copySelection">
@@ -3156,6 +3543,10 @@
         <source xml:lang="en">Save As JSON</source>
         <target state="translated">另存為 JSON</target>
       </trans-unit>
+      <trans-unit id="saveAsMarkdown">
+        <source xml:lang="en">Save As Markdown</source>
+        <target state="translated">另存為 Markdown</target>
+      </trans-unit>
       <trans-unit id="saveAsXml">
         <source xml:lang="en">Save As XML</source>
         <target state="translated">另存為 XML</target>
@@ -3163,6 +3554,576 @@
       <trans-unit id="selectAll">
         <source xml:lang="en">Select All</source>
         <target state="translated">全選</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/azdataGraphView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanComparison.bottomPlanDiagram.ariaLabel">
+        <source xml:lang="en">{0}, use arrow keys to navigate between nodes</source>
+        <target state="translated">{0}，使用方向鍵在節點之間瀏覽</target>
+      </trans-unit>
+      <trans-unit id="invalidExecutionPlanZoomError">
+        <source xml:lang="en">Zoom level cannot be 0 or negative</source>
+        <target state="translated">縮放比例不可以是 0 或負數</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/compareExecutionPlanInput" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="epCompare.editorName">
+        <source xml:lang="en">CompareExecutionPlans</source>
+        <target state="translated">CompareExecutionPlans</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/constants" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="ep.propertiesSearchDescription">
+        <source xml:lang="en">Search properties table</source>
+        <target state="translated">搜尋屬性表格</target>
+      </trans-unit>
+      <trans-unit id="ep.searchPlaceholder">
+        <source xml:lang="en">Filter for any field...</source>
+        <target state="translated">篩選任何欄位...</target>
+      </trans-unit>
+      <trans-unit id="ep.topOperationsSearchDescription">
+        <source xml:lang="en">Search top operations</source>
+        <target state="translated">搜尋前幾項作業</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanComparisonEditor" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="compareExecutionPlanEditor">
+        <source xml:lang="en">Compare Execution Plan Editor</source>
+        <target state="translated">比較執行計畫編輯器</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanComparisonEditorView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="addExecutionPlanLabel">
+        <source xml:lang="en">Add execution plan</source>
+        <target state="translated">新增執行計畫</target>
+      </trans-unit>
+      <trans-unit id="epComapre.LoadingPlanCompleteMessage">
+        <source xml:lang="en">Execution plan successfully loaded</source>
+        <target state="translated">已成功載入執行計畫</target>
+      </trans-unit>
+      <trans-unit id="epComapre.LoadingPlanMessage">
+        <source xml:lang="en">Loading execution plan</source>
+        <target state="translated">正在載入執行計畫</target>
+      </trans-unit>
+      <trans-unit id="epCompare.FileFilterDescription">
+        <source xml:lang="en">Execution Plan Files</source>
+        <target state="translated">執行計畫檔案</target>
+      </trans-unit>
+      <trans-unit id="epCompare.addExecutionPlanLabel">
+        <source xml:lang="en">Add execution plan</source>
+        <target state="translated">新增執行計畫</target>
+      </trans-unit>
+      <trans-unit id="epCompare.comparePropertiesAction">
+        <source xml:lang="en">Properties</source>
+        <target state="translated">屬性</target>
+      </trans-unit>
+      <trans-unit id="epCompare.comparisonProgess">
+        <source xml:lang="en">Loading similar areas in compared plans</source>
+        <target state="translated">在比較計畫中載入類似區域</target>
+      </trans-unit>
+      <trans-unit id="epCompare.searchNodeAction">
+        <source xml:lang="en">Find Node</source>
+        <target state="translated">尋找節點</target>
+      </trans-unit>
+      <trans-unit id="epCompare.searchNodeActionAddedPlan">
+        <source xml:lang="en">Find Node - Added Plan</source>
+        <target state="translated">尋找節點 - 已新增方案</target>
+      </trans-unit>
+      <trans-unit id="epCompare.toggleOrientation">
+        <source xml:lang="en">Toggle Orientation</source>
+        <target state="translated">切換方向</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomInAction">
+        <source xml:lang="en">Zoom In</source>
+        <target state="translated">放大</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomOutAction">
+        <source xml:lang="en">Zoom Out</source>
+        <target state="translated">縮小</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomReset">
+        <source xml:lang="en">Reset Zoom</source>
+        <target state="translated">重設縮放</target>
+      </trans-unit>
+      <trans-unit id="epCompare.zoomToFit">
+        <source xml:lang="en">Zoom to Fit</source>
+        <target state="translated">縮放至適當比例</target>
+      </trans-unit>
+      <trans-unit id="executionPlanComparison.bottomPlanDiagram.name">
+        <source xml:lang="en">Bottom execution Plan {0}</source>
+        <target state="translated">底層執行計畫 {0}</target>
+      </trans-unit>
+      <trans-unit id="executionPlanComparison.topPlanDiagram.name">
+        <source xml:lang="en">Top execution Plan {0}</source>
+        <target state="translated">頂層執行計畫 {0}</target>
+      </trans-unit>
+      <trans-unit id="executionPlanDisableTooltip">
+        <source xml:lang="en">Tooltips disabled</source>
+        <target state="translated">已停用工具提示</target>
+      </trans-unit>
+      <trans-unit id="executionPlanEnableTooltip">
+        <source xml:lang="en">Tooltips enabled</source>
+        <target state="translated">已啟用工具提示</target>
+      </trans-unit>
+      <trans-unit id="queryDropdownPrefix">
+        <source xml:lang="en">Query {0} of {1}: {2}</source>
+        <target state="translated">查詢{0}/{1}: {2}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanComparisonPropertiesView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanPropertiesEdgeOperationName">
+        <source xml:lang="en">Edge</source>
+        <target state="translated">邊緣</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewBottomOperation">
+        <source xml:lang="en">Bottom operation: {0}</source>
+        <target state="translated">底部作業: {0}</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewLeftOperation">
+        <source xml:lang="en">Left operation: {0}</source>
+        <target state="translated">左側作業: {0}</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameEquivalentPropertiesRowHeader">
+        <source xml:lang="en">Equivalent Properties</source>
+        <target state="translated">對等屬性</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameGreaterThanTitle">
+        <source xml:lang="en">Greater than</source>
+        <target state="translated">大於</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameLessThanTitle">
+        <source xml:lang="en">Less than</source>
+        <target state="translated">小於</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameNameColumnHeader">
+        <source xml:lang="en">Name</source>
+        <target state="translated">名稱</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameNotEqualTitle">
+        <source xml:lang="en">Not equal to</source>
+        <target state="translated">不等於</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnBottomHeader">
+        <source xml:lang="en">Value (Bottom Plan)</source>
+        <target state="translated">值 (基本計畫)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnLeftHeader">
+        <source xml:lang="en">Value (Left Plan)</source>
+        <target state="translated">值 (左側計畫)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnRightHeader">
+        <source xml:lang="en">Value (Right Plan)</source>
+        <target state="translated">值 (右側計畫)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnTopHeader">
+        <source xml:lang="en">Value (Top Plan)</source>
+        <target state="translated">值 (主要計畫)</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewRightOperation">
+        <source xml:lang="en">Right operation: {0}</source>
+        <target state="translated">右側作業: {0}</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewTopOperation">
+        <source xml:lang="en">Top operation: {0}</source>
+        <target state="translated">頂端作業: {0}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanContribution" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlan.tooltips.enableOnHoverTooltips">
+        <source xml:lang="en">When true, enables tooltips on hover for execution plan. When false, tooltips are shown on node click or F3 key press.</source>
+        <target state="translated">若為 true，會在暫留時啟用執行計畫暫留的工具提示。若為 false，則會在節點點擊或 F3 按鍵時顯示工具提示。</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCompareCommandOriginalValue">
+        <source xml:lang="en">Compare Execution Plans</source>
+        <target state="translated">比較執行計畫</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCompareCommandValue">
+        <source xml:lang="en">Compare Execution Plans</source>
+        <target state="translated">比較執行計畫</target>
+      </trans-unit>
+      <trans-unit id="executionPlanConfigurationTitle">
+        <source xml:lang="en">Execution Plan</source>
+        <target state="translated">執行計畫</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanEditor" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanEditor">
+        <source xml:lang="en">Query Execution Plan Editor</source>
+        <target state="translated">查詢執行計畫編輯器</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanFileView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanFileLoadingComplete">
+        <source xml:lang="en">Execution plans are generated</source>
+        <target state="translated">產生執行計畫</target>
+      </trans-unit>
+      <trans-unit id="executionPlanFileLoadingFailed">
+        <source xml:lang="en">Failed to load execution plan</source>
+        <target state="translated">無法載入執行計畫</target>
+      </trans-unit>
+      <trans-unit id="loadingExecutionPlanFile">
+        <source xml:lang="en">Generating execution plans</source>
+        <target state="translated">產生執行計畫</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanInput" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="epCompare.executionPlanEditorName">
+        <source xml:lang="en">ExecutionPlan</source>
+        <target state="translated">ExecutionPlan</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanPropertiesView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanPropertiesEdgeOperationName">
+        <source xml:lang="en">Edge</source>
+        <target state="translated">邊緣</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameNameColumnHeader">
+        <source xml:lang="en">Name</source>
+        <target state="translated">名稱</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewNameValueColumnHeader">
+        <source xml:lang="en">Value</source>
+        <target state="translated">值</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanPropertiesViewBase" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="ep.topOperationsCopyTableData">
+        <source xml:lang="en">Copy</source>
+        <target state="translated">複製</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCollapseAllProperties">
+        <source xml:lang="en">Collapse All</source>
+        <target state="translated">全部摺疊</target>
+      </trans-unit>
+      <trans-unit id="executionPlanExpandAllProperties">
+        <source xml:lang="en">Expand All</source>
+        <target state="translated">全部展開</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewClose">
+        <source xml:lang="en">Close</source>
+        <target state="translated">關閉</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewSortAlphabetically">
+        <source xml:lang="en">Alphabetical</source>
+        <target state="translated">字母順序</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewSortByDisplayOrder">
+        <source xml:lang="en">Importance</source>
+        <target state="translated">重要性</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertyViewSortReverseAlphabetically">
+        <source xml:lang="en">Reverse Alphabetical</source>
+        <target state="translated">反向字母順序</target>
+      </trans-unit>
+      <trans-unit id="nodePropertyViewTitle">
+        <source xml:lang="en">Properties</source>
+        <target state="translated">屬性</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanTab" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanTitle">
+        <source xml:lang="en">Query Plan</source>
+        <target state="translated">查詢計劃</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanTreeTab" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="ept.topOperationsCopyTableData">
+        <source xml:lang="en">Copy</source>
+        <target state="translated">複製</target>
+      </trans-unit>
+      <trans-unit id="ept.topOperationsCopyWithHeader">
+        <source xml:lang="en">Copy with Header</source>
+        <target state="translated">連同標頭複製</target>
+      </trans-unit>
+      <trans-unit id="ept.topOperationsSelectAll">
+        <source xml:lang="en">Select All</source>
+        <target state="translated">全選</target>
+      </trans-unit>
+      <trans-unit id="planTreeTab.title">
+        <source xml:lang="en">Plan Tree</source>
+        <target state="translated">方案樹狀</target>
+      </trans-unit>
+      <trans-unit id="topOperationsTableTitle">
+        <source xml:lang="en">Execution Plan Tree</source>
+        <target state="translated">執行計畫樹狀目錄</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanView" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlan.SaveFileDescription">
+        <source xml:lang="en">Execution Plan Files</source>
+        <target state="translated">執行計畫檔案</target>
+      </trans-unit>
+      <trans-unit id="executionPlan.diagram.ariaLabel">
+        <source xml:lang="en">Execution Plan {0}</source>
+        <target state="translated">執行計畫 {0}</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCompareExecutionPlanAction">
+        <source xml:lang="en">Compare Execution Plan</source>
+        <target state="translated">比較執行計畫</target>
+      </trans-unit>
+      <trans-unit id="executionPlanContextMenuDisableTooltip">
+        <source xml:lang="en">Disable Tooltips</source>
+        <target state="translated">停用工具提示</target>
+      </trans-unit>
+      <trans-unit id="executionPlanContextMenuEnableTooltip">
+        <source xml:lang="en">Enable Tooltips</source>
+        <target state="translated">啟用工具提示</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCustomZoom">
+        <source xml:lang="en">Custom Zoom</source>
+        <target state="translated">自訂縮放</target>
+      </trans-unit>
+      <trans-unit id="executionPlanDisableTooltip">
+        <source xml:lang="en">Tooltips disabled</source>
+        <target state="translated">已停用工具提示</target>
+      </trans-unit>
+      <trans-unit id="executionPlanEnableTooltip">
+        <source xml:lang="en">Tooltips enabled</source>
+        <target state="translated">已啟用工具提示</target>
+      </trans-unit>
+      <trans-unit id="executionPlanFitGraphLabel">
+        <source xml:lang="en">Zoom to Fit</source>
+        <target state="translated">縮放至適當比例</target>
+      </trans-unit>
+      <trans-unit id="executionPlanHighlightExpensiveOperationAction">
+        <source xml:lang="en">Highlight Expensive Operation</source>
+        <target state="translated">醒目提示成本過高的作業</target>
+      </trans-unit>
+      <trans-unit id="executionPlanOpenGraphFile">
+        <source xml:lang="en">Show Query Plan XML</source>
+        <target state="translated">顯示查詢計劃 XML</target>
+      </trans-unit>
+      <trans-unit id="executionPlanPropertiesActionLabel">
+        <source xml:lang="en">Properties</source>
+        <target state="translated">屬性</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSavePlanXML">
+        <source xml:lang="en">Save Plan File</source>
+        <target state="translated">儲存計畫檔案</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSearchNodeAction">
+        <source xml:lang="en">Find Node</source>
+        <target state="translated">尋找節點</target>
+      </trans-unit>
+      <trans-unit id="executionPlanTopOperationsAction">
+        <source xml:lang="en">Top Operations</source>
+        <target state="translated">最前幾項操作</target>
+      </trans-unit>
+      <trans-unit id="executionPlanZoomInActionLabel">
+        <source xml:lang="en">Zoom In</source>
+        <target state="translated">放大</target>
+      </trans-unit>
+      <trans-unit id="executionPlanZoomOutActionLabel">
+        <source xml:lang="en">Zoom Out</source>
+        <target state="translated">縮小</target>
+      </trans-unit>
+      <trans-unit id="openQueryAction">
+        <source xml:lang="en">Open Query</source>
+        <target state="translated">開啟查詢</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/executionPlanViewHeader" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="planHeaderIndexAndCost">
+        <source xml:lang="en">Query {0}: Query cost (relative to the script): {1}%</source>
+        <note>{0} is the index of the graph in the execution plan tab
+{1} is the relative cost in percentage of the graph to the rest of the graphs in execution plan tab </note>
+        <target state="translated">查詢 {0}: 查詢成本 (相對於指令碼): {1}%</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/topOperationsTab" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="ep.topOperationsCopyTableData">
+        <source xml:lang="en">Copy</source>
+        <target state="translated">複製</target>
+      </trans-unit>
+      <trans-unit id="ep.topOperationsCopyWithHeader">
+        <source xml:lang="en">Copy with Header</source>
+        <target state="translated">連同標頭複製</target>
+      </trans-unit>
+      <trans-unit id="ep.topOperationsSelectAll">
+        <source xml:lang="en">Select All</source>
+        <target state="translated">全選</target>
+      </trans-unit>
+      <trans-unit id="topOperationsTabTitle">
+        <source xml:lang="en">Top Operations</source>
+        <target state="translated">頂層作業</target>
+      </trans-unit>
+      <trans-unit id="topOperationsTableTitle">
+        <source xml:lang="en">Top Operations</source>
+        <target state="translated">前幾項作業</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/widgets/customZoomWidget" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="cancelCustomZoomAction">
+        <source xml:lang="en">Close</source>
+        <target state="translated">關閉</target>
+      </trans-unit>
+      <trans-unit id="customZoomApplyButton">
+        <source xml:lang="en">Apply</source>
+        <target state="translated">套用</target>
+      </trans-unit>
+      <trans-unit id="customZoomApplyButtonTitle">
+        <source xml:lang="en">Apply Zoom</source>
+        <target state="translated">套用縮放</target>
+      </trans-unit>
+      <trans-unit id="invalidCustomZoomError">
+        <source xml:lang="en">Select a zoom value between 1 to 200</source>
+        <target state="translated">選取介於 1 到 200 之間的縮放值</target>
+      </trans-unit>
+      <trans-unit id="qpZoomValueLabel">
+        <source xml:lang="en">Zoom (percent)</source>
+        <target state="translated">顯示比例 (百分比)</target>
+      </trans-unit>
+      <trans-unit id="zoomAction">
+        <source xml:lang="en">Zoom</source>
+        <target state="translated">縮放</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/widgets/highlightExpensiveNodeWidget" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="actualNumberOfRowsForAllExecutionsAction">
+        <source xml:lang="en">Actual Number of Rows For All Executions</source>
+        <target state="translated">所有執行的實際資料列數目</target>
+      </trans-unit>
+      <trans-unit id="cancelExpensiveOperationAction">
+        <source xml:lang="en">Close</source>
+        <target state="translated">關閉</target>
+      </trans-unit>
+      <trans-unit id="executionPlanActualElapsedCpuTime">
+        <source xml:lang="en">Actual Elapsed CPU Time</source>
+        <target state="translated">實際經過的 CPU 時間</target>
+      </trans-unit>
+      <trans-unit id="executionPlanActualElapsedTime">
+        <source xml:lang="en">Actual Elapsed Time</source>
+        <target state="translated">實際經過時間</target>
+      </trans-unit>
+      <trans-unit id="executionPlanCost">
+        <source xml:lang="en">Cost</source>
+        <target state="translated">成本</target>
+      </trans-unit>
+      <trans-unit id="executionPlanNumberOfRowsRead">
+        <source xml:lang="en">Number of Rows Read</source>
+        <target state="translated">讀取的資料列數</target>
+      </trans-unit>
+      <trans-unit id="executionPlanOff">
+        <source xml:lang="en">Off</source>
+        <target state="translated">關閉</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSelectExpenseMetricTitle">
+        <source xml:lang="en">Select expense metric</source>
+        <target state="translated">選取費用計量</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSubtreeCost">
+        <source xml:lang="en">Subtree Cost</source>
+        <target state="translated">樹狀子目錄成本</target>
+      </trans-unit>
+      <trans-unit id="expensiveOperationLabel">
+        <source xml:lang="en">Metric:</source>
+        <target state="translated">計量:</target>
+      </trans-unit>
+      <trans-unit id="highlightExpensiveOperationAction">
+        <source xml:lang="en">Apply</source>
+        <target state="translated">套用</target>
+      </trans-unit>
+      <trans-unit id="highlightExpensiveOperationApplyButton">
+        <source xml:lang="en">Apply</source>
+        <target state="translated">套用</target>
+      </trans-unit>
+      <trans-unit id="highlightExpensiveOperationButtonTitle">
+        <source xml:lang="en">Highlight Expensive Operation</source>
+        <target state="translated">醒目提示成本過高的作業</target>
+      </trans-unit>
+      <trans-unit id="qp.expensiveOperationMetric.dontShowAgain">
+        <source xml:lang="en">Don't Show Again</source>
+        <target state="translated">不要再顯示</target>
+      </trans-unit>
+      <trans-unit id="qp.expensiveOperationMetric.no">
+        <source xml:lang="en">No</source>
+        <target state="translated">否</target>
+      </trans-unit>
+      <trans-unit id="qp.expensiveOperationMetric.yes">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">是</target>
+      </trans-unit>
+      <trans-unit id="queryExecutionPlan.showUpdateDefaultMetricInfo">
+        <source xml:lang="en">Set chosen metric as the default for query execution plans?</source>
+        <target state="translated">要將選取的計量設定為查詢執行計畫的預設值嗎?</target>
+      </trans-unit>
+      <trans-unit id="turnOffExpensiveHighlightingOperationAction">
+        <source xml:lang="en">Off</source>
+        <target state="translated">關閉</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/executionPlan/browser/widgets/nodeSearchWidget" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="cancelSearchAction">
+        <source xml:lang="en">Close</source>
+        <target state="translated">關閉</target>
+      </trans-unit>
+      <trans-unit id="executionPlanEnterValueTitle">
+        <source xml:lang="en">Enter search value</source>
+        <target state="translated">輸入搜尋值</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSearchTypeContains">
+        <source xml:lang="en">Contains</source>
+        <target state="translated">包含</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSearchTypeEquals">
+        <source xml:lang="en">Equals</source>
+        <target state="translated">等於</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSelectPropertyTitle">
+        <source xml:lang="en">Select property</source>
+        <target state="translated">選取屬性</target>
+      </trans-unit>
+      <trans-unit id="executionPlanSelectSearchTypeTitle">
+        <source xml:lang="en">Select search type</source>
+        <target state="translated">選取搜尋類型</target>
+      </trans-unit>
+      <trans-unit id="nextSearchItemAction">
+        <source xml:lang="en">Next Match</source>
+        <target state="translated">下一個相符項目</target>
+      </trans-unit>
+      <trans-unit id="previousSearchItemAction">
+        <source xml:lang="en">Previous Match</source>
+        <target state="translated">上一個相符項目</target>
       </trans-unit>
     </body>
   </file>
@@ -3898,9 +4859,21 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/contrib/notebook/browser/cellViews/code.component" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="cellLanguageDescription">
+        <source xml:lang="en">({0}) - Current Language</source>
+        <target state="translated">({0}) - 目前的語言</target>
+      </trans-unit>
+      <trans-unit id="cellLanguageDescriptionConfigured">
+        <source xml:lang="en">({0})</source>
+        <target state="translated">({0})</target>
+      </trans-unit>
       <trans-unit id="parametersText">
         <source xml:lang="en">Parameters</source>
         <target state="translated">參數</target>
+      </trans-unit>
+      <trans-unit id="selectCellLanguage">
+        <source xml:lang="en">Select Cell Language Mode</source>
+        <target state="translated">選取儲存格語言模式</target>
       </trans-unit>
     </body>
   </file>
@@ -3946,9 +4919,9 @@ Error: {1}</source>
         <source xml:lang="en">Markdown preview toggle - off</source>
         <target state="translated">Markdown 預覽切換 - 關閉</target>
       </trans-unit>
-      <trans-unit id="dropdownHeading">
-        <source xml:lang="en">Heading</source>
-        <target state="translated">標題</target>
+      <trans-unit id="headingDropdownLabel">
+        <source xml:lang="en">Text Size</source>
+        <target state="translated">文字大小</target>
       </trans-unit>
       <trans-unit id="highlight">
         <source xml:lang="en">Highlight</source>
@@ -4019,16 +4992,16 @@ Error: {1}</source>
         <target state="translated">轉譯元件時發生錯誤: {0}</target>
       </trans-unit>
       <trans-unit id="noMimeTypeFound">
-        <source xml:lang="en">No {0}renderer could be found for output. It has the following MIME types: {1}</source>
-        <target state="translated">找不到輸出的 {0} 轉譯器。其有下列 MIME 類型: {1}</target>
+        <source xml:lang="en">No renderer could be found for output. It has the following MIME types: {0}</source>
+        <target state="translated">找不到輸出的轉譯器。其有下列 MIME 類型: {0}</target>
+      </trans-unit>
+      <trans-unit id="noSafeMimeTypeFound">
+        <source xml:lang="en">No safe renderer could be found for output. It has the following MIME types: {0}</source>
+        <target state="translated">找不到輸出的安全轉譯器。其有下列 MIME 類型: {0}</target>
       </trans-unit>
       <trans-unit id="noSelectorFound">
         <source xml:lang="en">No component could be found for selector {0}</source>
         <target state="translated">找不到選取器 {0} 的元件</target>
-      </trans-unit>
-      <trans-unit id="safe">
-        <source xml:lang="en">safe </source>
-        <target state="translated">安全</target>
       </trans-unit>
     </body>
   </file>
@@ -4120,6 +5093,14 @@ Error: {1}</source>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/notebook/browser/models/outputProcessor" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="notebookInvalidOutputTypeError">
+        <source xml:lang="en">Output type '{0}' not recognized.</source>
+        <target state="translated">無法識別輸出類型 '{0}'。</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/contrib/notebook/browser/notebook.component" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="addCell">
@@ -4141,10 +5122,6 @@ Error: {1}</source>
       <trans-unit id="cellRunFailed">
         <source xml:lang="en">Run Cells failed - See error in output of the currently selected cell for more information.</source>
         <target state="translated">執行資料格失敗 - 如需詳細資訊，請參閱目前所選資料格之輸出中的錯誤。</target>
-      </trans-unit>
-      <trans-unit id="code">
-        <source xml:lang="en">Code</source>
-        <target state="translated">程式碼</target>
       </trans-unit>
       <trans-unit id="codeCellsPreview">
         <source xml:lang="en">Add cell</source>
@@ -4174,17 +5151,9 @@ Error: {1}</source>
         <source xml:lang="en">&lt; Previous</source>
         <target state="translated">&lt; 上一步</target>
       </trans-unit>
-      <trans-unit id="runAll">
-        <source xml:lang="en">Run Cells</source>
-        <target state="translated">執行資料格</target>
-      </trans-unit>
       <trans-unit id="runAllPreview">
         <source xml:lang="en">Run all</source>
         <target state="translated">全部執行</target>
-      </trans-unit>
-      <trans-unit id="text">
-        <source xml:lang="en">Text</source>
-        <target state="translated">文字</target>
       </trans-unit>
       <trans-unit id="textPreview">
         <source xml:lang="en">Text cell</source>
@@ -4258,6 +5227,10 @@ Error: {1}</source>
         <source xml:lang="en">The maximum number of changes stored in the undo history for the notebook Rich Text editor.</source>
         <target state="translated">筆記本 RTF 文字編輯器復原歷程記錄中儲存的變更數目上限。</target>
       </trans-unit>
+      <trans-unit id="notebook.renderTablesInHtml">
+        <source xml:lang="en">Display and save tables in HTML format in text cells instead of converting to markdown tables.</source>
+        <target state="translated">在文字儲存格中以 HTML 格式顯示和儲存資料表，而不是轉換成 Markdown 資料表。</target>
+      </trans-unit>
       <trans-unit id="notebook.richTextModeDescription">
         <source xml:lang="en">Text is displayed as Rich Text (also known as WYSIWYG).</source>
         <target state="translated">文字顯示為 RTF 文字 (也稱為 WYSIWYG)。</target>
@@ -4297,6 +5270,10 @@ Error: {1}</source>
       <trans-unit id="notebookViews.enabled">
         <source xml:lang="en">(Preview) Enable Notebook Views</source>
         <target state="translated">(預覽)啟用筆記本檢視</target>
+      </trans-unit>
+      <trans-unit id="restartNotebookKernel">
+        <source xml:lang="en">Restart Notebook Kernel</source>
+        <target state="translated">重新啟動筆記本核心</target>
       </trans-unit>
       <trans-unit id="search.actionsPosition">
         <source xml:lang="en">Controls the positioning of the actionbar on rows in the search view.</source>
@@ -4502,6 +5479,10 @@ Error: {1}</source>
         <source xml:lang="en">New Notebook</source>
         <target state="translated">新增 Notebook</target>
       </trans-unit>
+      <trans-unit id="newNotebookTask.newNotebook">
+        <source xml:lang="en">New Notebook</source>
+        <target state="translated">新增筆記本</target>
+      </trans-unit>
       <trans-unit id="newViewLabel">
         <source xml:lang="en">Create New View</source>
         <target state="translated">建立新檢視</target>
@@ -4546,6 +5527,10 @@ Error: {1}</source>
         <source xml:lang="en">Trusted</source>
         <target state="translated">受信任</target>
       </trans-unit>
+      <trans-unit id="untitledNotSupported">
+        <source xml:lang="en">Run with parameters is not supported for Untitled notebooks. Please save the notebook before continuing. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).</source>
+        <target state="translated">未命名的筆記本不支援使用參數執行。請先儲存筆記本再繼續。[深入了解](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization)。</target>
+      </trans-unit>
       <trans-unit id="untrustLabel">
         <source xml:lang="en">Not Trusted</source>
         <target state="translated">不受信任</target>
@@ -4564,8 +5549,24 @@ Error: {1}</source>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/notebook/browser/notebookEditor.component" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="loadingNotebookCompletedMessage">
+        <source xml:lang="en">Loading notebook {0} completed</source>
+        <target state="translated">已完成載入筆記本 {0}</target>
+      </trans-unit>
+      <trans-unit id="loadingNotebookMessage">
+        <source xml:lang="en">Loading notebook {0}</source>
+        <target state="translated">正在載入筆記本 {0}</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/contrib/notebook/browser/notebookExplorer/notebookExplorerViewlet" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="ads-notebook">
+        <source xml:lang="en">Icon represent a notebook.</source>
+        <target state="translated">代表筆記本的圖示。</target>
+      </trans-unit>
       <trans-unit id="notebookExplorer.name">
         <source xml:lang="en">Notebooks</source>
         <target state="translated">筆記本</target>
@@ -4850,9 +5851,21 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/contrib/objectExplorer/browser/serverTreeView" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
-      <trans-unit id="serverTree.addConnection">
-        <source xml:lang="en">Add Connection</source>
+      <trans-unit id="serverTree.newConnection">
+        <source xml:lang="en">New Connection</source>
         <target state="translated">新增連線</target>
+      </trans-unit>
+      <trans-unit id="serverTreeViewChangeNotification">
+        <source xml:lang="en">Server tree has changed. Please reload the window to see the changes.</source>
+        <target state="translated">伺服器樹狀已變更。請重新載入視窗以查看變更。</target>
+      </trans-unit>
+      <trans-unit id="serverTreeViewChangeNotification.doNotReload">
+        <source xml:lang="en">Don't Reload</source>
+        <target state="translated">不要重新載入</target>
+      </trans-unit>
+      <trans-unit id="serverTreeViewChangeNotification.reload">
+        <source xml:lang="en">Reload</source>
+        <target state="translated">重新載入</target>
       </trans-unit>
       <trans-unit id="servers.noConnections">
         <source xml:lang="en">No connections found.</source>
@@ -4870,9 +5883,17 @@ Error: {1}</source>
         <source xml:lang="en">Server Group color palette used in the Object Explorer viewlet.</source>
         <target state="translated">在物件總管 Viewlet 中使用的伺服器群組調色盤。</target>
       </trans-unit>
+      <trans-unit id="serverTree.configuration.title">
+        <source xml:lang="en">Server Tree</source>
+        <target state="translated">伺服器樹狀目錄</target>
+      </trans-unit>
+      <trans-unit id="serverTree.nodeExpansionTimeout">
+        <source xml:lang="en">The timeout in seconds for expanding a node in the Servers view</source>
+        <target state="translated">在伺服器檢視中展開節點的逾時 (以秒為單位)</target>
+      </trans-unit>
       <trans-unit id="serverTree.useAsyncServerTree">
-        <source xml:lang="en">(Preview) Use the new async server tree for the Servers view and Connection Dialog with support for new features such as dynamic node filtering.</source>
-        <target state="translated">(預覽) 針對伺服器檢視及連線對話方塊使用新的非同步伺服器樹狀結構，並支援動態節點篩選等新功能。</target>
+        <source xml:lang="en">Use the new async server tree for the Servers view and Connection Dialog with support for new features such as dynamic node filtering. Requires a restart to take effect.</source>
+        <target state="translated">針對伺服器檢視及連線對話方塊使用新的非同步伺服器樹狀結構，並支援動態節點篩選等新功能。需要重新開機才能生效。</target>
       </trans-unit>
     </body>
   </file>
@@ -4893,6 +5914,10 @@ Error: {1}</source>
       <trans-unit id="data">
         <source xml:lang="en">Data</source>
         <target state="translated">資料</target>
+      </trans-unit>
+      <trans-unit id="executionPlan">
+        <source xml:lang="en">Execution Plan</source>
+        <target state="translated">執行計畫</target>
       </trans-unit>
       <trans-unit id="notebook">
         <source xml:lang="en">Notebook</source>
@@ -5110,6 +6135,10 @@ Error: {1}</source>
         <source xml:lang="en">Chart</source>
         <target state="translated">圖表</target>
       </trans-unit>
+      <trans-unit id="copyHeaders">
+        <source xml:lang="en">Copy Headers</source>
+        <target state="translated">複製標頭</target>
+      </trans-unit>
       <trans-unit id="copySelection">
         <source xml:lang="en">Copy</source>
         <target state="translated">複製</target>
@@ -5141,6 +6170,10 @@ Error: {1}</source>
       <trans-unit id="saveAsJson">
         <source xml:lang="en">Save As JSON</source>
         <target state="translated">另存為 JSON</target>
+      </trans-unit>
+      <trans-unit id="saveAsMarkdown">
+        <source xml:lang="en">Save As Markdown</source>
+        <target state="translated">另存為 Markdown</target>
       </trans-unit>
       <trans-unit id="saveAsXml">
         <source xml:lang="en">Save As XML</source>
@@ -5194,6 +6227,18 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/contrib/query/browser/gridPanel" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="query.QueryErrorOccured">
+        <source xml:lang="en">Error occured while executing the query.</source>
+        <target state="translated">執行查詢時發生錯誤。</target>
+      </trans-unit>
+      <trans-unit id="query.QueryExecutionEnded">
+        <source xml:lang="en">Query execution completed.</source>
+        <target state="translated">查詢執行已完成。</target>
+      </trans-unit>
+      <trans-unit id="query.QueryExecutionStarted">
+        <source xml:lang="en">Query execution started.</source>
+        <target state="translated">查詢執行已開始。</target>
+      </trans-unit>
       <trans-unit id="resultsGrid">
         <source xml:lang="en">Results grid</source>
         <target state="translated">結果方格</target>
@@ -5210,6 +6255,10 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/contrib/query/browser/keyboardQueryActions" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="ToggleActualPlanKeyboardAction">
+        <source xml:lang="en">Enable/Disable Actual Execution Plan</source>
+        <target state="translated">啟用/停用實際執行計畫</target>
+      </trans-unit>
       <trans-unit id="ToggleFocusBetweenQueryEditorAndResultsAction">
         <source xml:lang="en">Toggle Focus Between Query And Results</source>
         <target state="translated">在查詢與結果之間切換焦點</target>
@@ -5222,6 +6271,10 @@ Error: {1}</source>
         <source xml:lang="en">Copy Query With Results</source>
         <target state="translated">與結果一併複製查詢</target>
       </trans-unit>
+      <trans-unit id="estimatedExecutionPlanKeyboardAction">
+        <source xml:lang="en">Display Estimated Execution Plan</source>
+        <target state="translated">顯示預估執行方案</target>
+      </trans-unit>
       <trans-unit id="focusOnCurrentQueryKeyboardAction">
         <source xml:lang="en">Focus on Current Query</source>
         <target state="translated">聚焦於目前的查詢</target>
@@ -5231,16 +6284,16 @@ Error: {1}</source>
         <target state="translated">剖析查詢</target>
       </trans-unit>
       <trans-unit id="queryActions.notConnected">
-        <source xml:lang="en">Please connect to a server</source>
-        <target state="translated">請連線至伺服器</target>
+        <source xml:lang="en">Please connect to a server before running this action.</source>
+        <target state="translated">請先連線至伺服器再執行此動作。</target>
       </trans-unit>
       <trans-unit id="queryActions.parseSyntaxFailure">
-        <source xml:lang="en">Command failed: </source>
-        <target state="translated">命令失敗:</target>
+        <source xml:lang="en">Failed to parse the query: {0}</source>
+        <target state="translated">無法剖析查詢: {0}</target>
       </trans-unit>
       <trans-unit id="queryActions.parseSyntaxSuccess">
-        <source xml:lang="en">Commands completed successfully</source>
-        <target state="translated">已成功完成命令</target>
+        <source xml:lang="en">Successfully parsed the query.</source>
+        <target state="translated">已成功剖析查詢。</target>
       </trans-unit>
       <trans-unit id="queryActions.queryResultsCopySuccess">
         <source xml:lang="en">Successfully copied query and results.</source>
@@ -5257,10 +6310,6 @@ Error: {1}</source>
       <trans-unit id="runCurrentQueryKeyboardAction">
         <source xml:lang="en">Run Current Query</source>
         <target state="translated">執行目前查詢</target>
-      </trans-unit>
-      <trans-unit id="runCurrentQueryWithActualPlanKeyboardAction">
-        <source xml:lang="en">Run Current Query with Actual Plan</source>
-        <target state="translated">使用實際計畫執行目前的查詢</target>
       </trans-unit>
       <trans-unit id="runQueryKeyboardAction">
         <source xml:lang="en">Run Query</source>
@@ -5346,6 +6395,22 @@ Error: {1}</source>
         <source xml:lang="en">Character used for enclosing text fields when saving results as CSV</source>
         <target state="translated">將結果另存為 CSV 時，用於括住文字欄位的字元</target>
       </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsExcel.includeHeaders">
+        <source xml:lang="en">When true, column headers are included when saving results as an Excel file</source>
+        <target state="translated">若設定為 true，會在將結果另存為 Excel 檔案時包含資料行標題</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsMarkdown.encoding">
+        <source xml:lang="en">File encoding used when saving results as Markdown</source>
+        <target state="translated">將結果另存為 Markdown 時，要使用的檔案編碼</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsMarkdown.includeHeaders">
+        <source xml:lang="en">When true, column headers are included when saving results as a Markdown file</source>
+        <target state="translated">若設定為 true，會在將結果另存為 Markdown 檔案時包含資料行標題</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.saveAsMarkdown.lineSeparator">
+        <source xml:lang="en">Character(s) to use to separate lines when exporting to Markdown, defaults to system line endings</source>
+        <target state="translated">匯出至 Markdown 時，要用於分隔行的字元，預設為系統行結尾</target>
+      </trans-unit>
       <trans-unit id="queryEditor.results.saveAsXml.encoding">
         <source xml:lang="en">File encoding used when saving results as XML</source>
         <target state="translated">將結果另存為 XML 時，要使用的檔案編碼</target>
@@ -5353,6 +6418,10 @@ Error: {1}</source>
       <trans-unit id="queryEditor.results.saveAsXml.formatted">
         <source xml:lang="en">When true, XML output will be formatted when saving results as XML</source>
         <target state="translated">若設定為 true，會在將結果另存為 XML 時將輸出格式化</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.results.showActionBar">
+        <source xml:lang="en">Whether to show the action bar in the query results view</source>
+        <target state="translated">是否要在查詢結果檢視中顯示動作列</target>
       </trans-unit>
       <trans-unit id="queryEditor.results.streaming">
         <source xml:lang="en">Enable results streaming; contains few minor visual issues</source>
@@ -5394,6 +6463,10 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/contrib/query/browser/queryActions" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="ExecutionPlan">
+        <source xml:lang="en">Execution Plan</source>
+        <target state="translated">執行計劃</target>
+      </trans-unit>
       <trans-unit id="actualQueryPlan">
         <source xml:lang="en">Actual</source>
         <target state="translated">實際</target>
@@ -5403,6 +6476,10 @@ Error: {1}</source>
         <target state="translated">取消</target>
       </trans-unit>
       <trans-unit id="changeConnectionDatabaseLabel">
+        <source xml:lang="en">Change</source>
+        <target state="translated">變更</target>
+      </trans-unit>
+      <trans-unit id="changeConnectionDatabaseTooltip">
         <source xml:lang="en">Change Connection</source>
         <target state="translated">變更連線</target>
       </trans-unit>
@@ -5418,6 +6495,10 @@ Error: {1}</source>
         <source xml:lang="en">Connect</source>
         <target state="translated">連線</target>
       </trans-unit>
+      <trans-unit id="disableActualPlanLabel">
+        <source xml:lang="en">Disable Actual Plan</source>
+        <target state="translated">停用實際計畫</target>
+      </trans-unit>
       <trans-unit id="disablesqlcmdLabel">
         <source xml:lang="en">Disable SQLCMD</source>
         <target state="translated">停用 SQLCMD</target>
@@ -5426,21 +6507,37 @@ Error: {1}</source>
         <source xml:lang="en">Disconnect</source>
         <target state="translated">中斷連線</target>
       </trans-unit>
+      <trans-unit id="enableActualPlanLabel">
+        <source xml:lang="en">Enable Actual Plan</source>
+        <target state="translated">啟用實際計畫</target>
+      </trans-unit>
       <trans-unit id="enablesqlcmdLabel">
         <source xml:lang="en">Enable SQLCMD</source>
         <target state="translated">啟用 SQLCMD</target>
       </trans-unit>
       <trans-unit id="estimatedQueryPlan">
-        <source xml:lang="en">Explain</source>
-        <target state="translated">說明</target>
+        <source xml:lang="en">Estimated Plan</source>
+        <target state="translated">預估方案</target>
       </trans-unit>
       <trans-unit id="newQueryTask.newQuery">
         <source xml:lang="en">New Query</source>
         <target state="translated">新增查詢</target>
       </trans-unit>
-      <trans-unit id="queryEditor.exportSqlAsNotebook">
+      <trans-unit id="query.multiSelectionNotSupported">
+        <source xml:lang="en">Running query is not supported when the editor is in multiple selection mode.</source>
+        <target state="translated">當編輯器處於多重選取模式時，不支援執行查詢。</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.exportSqlAsNotebookLabel">
+        <source xml:lang="en">To Notebook</source>
+        <target state="translated">至筆記本</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.exportSqlAsNotebookTooltip">
         <source xml:lang="en">Export as Notebook</source>
         <target state="translated">匯出為筆記本</target>
+      </trans-unit>
+      <trans-unit id="queryEditor.parse">
+        <source xml:lang="en">Parse</source>
+        <target state="translated">剖析</target>
       </trans-unit>
       <trans-unit id="runQueryLabel">
         <source xml:lang="en">Run</source>
@@ -5502,6 +6599,14 @@ Error: {1}</source>
         <source xml:lang="en">Average: {0}  Count: {1}  Sum: {2}</source>
         <target state="translated">平均: {0} 計數: {1} 總和: {2}</target>
       </trans-unit>
+      <trans-unit id="status.query.summaryTextNonNumeric">
+        <source xml:lang="en">Count: {0}  Distinct Count: {1}  Null Count: {2}</source>
+        <target state="translated">計數: {0}  相異計數: {1}  Null 計數: {2}</target>
+      </trans-unit>
+      <trans-unit id="status.query.summaryTooltip">
+        <source xml:lang="en">Average: {0}  Count: {1}  Distinct Count: {2}  Max: {3}  Min: {4}  Null Count: {5}  Sum: {6}</source>
+        <target state="translated">平均: {0}  計數: {1}  相異計數: {2}  最大值: {3}  最小值: {4}  Null 計數:  {5}  總和: {6}</target>
+      </trans-unit>
       <trans-unit id="status.query.timeElapsed">
         <source xml:lang="en">Time Elapsed</source>
         <target state="translated">已耗用時間</target>
@@ -5538,6 +6643,10 @@ Error: {1}</source>
         <source xml:lang="en">The maximum width in pixels for auto-sized columns</source>
         <target state="translated">自動調整大小之欄位的寬度上限 (像素)</target>
       </trans-unit>
+      <trans-unit id="resultsGrid.showJsonAsLink">
+        <source xml:lang="en">Whether to show cells with JSON formatted string as hyperlink. When enabled, upon click the JSON value will be opened in another tab. The default value is true.</source>
+        <target state="translated">是否將具有 JSON 格式化字串的儲存格顯示為超連結。當啟用時，按一下則 JSON 值會隨即在另一個索引標籤中開啟。預設值為 true。</target>
+      </trans-unit>
       <trans-unit id="resultsGridConfigurationTitle">
         <source xml:lang="en">Results Grid and Messages</source>
         <target state="translated">結果方格與訊息</target>
@@ -5545,318 +6654,6 @@ Error: {1}</source>
       <trans-unit id="rowHeight">
         <source xml:lang="en">Controls the row height in pixels</source>
         <target state="translated">控制列高 (像素)</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/browser/queryHistoryActions" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="queryHistory.clearLabel">
-        <source xml:lang="en">Clear All History</source>
-        <target state="translated">清除所有歷史記錄</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.delete">
-        <source xml:lang="en">Delete</source>
-        <target state="translated">刪除</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.disableCapture">
-        <source xml:lang="en">Pause Query History Capture</source>
-        <target state="translated">暫停查詢歷史記錄擷取</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.enableCapture">
-        <source xml:lang="en">Start Query History Capture</source>
-        <target state="translated">開始查詢歷史記錄擷取</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.openQuery">
-        <source xml:lang="en">Open Query</source>
-        <target state="translated">開啟查詢</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.runQuery">
-        <source xml:lang="en">Run Query</source>
-        <target state="translated">執行查詢</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.toggleCaptureLabel">
-        <source xml:lang="en">Toggle Query History capture</source>
-        <target state="translated">切換查詢歷史記錄擷取</target>
-      </trans-unit>
-      <trans-unit id="toggleQueryHistory">
-        <source xml:lang="en">Toggle Query History</source>
-        <target state="translated">切換查詢歷史記錄</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/browser/queryHistoryRenderer" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="failed">
-        <source xml:lang="en">failed</source>
-        <target state="translated">失敗</target>
-      </trans-unit>
-      <trans-unit id="succeeded">
-        <source xml:lang="en">succeeded</source>
-        <target state="translated">成功</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/browser/queryHistoryView" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="noQueriesMessage">
-        <source xml:lang="en">No queries to display.</source>
-        <target state="translated">沒有查詢可顯示。</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.regTreeAriaLabel">
-        <source xml:lang="en">Query History</source>
-        <note>QueryHistory</note>
-        <target state="translated">查詢歷史記錄</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryHistory/electron-browser/queryHistory" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="miViewQueryHistory">
-        <source xml:lang="en">&amp;&amp;Query History</source>
-        <note>&amp;&amp; denotes a mnemonic</note>
-        <target state="translated">查詢歷史記錄(&amp;&amp;Q)</target>
-      </trans-unit>
-      <trans-unit id="queryHistory">
-        <source xml:lang="en">Query History</source>
-        <target state="translated">查詢歷史記錄</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.clearLabel">
-        <source xml:lang="en">Clear All History</source>
-        <target state="translated">清除所有歷史記錄</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.disableCapture">
-        <source xml:lang="en">Pause Query History Capture</source>
-        <target state="translated">暫停查詢歷史記錄擷取</target>
-      </trans-unit>
-      <trans-unit id="queryHistory.enableCapture">
-        <source xml:lang="en">Start Query History Capture</source>
-        <target state="translated">開始查詢歷史記錄擷取</target>
-      </trans-unit>
-      <trans-unit id="queryHistoryCaptureEnabled">
-        <source xml:lang="en">Whether Query History capture is enabled. If false queries executed will not be captured.</source>
-        <target state="translated">是否啟用了查詢歷史記錄擷取。若未啟用，將不會擷取已經執行的查詢。</target>
-      </trans-unit>
-      <trans-unit id="queryHistoryConfigurationTitle">
-        <source xml:lang="en">QueryHistory</source>
-        <target state="translated">查詢歷史記錄</target>
-      </trans-unit>
-      <trans-unit id="viewCategory">
-        <source xml:lang="en">View</source>
-        <target state="translated">檢視</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryPlan/browser/queryPlan" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="queryPlanTitle">
-        <source xml:lang="en">Query Plan</source>
-        <target state="translated">查詢計劃</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryPlan/browser/queryPlanEditor" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="queryPlanEditor">
-        <source xml:lang="en">Query Plan Editor</source>
-        <target state="translated">查詢計畫編輯器</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryPlan/browser/topOperations" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="topOperations.actualExecutions">
-        <source xml:lang="en">Actual Executions</source>
-        <target state="translated">實際執行次數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.actualRebinds">
-        <source xml:lang="en">Actual Rebinds</source>
-        <target state="translated">實際重新繫結數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.actualRewinds">
-        <source xml:lang="en">Actual Rewinds</source>
-        <target state="translated">實際倒轉數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.actualRows">
-        <source xml:lang="en">Actual Rows</source>
-        <target state="translated">實際資料列數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estCPUCost">
-        <source xml:lang="en">Est CPU Cost</source>
-        <target state="translated">估計 CPU 成本</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estCost">
-        <source xml:lang="en">Est Cost</source>
-        <target state="translated">估計成本</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estIOCost">
-        <source xml:lang="en">Est IO Cost</source>
-        <target state="translated">估計 IO 成本</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estRebinds">
-        <source xml:lang="en">Est Rebinds</source>
-        <target state="translated">估計重新繫結數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estRewinds">
-        <source xml:lang="en">Est Rewinds</source>
-        <target state="translated">估計倒轉數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estRows">
-        <source xml:lang="en">Est Rows</source>
-        <target state="translated">估計資料列數</target>
-      </trans-unit>
-      <trans-unit id="topOperations.estSubtreeCost">
-        <source xml:lang="en">Est Subtree Cost</source>
-        <target state="translated">估計的樹狀子目錄成本</target>
-      </trans-unit>
-      <trans-unit id="topOperations.object">
-        <source xml:lang="en">Object</source>
-        <target state="translated">物件</target>
-      </trans-unit>
-      <trans-unit id="topOperations.operation">
-        <source xml:lang="en">Operation</source>
-        <target state="translated">作業</target>
-      </trans-unit>
-      <trans-unit id="topOperations.parallel">
-        <source xml:lang="en">Parallel</source>
-        <target state="translated">平行作業</target>
-      </trans-unit>
-      <trans-unit id="topOperations.partitioned">
-        <source xml:lang="en">Partitioned</source>
-        <target state="translated">已分割</target>
-      </trans-unit>
-      <trans-unit id="topOperationsTitle">
-        <source xml:lang="en">Top Operations</source>
-        <target state="translated">最前幾項操作</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/planHeader" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="planHeaderIndexAndCost">
-        <source xml:lang="en">Query {0}: Query cost (relative to the script): {1}%</source>
-        <note>{0} is the index of the graph in the execution plan tab
-{1} is the relative cost in percentage of the graph to the rest of the graphs in execution plan tab </note>
-        <target state="translated">查詢 {0}: 查詢成本 (相對於指令碼): {1}%</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/queryPlan" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="openQueryAction">
-        <source xml:lang="en">Open Query</source>
-        <target state="translated">開啟查詢</target>
-      </trans-unit>
-      <trans-unit id="queryPlanCustomZoom">
-        <source xml:lang="en">Custom Zoom</source>
-        <target state="translated">自訂縮放</target>
-      </trans-unit>
-      <trans-unit id="queryPlanFitGraphLabel">
-        <source xml:lang="en">Zoom to fit</source>
-        <target state="translated">縮放至適當比例</target>
-      </trans-unit>
-      <trans-unit id="queryPlanOpenGraphFile">
-        <source xml:lang="en">Open Plan File</source>
-        <target state="new">Open Plan File</target>
-      </trans-unit>
-      <trans-unit id="queryPlanPropertiesActionLabel">
-        <source xml:lang="en">Properties</source>
-        <target state="translated">屬性</target>
-      </trans-unit>
-      <trans-unit id="queryPlanSavePlanXML">
-        <source xml:lang="en">Save Plan File</source>
-        <target state="new">Save Plan File</target>
-      </trans-unit>
-      <trans-unit id="queryPlanSearchNodeAction">
-        <source xml:lang="en">SearchNode</source>
-        <target state="translated">SearchNode</target>
-      </trans-unit>
-      <trans-unit id="queryPlanTitle">
-        <source xml:lang="en">Query Plan (Preview)</source>
-        <target state="new">Query Plan (Preview)</target>
-      </trans-unit>
-      <trans-unit id="queryPlanZoomInActionLabel">
-        <source xml:lang="en">Zoom In</source>
-        <target state="translated">放大</target>
-      </trans-unit>
-      <trans-unit id="queryPlanZoomOutActionLabel">
-        <source xml:lang="en">Zoom Out</source>
-        <target state="translated">縮小</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/queryPlanPropertiesView" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="nodePropertyViewNameNameColumnHeader">
-        <source xml:lang="en">Name</source>
-        <target state="new">Name</target>
-      </trans-unit>
-      <trans-unit id="nodePropertyViewNameValueColumnHeader">
-        <source xml:lang="en">Value</source>
-        <target state="new">Value</target>
-      </trans-unit>
-      <trans-unit id="nodePropertyViewTitle">
-        <source xml:lang="en">Properties</source>
-        <target state="new">Properties</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertiesEdgeOperationName">
-        <source xml:lang="en">Edge</source>
-        <target state="new">Edge</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertyViewClose">
-        <source xml:lang="en">Close</source>
-        <target state="new">Close</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertyViewSortAlphabetically">
-        <source xml:lang="en">Alphabetical</source>
-        <target state="new">Alphabetical</target>
-      </trans-unit>
-      <trans-unit id="executionPlanPropertyViewSortByDisplayOrder">
-        <source xml:lang="en">Categorized</source>
-        <target state="new">Categorized</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/widgets/customZoomWidget" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="cancelCustomZoomAction">
-        <source xml:lang="en">Close (Escape)</source>
-        <target state="new">Close (Escape)</target>
-      </trans-unit>
-      <trans-unit id="invalidCustomZoomError">
-        <source xml:lang="en">Select a zoom value between 1 to 200</source>
-        <target state="new">Select a zoom value between 1 to 200</target>
-      </trans-unit>
-      <trans-unit id="qpZoomValueLabel">
-        <source xml:lang="en">Zoom (percent)</source>
-        <target state="new">Zoom (percent)</target>
-      </trans-unit>
-      <trans-unit id="zoomAction">
-        <source xml:lang="en">Zoom (Enter)</source>
-        <target state="new">Zoom (Enter)</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/queryplan2/browser/widgets/nodeSearchWidget" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="cancelSearchAction">
-        <source xml:lang="en">Close (Escape)</source>
-        <target state="new">Close (Escape)</target>
-      </trans-unit>
-      <trans-unit id="nextSearchItemAction">
-        <source xml:lang="en">Next Match (Enter)</source>
-        <target state="new">Next Match (Enter)</target>
-      </trans-unit>
-      <trans-unit id="previousSearchItemAction">
-        <source xml:lang="en">Previous Match (Shift+Enter)</source>
-        <target state="new">Previous Match (Shift+Enter)</target>
-      </trans-unit>
-      <trans-unit id="executionPlanSearchTypeContains">
-        <source xml:lang="en">Contains</source>
-        <target state="new">Contains</target>
-      </trans-unit>
-      <trans-unit id="executionPlanSearchTypeEquals">
-        <source xml:lang="en">Equals</source>
-        <target state="new">Equals</target>
       </trans-unit>
     </body>
   </file>
@@ -5873,6 +6670,10 @@ Error: {1}</source>
       <trans-unit id="resourceViewer">
         <source xml:lang="en">Resource Viewer</source>
         <target state="translated">資源檢視器</target>
+      </trans-unit>
+      <trans-unit id="resourceViewerIcon">
+        <source xml:lang="en">Icon for resource viewer.</source>
+        <target state="translated">資源檢視器的圖示。</target>
       </trans-unit>
     </body>
   </file>
@@ -6030,21 +6831,13 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/contrib/tableDesigner/browser/actions" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
-      <trans-unit id="tableDesigner.generateScript">
-        <source xml:lang="en">Generate Script</source>
-        <target state="translated">產生指令碼</target>
-      </trans-unit>
       <trans-unit id="tableDesigner.publishTableChanges">
         <source xml:lang="en">Publish Changes...</source>
         <target state="translated">發佈變更...</target>
       </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/contrib/tableDesigner/browser/tableDesignerEditor" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="tableDesigner.PreviewFeature">
-        <source xml:lang="en">Preview feature</source>
-        <target state="translated">預覽功能</target>
+      <trans-unit id="tableDesigner.saveTableChanges">
+        <source xml:lang="en">Save</source>
+        <target state="translated">儲存</target>
       </trans-unit>
     </body>
   </file>
@@ -6203,6 +6996,22 @@ Error: {1}</source>
       <trans-unit id="enablePreviewFeatures.yes">
         <source xml:lang="en">Yes (recommended)</source>
         <target state="translated">是 (建議)</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/contrib/welcome/notifyEncryption/notifyEncryptionDialog" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="notifyEncryption.message">
+        <source xml:lang="en">Azure Data Studio now has encryption enabled by default for all SQL Server connections. This may result in your existing connections no longer working unless certain Encryption related connection properties are changed.{0}We recommend you review the link below for more details.</source>
+        <target state="translated">Azure Data Studio 現在會針對所有 SQL Server 連線預設啟用加密。除非您變更特定加密相關連線屬性，否則這可能會導致現有的連線無法再使用。{0}建議您檢閱下列連結以了解更多詳細資料。</target>
+      </trans-unit>
+      <trans-unit id="notifyEncryption.moreInfoLink">
+        <source xml:lang="en">More information</source>
+        <target state="translated">詳細資訊</target>
+      </trans-unit>
+      <trans-unit id="notifyEncryption.title">
+        <source xml:lang="en">Important Update</source>
+        <target state="translated">重要更新</target>
       </trans-unit>
     </body>
   </file>
@@ -6566,6 +7375,49 @@ Error: {1}</source>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/contrib/welcome/page/browser/welcomePage.contribution" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="miWelcome">
+        <source xml:lang="en">&amp;&amp;Welcome</source>
+        <note>&amp;&amp; denotes a mnemonic</note>
+        <target state="translated">歡迎使用(&amp;&amp;W)</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor">
+        <source xml:lang="en">Controls which editor is shown at startup, if none are restored from the previous session.</source>
+        <target state="translated">控制在啟動時顯示哪個編輯器，若沒有，則從上個工作階段還原。</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.newUntitledFile">
+        <source xml:lang="en">Open a new untitled file (only applies when opening an empty window).</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">開啟一個新的無標題檔案 (僅在開啟空白視窗時適用)。</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.none">
+        <source xml:lang="en">Start without an editor.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">不使用編輯器開始。</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.readme">
+        <source xml:lang="en">Open the README when opening a folder that contains one, fallback to 'welcomePage' otherwise. Note: This is only observed as a global configuration, it will be ignored if set in a workspace or folder configuration.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">開啟資料夾時，如果當中包含讀我檔案就開啟讀我檔案，否則改為開啟 'welcomePage'。注意: 只會監看全域設定中的設定，如果是在工作區或資料夾設定中的設定，則會忽略。</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.welcomePage">
+        <source xml:lang="en">Open the Welcome page, with content to aid in getting started with Azure Data Studio and extensions.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">開啟包含協助開始使用 Azure Data Studio 和延伸模組內容的歡迎頁面。</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.welcomePageInEmptyWorkbench">
+        <source xml:lang="en">Open the Welcome page when opening an empty workbench.</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">在開啟空的工作台時開啟歡迎頁面。</target>
+      </trans-unit>
+      <trans-unit id="workbench.startupEditor.welcomePageWithTour">
+        <source xml:lang="en">Open the welcome page with Getting Started Tour (default)</source>
+        <note>This is the description for a setting. Values surrounded by single quotes are not to be translated.</note>
+        <target state="translated">使用使用者入門導覽 (預設) 開啟歡迎頁面</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/services/accountManagement/browser/accountDialog" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="accountDialog.addConnection">
@@ -6579,6 +7431,10 @@ Error: {1}</source>
       <trans-unit id="accountDialog.didNotPickAuthProvider">
         <source xml:lang="en">You didn't select any authentication provider. Please try again.</source>
         <target state="translated">您未選取任何驗證提供者。請再試一次。</target>
+      </trans-unit>
+      <trans-unit id="accountDialog.loadingProviderLabel">
+        <source xml:lang="en">Loading accounts...</source>
+        <target state="translated">正在載入帳戶...</target>
       </trans-unit>
       <trans-unit id="accountDialog.noAccountLabel">
         <source xml:lang="en">There is no linked account. Please add an account.</source>
@@ -6620,13 +7476,33 @@ Error: {1}</source>
         <source xml:lang="en">Close</source>
         <target state="translated">關閉</target>
       </trans-unit>
+      <trans-unit id="addAccountFailedCodeMessage">
+        <source xml:lang="en">{0} 
+Error Message: {1}</source>
+        <target state="translated">{0} 
+錯誤訊息: {1}</target>
+      </trans-unit>
+      <trans-unit id="addAccountFailedGenericMessage">
+        <source xml:lang="en">Adding account failed, check Azure Accounts log for more info.</source>
+        <target state="translated">新增帳戶失敗，如需詳細資訊，請查看 Azure 帳戶記錄。</target>
+      </trans-unit>
       <trans-unit id="loggingIn">
         <source xml:lang="en">Adding account...</source>
         <target state="translated">正在新增帳戶...</target>
       </trans-unit>
-      <trans-unit id="refreshFailed">
+      <trans-unit id="refreshAccountFailedGenericMessage">
+        <source xml:lang="en">Refreshing account failed, check Azure Accounts log for more info.</source>
+        <target state="translated">重新整理帳戶失敗，如需詳細資訊，請查看 Azure 帳戶記錄。</target>
+      </trans-unit>
+      <trans-unit id="refreshCanceled">
         <source xml:lang="en">Refresh account was canceled by the user</source>
         <target state="translated">使用者已取消重新整理帳戶</target>
+      </trans-unit>
+      <trans-unit id="refreshFailed">
+        <source xml:lang="en">{0} 
+Error Message: {1}</source>
+        <target state="translated">{0} 
+錯誤訊息: {1}</target>
       </trans-unit>
     </body>
   </file>
@@ -6691,6 +7567,62 @@ Error: {1}</source>
       <trans-unit id="asmt.providerIdNotValidError">
         <source xml:lang="en">Connection is required in order to interact with Assessment Service</source>
         <target state="translated">需要連線才能與評定服務互動</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/backupRestoreUrlBrowser/browser/urlBrowserDialog" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="backupRestoreUrlBrowserDialog.account">
+        <source xml:lang="en">Azure Account</source>
+        <target state="translated">Azure 帳戶</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.backupFile">
+        <source xml:lang="en">Backup file</source>
+        <target state="translated">備份檔案</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.blobContainer">
+        <source xml:lang="en">Blob container</source>
+        <target state="translated">Blob 容器</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.linkAccount">
+        <source xml:lang="en">Link account</source>
+        <target state="translated">連結帳戶</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.sharedAccessSignature">
+        <source xml:lang="en">Shared access signature generated</source>
+        <target state="translated">已產生共用存取簽章</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.sharedAccessSignatureButton">
+        <source xml:lang="en">Create Credentials</source>
+        <target state="translated">建立認證</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.storageAccount">
+        <source xml:lang="en">Storage account</source>
+        <target state="translated">儲存體帳戶</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.subscription">
+        <source xml:lang="en">Azure subscription</source>
+        <target state="translated">Azure 訂用帳戶</target>
+      </trans-unit>
+      <trans-unit id="backupRestoreUrlBrowserDialog.tenant">
+        <source xml:lang="en">Azure AD Tenant</source>
+        <target state="translated">Azure AD 租用戶</target>
+      </trans-unit>
+      <trans-unit id="fileBrowser.discard">
+        <source xml:lang="en">Discard</source>
+        <target state="translated">捨棄</target>
+      </trans-unit>
+      <trans-unit id="fileBrowser.ok">
+        <source xml:lang="en">OK</source>
+        <target state="translated">確定</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/backupRestoreUrlBrowser/browser/urlBrowserDialogService" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="filebrowser.selectBlob">
+        <source xml:lang="en">Select a blob</source>
+        <target state="translated">選取 Blob</target>
       </trans-unit>
     </body>
   </file>
@@ -6824,6 +7756,10 @@ Error: {1}</source>
         <source xml:lang="en">If you have previously connected you may need to re-run kinit.</source>
         <target state="translated">如果您之前曾連線，則可能需要重新執行 kinit。</target>
       </trans-unit>
+      <trans-unit id="runKinit">
+        <source xml:lang="en">Run Kinit</source>
+        <target state="translated">執行 Kinit</target>
+      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/services/connection/browser/connectionDialogWidget" source-language="en" datatype="plaintext" target-language="zh-Hant">
@@ -6872,6 +7808,10 @@ Error: {1}</source>
         <source xml:lang="en">Are you sure you want to cancel this connection?</source>
         <target state="translated">您確定要取消此連線嗎?</target>
       </trans-unit>
+      <trans-unit id="connection.extensionNotInstalled">
+        <source xml:lang="en">The extension '{0}' is required in order to connect to this resource. Do you want to install it?</source>
+        <target state="translated">需要延伸模組 '{0}' 才能連線到此資源。是否要安裝?</target>
+      </trans-unit>
       <trans-unit id="connection.invalidConnectionResult">
         <source xml:lang="en">Connection result is invalid</source>
         <target state="translated">連線結果無效。</target>
@@ -6888,9 +7828,17 @@ Error: {1}</source>
         <source xml:lang="en">Failed to refresh Azure account token for connection</source>
         <target state="translated">無法重新整理 Azure 帳戶權杖以建立連線</target>
       </trans-unit>
+      <trans-unit id="connection.unknownProvider">
+        <source xml:lang="en">Unknown provider '{0}'</source>
+        <target state="translated">未知的提供者 '{0}'</target>
+      </trans-unit>
       <trans-unit id="connection.unsupportedServerVersionWarning">
         <source xml:lang="en">The server version is not supported by Azure Data Studio, you may still connect to it but some features in Azure Data Studio might not work as expected.</source>
         <target state="translated">Azure Data Studio 不支援伺服器版本，您仍然可以連接到伺服器版本，但 Azure Data Studio 中的某些功能可能無法如預期方式執行。</target>
+      </trans-unit>
+      <trans-unit id="connectionDialog.connectionProviderNotSupported">
+        <source xml:lang="en">The extension that supports provider type '{0}' is not currently installed. Do you want to view the extensions?</source>
+        <target state="translated">目前未安裝支援提供者類型 '{0}' 之延伸模組。您要檢視延伸模組嗎?</target>
       </trans-unit>
       <trans-unit id="connectionManagementService.noProviderForUri">
         <source xml:lang="en">Could not find provider for uri: {0}</source>
@@ -6920,6 +7868,14 @@ Error: {1}</source>
         <source xml:lang="en">Advanced...</source>
         <target state="translated">進階...</target>
       </trans-unit>
+      <trans-unit id="boolean.false">
+        <source xml:lang="en">False</source>
+        <target state="translated">False</target>
+      </trans-unit>
+      <trans-unit id="boolean.true">
+        <source xml:lang="en">True</source>
+        <target state="translated">True</target>
+      </trans-unit>
       <trans-unit id="connection.azureAccountDropdownLabel">
         <source xml:lang="en">Account</source>
         <target state="translated">帳戶</target>
@@ -6936,9 +7892,21 @@ Error: {1}</source>
         <source xml:lang="en">Add an account...</source>
         <target state="translated">新增帳戶...</target>
       </trans-unit>
-      <trans-unit id="connectionWidget.fieldWillBeTrimmed">
-        <source xml:lang="en">{0} will be trimmed.</source>
-        <target state="translated">{0} 將受到修剪。</target>
+      <trans-unit id="connectionWidget.ConnectionStringError">
+        <source xml:lang="en">Failed to parse the connection string. {0}</source>
+        <target state="translated">無法剖析連接字串。{0}</target>
+      </trans-unit>
+      <trans-unit id="connectionWidget.ConnectionStringUndefined">
+        <source xml:lang="en">No connection info returned.</source>
+        <target state="translated">未傳回連線資訊。</target>
+      </trans-unit>
+      <trans-unit id="connectionWidget.Error">
+        <source xml:lang="en">Error</source>
+        <target state="translated">錯誤</target>
+      </trans-unit>
+      <trans-unit id="connectionWidget.connectionString">
+        <source xml:lang="en">Connection string</source>
+        <target state="translated">連接字串</target>
       </trans-unit>
       <trans-unit id="connectionWidget.invalidAzureAccount">
         <source xml:lang="en">You must select an account</source>
@@ -6994,6 +7962,58 @@ Error: {1}</source>
       </trans-unit>
     </body>
   </file>
+  <file original="src/sql/workbench/services/connection/browser/passwordChangeDialog" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="passwordChangeDialog.Message1">
+        <source xml:lang="en">Password must be changed for '{0}' to continue logging into '{1}'.</source>
+        <target state="translated">必須變更 '{0}' 的密碼，才能繼續登入 '{1}'。</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.Message2">
+        <source xml:lang="en">Please enter a new password below:</source>
+        <target state="translated">請在下方輸入新密碼:</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.cancel">
+        <source xml:lang="en">Cancel</source>
+        <target state="translated">取消</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.confirmPassword">
+        <source xml:lang="en">Confirm password:</source>
+        <target state="translated">確認密碼:</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.connecting">
+        <source xml:lang="en">Connecting</source>
+        <target state="translated">正在連線</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.errorHeader">
+        <source xml:lang="en">Failure when attempting to change password</source>
+        <target state="translated">嘗試變更密碼時失敗</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.errorPasswordMismatchErrorMessage">
+        <source xml:lang="en">Passwords entered do not match</source>
+        <target state="translated">輸入的密碼不相符</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.errorPasswordMismatchRecoveryInstructions">
+        <source xml:lang="en">Press OK and enter the exact same password in both boxes.</source>
+        <target state="translated">請按 [確定]，然後在兩個方塊中輸入完全相同的密碼。</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.newPassword">
+        <source xml:lang="en">New password:</source>
+        <target state="translated">新密碼:</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.ok">
+        <source xml:lang="en">OK</source>
+        <target state="translated">確定</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.passwordChangeInProgress">
+        <source xml:lang="en">Password change already in progress</source>
+        <target state="translated">密碼變更已在進行中</target>
+      </trans-unit>
+      <trans-unit id="passwordChangeDialog.title">
+        <source xml:lang="en">Change Password</source>
+        <target state="translated">變更密碼</target>
+      </trans-unit>
+    </body>
+  </file>
   <file original="src/sql/workbench/services/dashboard/browser/newDashboardTabDialogImpl" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="newDashboardTab.cancel">
@@ -7019,6 +8039,15 @@ Error: {1}</source>
       <trans-unit id="wizardPageNumberDisplayText">
         <source xml:lang="en">Step {0}</source>
         <target state="translated">步驟 {0}</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/dialog/browser/wizardNavigation.component" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="wizardNavigation.stepName">
+        <source xml:lang="en">Step {0}: {1}</source>
+        <note>Name of a step in wizard. {0}: step number, {1}: step name.</note>
+        <target state="translated">步驟 {0}: {1}</target>
       </trans-unit>
     </body>
   </file>
@@ -7060,6 +8089,10 @@ Error: {1}</source>
         <source xml:lang="en">OK</source>
         <target state="translated">確定</target>
       </trans-unit>
+      <trans-unit id="errorMessageDialog.readMore">
+        <source xml:lang="en">Read More</source>
+        <target state="translated">深入了解</target>
+      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/services/errorMessage/browser/errorMessageService" source-language="en" datatype="plaintext" target-language="zh-Hant">
@@ -7079,6 +8112,30 @@ Error: {1}</source>
       <trans-unit id="warning">
         <source xml:lang="en">Warning</source>
         <target state="translated">警告</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/executionPlan/common/executionPlanService" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="executionPlanService.ensureCapabilitiesRegistered">
+        <source xml:lang="en">Provider with id {0} was not registered after 30 seconds.</source>
+        <target state="translated">識別碼為 {0} 的提供者未在 30 秒後登錄。</target>
+      </trans-unit>
+      <trans-unit id="executionPlanService.ensureFileExtensionHandlerRegistered">
+        <source xml:lang="en">Execution plan provider which supports file format '{0}' was not registered after 30 seconds.</source>
+        <target state="translated">支援檔案格式 '{0}' 的執行計畫提供者未在 30 秒後登錄。</target>
+      </trans-unit>
+      <trans-unit id="noHandlerRegistered">
+        <source xml:lang="en">No valid execution plan handler is registered</source>
+        <target state="translated">未登錄有效的執行計畫處理常式</target>
+      </trans-unit>
+      <trans-unit id="providerIdNotValidError">
+        <source xml:lang="en">Valid provider is required in order to interact with ExecutionPlanService</source>
+        <target state="translated">需要有效的提供者才能與 ExecutionPlanService 互動</target>
+      </trans-unit>
+      <trans-unit id="selectExecutionPlanProvider">
+        <source xml:lang="en">Select a provider to open execution plan</source>
+        <target state="translated">選取要開啟執行計畫的提供者</target>
       </trans-unit>
     </body>
   </file>
@@ -7303,6 +8360,18 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/services/notebook/browser/models/cell" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="cellExecutionComplete">
+        <source xml:lang="en">Cell execution is complete</source>
+        <target state="translated">完成儲存格執行</target>
+      </trans-unit>
+      <trans-unit id="cellExecutionStarted">
+        <source xml:lang="en">Cell execution started</source>
+        <target state="translated">儲存格執行已開始</target>
+      </trans-unit>
+      <trans-unit id="codeCellLabel">
+        <source xml:lang="en">Code Cell {0}</source>
+        <target state="translated">儲存格代碼 {0}</target>
+      </trans-unit>
       <trans-unit id="commandSuccessful">
         <source xml:lang="en">Command executed successfully</source>
         <target state="translated">已成功執行命令</target>
@@ -7310,6 +8379,10 @@ Error: {1}</source>
       <trans-unit id="executionCanceled">
         <source xml:lang="en">Query execution was canceled</source>
         <target state="translated">已取消執行查詢</target>
+      </trans-unit>
+      <trans-unit id="mdCellLabel">
+        <source xml:lang="en">Markdown Cell {0}</source>
+        <target state="translated">Markdown 儲存格 {0}</target>
       </trans-unit>
       <trans-unit id="noDefaultKernel">
         <source xml:lang="en">No kernel is available for this notebook</source>
@@ -7368,8 +8441,16 @@ Error: {1}</source>
         <target state="translated">啟動筆記本工作階段時發生錯誤</target>
       </trans-unit>
       <trans-unit id="kernelRequiresConnection">
-        <source xml:lang="en">Kernel {0} was not found. The default kernel will be used instead.</source>
+        <source xml:lang="en">Kernel '{0}' was not found. The default kernel will be used instead.</source>
         <target state="translated">找不到核心 {0}。會改用預設核心。</target>
+      </trans-unit>
+      <trans-unit id="kernelRestartFailed">
+        <source xml:lang="en">Kernel restart failed: {0}</source>
+        <target state="translated">核心重新開機失敗: {0}</target>
+      </trans-unit>
+      <trans-unit id="kernelRestartedSuccessfully">
+        <source xml:lang="en">Kernel restarted successfully</source>
+        <target state="translated">已成功重新啟動核心</target>
       </trans-unit>
     </body>
   </file>
@@ -7417,6 +8498,10 @@ Error: {1}</source>
         <source xml:lang="en">Please select a connection to run cells for this kernel</source>
         <target state="translated">請選取要為此核心執行資料格的連線</target>
       </trans-unit>
+      <trans-unit id="savedKernelNotSupported">
+        <source xml:lang="en">This notebook's '{0}' kernel is not supported. Defaulting to SQL kernel instead.</source>
+        <target state="translated">不支援此筆記本的 '{0}' 核心。改為預設為 SQL 核心。</target>
+      </trans-unit>
       <trans-unit id="shutdownClientSessionError">
         <source xml:lang="en">A client session error occurred when closing the notebook: {0}</source>
         <target state="translated">關閉筆記本時發生用戶端工作階段錯誤: {0}</target>
@@ -7432,6 +8517,10 @@ Error: {1}</source>
       <trans-unit id="executeProviderTimeout">
         <source xml:lang="en">Waiting for Execute Provider availability timed out for notebook provider '{0}'</source>
         <target state="translated">正在等候筆記本提供者 '{0}' 之執行提供者顯示狀態的逾時</target>
+      </trans-unit>
+      <trans-unit id="failedToCreateNotebookInput">
+        <source xml:lang="en">Failed to create notebook input for provider '{0}'</source>
+        <target state="translated">無法建立提供者 '{0}' 的筆記本輸入</target>
       </trans-unit>
       <trans-unit id="notebookServiceNoProvider">
         <source xml:lang="en">Notebook provider does not exist</source>
@@ -7453,6 +8542,10 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/services/notebook/browser/notebookViews/notebookViewModel" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="Untitled">
+        <source xml:lang="en">Untitled</source>
+        <target state="translated">未命名</target>
+      </trans-unit>
       <trans-unit id="notebookView.nameTaken">
         <source xml:lang="en">A view with the name {0} already exists in this notebook.</source>
         <target state="translated">此筆記本中已有名稱為 {0} 的檢視。</target>
@@ -7469,6 +8562,10 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/services/notebook/browser/sql/sqlSessionManager" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="SqlKernelRestartNotSupported">
+        <source xml:lang="en">SQL kernel restart not supported</source>
+        <target state="translated">不支援 SQL 核心重新啟動</target>
+      </trans-unit>
       <trans-unit id="connectionRequired">
         <source xml:lang="en">A connection must be chosen to run notebook cells</source>
         <target state="translated">必須選擇連線來執行筆記本資料格</target>
@@ -7517,29 +8614,21 @@ Error: {1}</source>
         <source xml:lang="en">Cell type {0} unknown</source>
         <target state="translated">資料格類型 {0} 不明</target>
       </trans-unit>
-      <trans-unit id="unrecognizedOutput">
-        <source xml:lang="en">Output type {0} not recognized</source>
-        <target state="translated">無法識別輸出類型 {0}</target>
-      </trans-unit>
-      <trans-unit id="unrecognizedOutputType">
-        <source xml:lang="en">Output type {0} not recognized</source>
-        <target state="translated">無法識別輸出類型 {0}</target>
-      </trans-unit>
     </body>
   </file>
   <file original="src/sql/workbench/services/notebook/common/notebookRegistry" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
       <trans-unit id="carbon.extension.contributes.notebook.executionTarget">
-        <source xml:lang="en">Optional execution target this magic indicates, for example Spark vs SQL</source>
-        <target state="translated">這個 magic 指示的選擇性執行目標，例如 Spark vs SQL</target>
+        <source xml:lang="en">Optional execution target this magic indicates, for example Python vs SQL</source>
+        <target state="translated">這個 magic 指示的選擇性執行目標，例如 Python vs SQL</target>
       </trans-unit>
       <trans-unit id="carbon.extension.contributes.notebook.fileExtensions">
         <source xml:lang="en">What file extensions should be registered to this notebook provider</source>
         <target state="translated">應向此筆記本提供者註冊的檔案副檔名</target>
       </trans-unit>
       <trans-unit id="carbon.extension.contributes.notebook.kernels">
-        <source xml:lang="en">Optional set of kernels this is valid for, e.g. python3, pyspark, sql</source>
-        <target state="translated">適用於像是 python3、pyspark、sql 等等的選擇性核心集</target>
+        <source xml:lang="en">Optional set of kernels this is valid for, e.g. python3, sql</source>
+        <target state="translated">適用於像是 Python3、SQL 等等的選擇性核心集</target>
       </trans-unit>
       <trans-unit id="carbon.extension.contributes.notebook.language">
         <source xml:lang="en">The cell language to be used if this cell magic is included in the cell</source>
@@ -7557,10 +8646,6 @@ Error: {1}</source>
         <source xml:lang="en">What kernels should be standard with this notebook provider</source>
         <target state="translated">應為此筆記本提供者之標準的核心</target>
       </trans-unit>
-      <trans-unit id="providerNotInRegistryError">
-        <source xml:lang="en">The specified provider '{0}' is not present in the notebook registry.</source>
-        <target state="translated">指定的提供者 '{0}' 不存在於筆記本登錄中。</target>
-      </trans-unit>
       <trans-unit id="vscode.extension.contributes.notebook.languagemagics">
         <source xml:lang="en">Contributes notebook language.</source>
         <target state="translated">提供筆記本語言。</target>
@@ -7568,14 +8653,6 @@ Error: {1}</source>
       <trans-unit id="vscode.extension.contributes.notebook.providersDescriptions">
         <source xml:lang="en">Contributes notebook provider descriptions.</source>
         <target state="translated">提供筆記本提供者描述。</target>
-      </trans-unit>
-    </body>
-  </file>
-  <file original="src/sql/workbench/services/objectExplorer/browser/asyncServerTreeRenderer" source-language="en" datatype="plaintext" target-language="zh-Hant">
-    <body>
-      <trans-unit id="loading">
-        <source xml:lang="en">Loading...</source>
-        <target state="translated">正在載入...</target>
       </trans-unit>
     </body>
   </file>
@@ -7613,9 +8690,25 @@ Error: {1}</source>
         <source xml:lang="en">Delete Connection</source>
         <target state="translated">刪除連線</target>
       </trans-unit>
+      <trans-unit id="deleteConnectionConfirmation">
+        <source xml:lang="en">Are you sure you want to delete connection '{0}'?</source>
+        <target state="translated">是否確定要刪除連線 '{0}'?</target>
+      </trans-unit>
+      <trans-unit id="deleteConnectionConfirmationNo">
+        <source xml:lang="en">No</source>
+        <target state="translated">否</target>
+      </trans-unit>
+      <trans-unit id="deleteConnectionConfirmationYes">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">是</target>
+      </trans-unit>
       <trans-unit id="deleteConnectionGroup">
         <source xml:lang="en">Delete Group</source>
         <target state="translated">刪除群組</target>
+      </trans-unit>
+      <trans-unit id="deleteConnectionGroupConfirmation">
+        <source xml:lang="en">Are you sure you want to delete connection group '{0}'?</source>
+        <target state="translated">是否確定要刪除連線群組 '{0}'?</target>
       </trans-unit>
       <trans-unit id="showAllConnections">
         <source xml:lang="en">Show All Connections</source>
@@ -7632,6 +8725,22 @@ Error: {1}</source>
       <trans-unit id="nodeExpansionError">
         <source xml:lang="en">Multiple errors:</source>
         <target state="translated">多個錯誤:</target>
+      </trans-unit>
+      <trans-unit id="nodeExpansionTimeout">
+        <source xml:lang="en">Node expansion timed out for node {0} for providers {1}</source>
+        <target state="translated">提供者 {1} 節點 {0} 的節點擴充已逾時</target>
+      </trans-unit>
+      <trans-unit id="objectExplorerMissingConnectionForSession">
+        <source xml:lang="en">Timeout waiting for session {0} to be created for connection "{1}". This has probably happened because OE service did not recieve a response for createNewSession from the provider for connection "{1}"</source>
+        <target state="translated">等候建立連線 “{1}” 的工作階段 “{0}” 時發生逾時。這可能是因為 OE 服務並未收到連線 “{1}” 的提供者對於 createNewSession 的回應</target>
+      </trans-unit>
+      <trans-unit id="objectExplorerMissingSession">
+        <source xml:lang="en">Timed out waiting for session {0} to be created. This has probably happened because OE service did not recieve a response for createNewSession from the provider.</source>
+        <target state="translated">等候建立工作階段 {0} 時逾時。這可能是因為 OE 服務並未收到提供者對於 createNewSession 的回應。</target>
+      </trans-unit>
+      <trans-unit id="objectExplorerSessionIdMissing">
+        <source xml:lang="en">The session ID returned by provider "{0}" for connection "{1}" is invalid.</source>
+        <target state="translated">提供者 “{0}” 針對連線 “{1}” 傳回的工作階段識別碼無效。</target>
       </trans-unit>
     </body>
   </file>
@@ -7653,9 +8762,9 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/services/objectExplorer/browser/serverTreeRenderer" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
-      <trans-unit id="loading">
-        <source xml:lang="en">Loading...</source>
-        <target state="translated">正在載入...</target>
+      <trans-unit id="filteredTreeElementName">
+        <source xml:lang="en">{0} (filtered)</source>
+        <target state="translated">{0} (已篩選)</target>
       </trans-unit>
     </body>
   </file>
@@ -7672,6 +8781,14 @@ Error: {1}</source>
       <trans-unit id="treeCreation.regTreeAriaLabel">
         <source xml:lang="en">Servers</source>
         <target state="translated">伺服器</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/objectExplorer/browser/treeUpdateUtils" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="objectExplorerTimeout">
+        <source xml:lang="en">Object Explorer expansion timed out for '{0}'</source>
+        <target state="translated">'{0}' 的物件總管擴充逾時</target>
       </trans-unit>
     </body>
   </file>
@@ -7705,6 +8822,10 @@ Error: {1}</source>
         <source xml:lang="en">Add a clause</source>
         <target state="translated">新增子句</target>
       </trans-unit>
+      <trans-unit id="profilerFilterDialog.allClausesCleared">
+        <source xml:lang="en">All clauses have been cleared.</source>
+        <target state="translated">已清除所有子句。</target>
+      </trans-unit>
       <trans-unit id="profilerFilterDialog.apply">
         <source xml:lang="en">Apply</source>
         <target state="translated">套用</target>
@@ -7736,6 +8857,10 @@ Error: {1}</source>
       <trans-unit id="profilerFilterDialog.loadFilter">
         <source xml:lang="en">Load Filter</source>
         <target state="translated">載入篩選</target>
+      </trans-unit>
+      <trans-unit id="profilerFilterDialog.newClauseAdded">
+        <source xml:lang="en">A new clause has been added.</source>
+        <target state="translated">已加入新的子句。</target>
       </trans-unit>
       <trans-unit id="profilerFilterDialog.notContainsOperator">
         <source xml:lang="en">Not Contains</source>
@@ -7873,6 +8998,10 @@ Error: {1}</source>
         <source xml:lang="en">JSON</source>
         <target state="translated">JSON</target>
       </trans-unit>
+      <trans-unit id="resultsSerializer.saveAsFileExtensionMarkdownTitle">
+        <source xml:lang="en">Markdown</source>
+        <target state="translated">Markdown</target>
+      </trans-unit>
       <trans-unit id="resultsSerializer.saveAsFileExtensionTXTTitle">
         <source xml:lang="en">Plain Text</source>
         <target state="translated">純文字</target>
@@ -7917,13 +9046,17 @@ Error: {1}</source>
         <source xml:lang="en">OK</source>
         <target state="translated">確定</target>
       </trans-unit>
-      <trans-unit id="firewallRuleDialogDescription">
-        <source xml:lang="en">Your client IP address does not have access to the server. Sign in to an Azure account and create a new firewall rule to enable access.</source>
-        <target state="translated">您的用戶端 IP 位址無法存取伺服器。登錄到 Azure 帳戶並建立新的防火牆規則以啟用存取權限。</target>
+      <trans-unit id="firewall.ruleName">
+        <source xml:lang="en">Rule name</source>
+        <target state="translated">規則名稱</target>
       </trans-unit>
-      <trans-unit id="firewallRuleHelpDescription">
-        <source xml:lang="en">Learn more about firewall settings</source>
-        <target state="translated">深入了解防火牆設定</target>
+      <trans-unit id="firewallRuleDescription">
+        <source xml:lang="en">A firewall rule is required to access the SQL Server instance. Click the link below to create a new firewall rule.</source>
+        <target state="translated">需要防火牆規則才能存取 SQL Server 執行個體。按一下下方連結以建立新的防火牆規則。</target>
+      </trans-unit>
+      <trans-unit id="firewallRuleHelpLink">
+        <source xml:lang="en">Learn more about firewall rules</source>
+        <target state="translated">深入了解防火牆規則</target>
       </trans-unit>
       <trans-unit id="from">
         <source xml:lang="en">From</source>
@@ -7961,6 +9094,10 @@ Error: {1}</source>
         <source xml:lang="en">Backup sets to restore</source>
         <target state="translated">要還原的備份組</target>
       </trans-unit>
+      <trans-unit id="backupUrl">
+        <source xml:lang="en">Backup URL</source>
+        <target state="translated">備份 URL</target>
+      </trans-unit>
       <trans-unit id="database">
         <source xml:lang="en">Database</source>
         <target state="translated">資料庫</target>
@@ -7968,6 +9105,10 @@ Error: {1}</source>
       <trans-unit id="destination">
         <source xml:lang="en">Destination</source>
         <target state="translated">目的地</target>
+      </trans-unit>
+      <trans-unit id="enterBackupUrl">
+        <source xml:lang="en">Please enter URL</source>
+        <target state="translated">請輸入 URL</target>
       </trans-unit>
       <trans-unit id="fileType">
         <source xml:lang="en">File type</source>
@@ -7988,6 +9129,10 @@ Error: {1}</source>
       <trans-unit id="missingBackupFilePathError">
         <source xml:lang="en">Backup file path is required.</source>
         <target state="translated">需要備份檔案路徑。</target>
+      </trans-unit>
+      <trans-unit id="missingBackupUrlError">
+        <source xml:lang="en">Backup url is required.</source>
+        <target state="translated">需要備份 URL。</target>
       </trans-unit>
       <trans-unit id="multipleBackupFilePath">
         <source xml:lang="en">Please enter one or more file paths separated by commas</source>
@@ -8017,6 +9162,10 @@ Error: {1}</source>
         <source xml:lang="en">Backup file</source>
         <target state="translated">備份檔案</target>
       </trans-unit>
+      <trans-unit id="restoreDialog.browse">
+        <source xml:lang="en">Browse</source>
+        <target state="translated">瀏覽</target>
+      </trans-unit>
       <trans-unit id="restoreDialog.cancel">
         <source xml:lang="en">Cancel</source>
         <target state="translated">取消</target>
@@ -8036,6 +9185,14 @@ Error: {1}</source>
       <trans-unit id="restoreDialog.script">
         <source xml:lang="en">Script</source>
         <target state="translated">指令碼</target>
+      </trans-unit>
+      <trans-unit id="restoreDialog.targetDatabaseAlreadyExists">
+        <source xml:lang="en">Target database already exists</source>
+        <target state="translated">目標資料庫已存在</target>
+      </trans-unit>
+      <trans-unit id="restoreDialog.url">
+        <source xml:lang="en">URL</source>
+        <target state="translated">URL</target>
       </trans-unit>
       <trans-unit id="restoreFrom">
         <source xml:lang="en">Restore from</source>
@@ -8068,6 +9225,10 @@ Error: {1}</source>
       <trans-unit id="targetDatabase">
         <source xml:lang="en">Target database</source>
         <target state="translated">目標資料庫</target>
+      </trans-unit>
+      <trans-unit id="targetDatabaseTooltip">
+        <source xml:lang="en">Please enter target database name</source>
+        <target state="translated">請輸入目標資料庫名稱</target>
       </trans-unit>
     </body>
   </file>
@@ -8129,6 +9290,10 @@ Error: {1}</source>
   </file>
   <file original="src/sql/workbench/services/tableDesigner/browser/tableDesignerComponentInput" source-language="en" datatype="plaintext" target-language="zh-Hant">
     <body>
+      <trans-unit id="designer.checkConstraint.description.description">
+        <source xml:lang="en">The description of the check constraint.</source>
+        <target state="translated">檢查條件約束的描述。</target>
+      </trans-unit>
       <trans-unit id="designer.checkConstraint.description.expression">
         <source xml:lang="en">The expression defining the check constraint.</source>
         <target state="translated">定義檢查條件約束的運算式。</target>
@@ -8136,6 +9301,10 @@ Error: {1}</source>
       <trans-unit id="designer.checkConstraint.description.name">
         <source xml:lang="en">The name of the check constraint.</source>
         <target state="translated">檢查條件約束的名稱。</target>
+      </trans-unit>
+      <trans-unit id="designer.column.description.advancedType">
+        <source xml:lang="en">Displays the unified data type (including length, scale and precision) for the column</source>
+        <target state="translated">顯示統一資料類型 (包括資料行的長度、比例與精確度)</target>
       </trans-unit>
       <trans-unit id="designer.column.description.allowNulls">
         <source xml:lang="en">Specifies whether the column may have a NULL value.</source>
@@ -8148,6 +9317,10 @@ Error: {1}</source>
       <trans-unit id="designer.column.description.defaultValueBinding">
         <source xml:lang="en">A predefined global default value for the column or binding.</source>
         <target state="translated">資料行或繫結的預先定義全域預設值。</target>
+      </trans-unit>
+      <trans-unit id="designer.column.description.description">
+        <source xml:lang="en">Displays the description of the column</source>
+        <target state="translated">顯示資料行的描述</target>
       </trans-unit>
       <trans-unit id="designer.column.description.length">
         <source xml:lang="en">The maximum length (in characters) that can be stored in this database object.</source>
@@ -8173,6 +9346,10 @@ Error: {1}</source>
         <source xml:lang="en">The mapping between foreign key columns and primary key columns.</source>
         <target state="translated">外部索引鍵資料行與主索引鍵資料行之間的對應。</target>
       </trans-unit>
+      <trans-unit id="designer.foreignkey.description.description">
+        <source xml:lang="en">The description of the foreign key.</source>
+        <target state="translated">外部索引鍵的描述。</target>
+      </trans-unit>
       <trans-unit id="designer.foreignkey.description.name">
         <source xml:lang="en">The name of the foreign key.</source>
         <target state="translated">外部索引鍵的名稱。</target>
@@ -8197,6 +9374,10 @@ Error: {1}</source>
         <source xml:lang="en">The columns of the index.</source>
         <target state="translated">索引的資料行。</target>
       </trans-unit>
+      <trans-unit id="designer.index.description.description">
+        <source xml:lang="en">The description of the index.</source>
+        <target state="translated">索引子的描述。</target>
+      </trans-unit>
       <trans-unit id="designer.index.description.name">
         <source xml:lang="en">The name of the index.</source>
         <target state="translated">索引的名稱。</target>
@@ -8213,9 +9394,21 @@ Error: {1}</source>
         <source xml:lang="en">The schema that contains the table.</source>
         <target state="translated">包含資料表的結構描述。</target>
       </trans-unit>
+      <trans-unit id="designer.table.primaryKeyColumns.description">
+        <source xml:lang="en">Columns in the primary key.</source>
+        <target state="translated">主鍵中的資料行。</target>
+      </trans-unit>
+      <trans-unit id="designer.table.primaryKeyDescription.description">
+        <source xml:lang="en">The description of the primary key.</source>
+        <target state="translated">主索引鍵的描述。</target>
+      </trans-unit>
+      <trans-unit id="designer.table.primaryKeyName.description">
+        <source xml:lang="en">Name of the primary key.</source>
+        <target state="translated">主鍵的名稱。</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.ErrorDialogTitle">
         <source xml:lang="en">Table Designer Error</source>
-        <target state="new">Table Designer Error</target>
+        <target state="translated">資料表設計工具錯誤</target>
       </trans-unit>
       <trans-unit id="tableDesigner.ForeignKeyTypeName">
         <source xml:lang="en">Foreign Key</source>
@@ -8228,6 +9421,46 @@ Error: {1}</source>
       <trans-unit id="tableDesigner.IndexTypeName">
         <source xml:lang="en">Index</source>
         <target state="translated">索引</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.PrimaryKeyTabTitle">
+        <source xml:lang="en">Primary Key</source>
+        <target state="translated">主索引鍵</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.TableSchemaValidationError">
+        <source xml:lang="en">Table schema validation failed with error: {0}</source>
+        <target state="translated">資料表結構描述驗證失敗，錯誤為: {0}</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addForeignKey">
+        <source xml:lang="en">New Foreign Key</source>
+        <target state="translated">新增外部索引鍵</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewCheckConstraint">
+        <source xml:lang="en">New Check Constraint</source>
+        <target state="translated">新增 CHECK 條件約束</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumn">
+        <source xml:lang="en">New Column</source>
+        <target state="translated">新增資料行</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumnMapping">
+        <source xml:lang="en">New Column Mapping</source>
+        <target state="translated">資料行對應</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumnToIndex">
+        <source xml:lang="en">Add Column</source>
+        <target state="translated">加入資料行</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewColumnToPrimaryKey">
+        <source xml:lang="en">Add Column</source>
+        <target state="translated">加入資料行</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.addNewIndex">
+        <source xml:lang="en">New Index</source>
+        <target state="translated">新增索引</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.checkConstraintDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">描述</target>
       </trans-unit>
       <trans-unit id="tableDesigner.checkConstraintExpressionTitle">
         <source xml:lang="en">Expression</source>
@@ -8245,6 +9478,10 @@ Error: {1}</source>
         <source xml:lang="en">Check Constraints</source>
         <target state="translated">檢查條件約束</target>
       </trans-unit>
+      <trans-unit id="tableDesigner.columnAdvancedTypeTitle">
+        <source xml:lang="en">Type</source>
+        <target state="translated">類型</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.columnAllowNullTitle">
         <source xml:lang="en">Allow Nulls</source>
         <target state="translated">允許 Null 值</target>
@@ -8252,6 +9489,10 @@ Error: {1}</source>
       <trans-unit id="tableDesigner.columnDefaultValueTitle">
         <source xml:lang="en">Default Value</source>
         <target state="translated">預設值</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.columnDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">描述</target>
       </trans-unit>
       <trans-unit id="tableDesigner.columnIsPrimaryKeyTitle">
         <source xml:lang="en">Primary Key</source>
@@ -8290,7 +9531,7 @@ Error: {1}</source>
         <target state="translated">描述</target>
       </trans-unit>
       <trans-unit id="tableDesigner.errorInitializingTableDesigner">
-        <source xml:lang="en">An error occured while initializing the table designer: {0}</source>
+        <source xml:lang="en">An error occurred while initializing the table designer: {0}</source>
         <target state="translated">初始化資料表設計工具時發生錯誤: {0}</target>
       </trans-unit>
       <trans-unit id="tableDesigner.errorProcessingEdit">
@@ -8308,6 +9549,10 @@ Error: {1}</source>
       <trans-unit id="tableDesigner.foreignKeyColumns">
         <source xml:lang="en">Columns</source>
         <target state="translated">資料行</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.foreignKeyDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">描述</target>
       </trans-unit>
       <trans-unit id="tableDesigner.foreignKeyNameTitle">
         <source xml:lang="en">Name</source>
@@ -8330,7 +9575,7 @@ Error: {1}</source>
         <target state="translated">一般</target>
       </trans-unit>
       <trans-unit id="tableDesigner.generatePreviewReportError">
-        <source xml:lang="en">An error occured while generating preview report: {0}</source>
+        <source xml:lang="en">An error occurred while generating preview report: {0}</source>
         <target state="translated">產生預覽報表時發生錯誤: {0}</target>
       </trans-unit>
       <trans-unit id="tableDesigner.generateScriptError">
@@ -8357,6 +9602,10 @@ Error: {1}</source>
         <source xml:lang="en">Columns</source>
         <target state="translated">資料行</target>
       </trans-unit>
+      <trans-unit id="tableDesigner.indexDescription">
+        <source xml:lang="en">Description</source>
+        <target state="translated">描述</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.indexName">
         <source xml:lang="en">Name</source>
         <target state="translated">名稱</target>
@@ -8365,9 +9614,25 @@ Error: {1}</source>
         <source xml:lang="en">Indexes</source>
         <target state="translated">索引</target>
       </trans-unit>
+      <trans-unit id="tableDesigner.inputValidationError">
+        <source xml:lang="en">The input validation failed with error: {0}</source>
+        <target state="translated">輸入驗證失敗，錯誤為: {0}</target>
+      </trans-unit>
       <trans-unit id="tableDesigner.nameTitle">
         <source xml:lang="en">Table name</source>
         <target state="translated">資料表名稱</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.primaryKeyColumnsTitle">
+        <source xml:lang="en">Primary Key Columns</source>
+        <target state="translated">主索引鍵資料行</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.primaryKeyDescriptionTitle">
+        <source xml:lang="en">Description</source>
+        <target state="translated">描述</target>
+      </trans-unit>
+      <trans-unit id="tableDesigner.primaryKeyNameTitle">
+        <source xml:lang="en">Name</source>
+        <target state="translated">名稱</target>
       </trans-unit>
       <trans-unit id="tableDesigner.publishChangeError">
         <source xml:lang="en">An error occured while publishing changes: {0}</source>
@@ -8408,6 +9673,19 @@ Error: {1}</source>
       <trans-unit id="tableDesigner.previewDatabaseUpdates">
         <source xml:lang="en">Preview Database Updates</source>
         <target state="translated">預覽資料庫更新</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="src/sql/workbench/services/tableDesigner/browser/tableDesignerService" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="TableDesigner.closeApplication">
+        <source xml:lang="en">&amp;&amp;Close Application</source>
+        <note>&amp;&amp; denotes a mnemonic</note>
+        <target state="translated">關閉應用程式(&amp;&amp;C)</target>
+      </trans-unit>
+      <trans-unit id="TableDesigner.saveBeforeExit">
+        <source xml:lang="en">There are unsaved changes in Table Designer that will be lost if you close the application. Do you want to close the application?</source>
+        <target state="translated">若關閉應用程式，資料表設計工具中將會遺失未儲存的變更。是否關閉應用程式嗎?</target>
       </trans-unit>
     </body>
   </file>

@@ -13,7 +13,6 @@ import { ConnectionProviderProperties, ICapabilitiesService } from 'sql/platform
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, IWorkbenchContribution } from 'vs/workbench/common/contributions';
 import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import type { IDisposable } from 'vs/base/common/lifecycle';
-import { isArray } from 'vs/base/common/types';
 
 const ConnectionProviderContrib: IJSONSchema = {
 	type: 'object',
@@ -26,6 +25,10 @@ const ConnectionProviderContrib: IJSONSchema = {
 			type: 'string',
 			description: localize('schema.displayName', "Display Name for the provider")
 		},
+		azureResource: {
+			type: 'string',
+			description: localize('schema.azureResource', "Azure resource endpoint for the provider.")
+		},
 		notebookKernelAlias: {
 			type: 'string',
 			description: localize('schema.notebookKernelAlias', "Notebook Kernel Alias for the provider")
@@ -33,6 +36,19 @@ const ConnectionProviderContrib: IJSONSchema = {
 		isQueryProvider: {
 			type: 'boolean',
 			description: localize('schema.isQueryProvider', "Whether the provider is also a query provider. The default value is true.")
+		},
+		connectionStringOptions: {
+			type: 'object',
+			properties: {
+				isEnabled: {
+					type: 'boolean',
+					description: localize('schema.enableConnectionStringOption', "Whether the provider supports connection string as an input option. The default value is false.")
+				},
+				isDefaultOption: {
+					type: 'boolean',
+					description: localize('schema.useConnectionStringAsDefaultOption', "Whether the connection provider uses connection string as the default option to connect. The default value is false.")
+				}
+			},
 		},
 		iconPath: {
 			description: localize('schema.iconPath', "Icon path for the server type"),
@@ -153,7 +169,7 @@ class ConnectionProviderHandler implements IWorkbenchContribution {
 
 			delta.added.forEach(added => {
 				resolveIconPath(added);
-				if (isArray(added.value)) {
+				if (Array.isArray(added.value)) {
 					for (const provider of added.value) {
 						this.disposables.set(provider, handleProvider(provider));
 					}
@@ -162,7 +178,7 @@ class ConnectionProviderHandler implements IWorkbenchContribution {
 				}
 			});
 			delta.removed.forEach(removed => {
-				if (isArray(removed.value)) {
+				if (Array.isArray(removed.value)) {
 					for (const provider of removed.value) {
 						this.disposables.get(provider)!.dispose();
 					}

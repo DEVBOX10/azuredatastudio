@@ -1,6 +1,7 @@
 {
 	"parserOptions": {
-		"project": "./extensions/azurecore/tsconfig.json"
+		"project": "./extensions/azurecore/tsconfig.json",
+		"createDefaultProgram": true
 	},
 	"rules": {
 		"@typescript-eslint/no-floating-promises": [
@@ -8,6 +9,9 @@
 			{
 				"ignoreVoid": true
 			}
-		]
+		],
+		// Disabled until the issues can be fixed
+		"@typescript-eslint/explicit-function-return-type": ["off"],
+		"@typescript-eslint/no-unsafe-assignment": "error"
 	}
 }

@@ -5,7 +5,7 @@
 
 import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { ITelemetryService, TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
 import { IOpenerService } from 'vs/platform/opener/common/opener';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
 import { URI } from 'vs/base/common/uri';
@@ -42,7 +42,7 @@ export abstract class AbstractTelemetryOptOut implements IWorkbenchContribution 
 
 	protected async handleTelemetryOptOut(): Promise<void> {
 		if (this.productService.telemetryOptOutUrl &&
-			!this.storageService.get(AbstractTelemetryOptOut.TELEMETRY_OPT_OUT_SHOWN, StorageScope.GLOBAL) &&
+			!this.storageService.get(AbstractTelemetryOptOut.TELEMETRY_OPT_OUT_SHOWN, StorageScope.APPLICATION) &&
 			!this.environmentService.disableTelemetry) { // {{SQL CARBON EDIT}} Adding check to disable opt out toast when this flag is set.
 			const experimentId = 'telemetryOptOut';
 
@@ -52,11 +52,11 @@ export abstract class AbstractTelemetryOptOut implements IWorkbenchContribution 
 				return; // return early if meanwhile another window opened (we only show the opt-out once)
 			}
 
-			this.storageService.store(AbstractTelemetryOptOut.TELEMETRY_OPT_OUT_SHOWN, true, StorageScope.GLOBAL, StorageTarget.USER);
+			this.storageService.store(AbstractTelemetryOptOut.TELEMETRY_OPT_OUT_SHOWN, true, StorageScope.APPLICATION, StorageTarget.USER);
 
 			this.privacyUrl = this.productService.privacyStatementUrl || this.productService.telemetryOptOutUrl;
 
-			if (experimentState && experimentState.state === ExperimentState.Run && this.telemetryService.isOptedIn) {
+			if (experimentState && experimentState.state === ExperimentState.Run && this.telemetryService.telemetryLevel !== TelemetryLevel.NONE) {
 				this.runExperiment(experimentId);
 				return;
 			}
@@ -74,7 +74,7 @@ export abstract class AbstractTelemetryOptOut implements IWorkbenchContribution 
 
 		this.notificationService.prompt(
 			Severity.Info,
-			this.telemetryService.isOptedIn ? optOutNotice : optInNotice,
+			this.telemetryService.telemetryLevel !== TelemetryLevel.NONE ? optOutNotice : optInNotice,
 			[{
 				label: localize('telemetryOptOut.readMore', "Read More"),
 				run: () => this.openerService.open(URI.parse(telemetryOptOutUrl))
@@ -121,7 +121,9 @@ export abstract class AbstractTelemetryOptOut implements IWorkbenchContribution 
 
 		const logTelemetry = (optout?: boolean) => {
 			type ExperimentsOptOutClassification = {
-				optout?: { classification: 'SystemMetaData', purpose: 'FeatureInsight', isMeasurement: true };
+				owner: 'karlb';
+				comment: 'VS Code experiements opt out classification event';
+				optout?: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The optout value' };
 			};
 
 			type ExperimentsOptOutEvent = {

@@ -27,6 +27,8 @@ export class NativeExtHostSearch extends ExtHostSearch {
 	private _internalFileSearchHandle: number = -1;
 	private _internalFileSearchProvider: SearchService | null = null;
 
+	private _registeredEHSearchProvider = false;
+
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
 		@IExtHostInitDataService initData: IExtHostInitDataService,
@@ -36,7 +38,7 @@ export class NativeExtHostSearch extends ExtHostSearch {
 		super(extHostRpc, _uriTransformer, _logService);
 
 		const outputChannel = new OutputChannel('RipgrepSearchUD', this._logService);
-		this.registerTextSearchProvider(Schemas.userData, new RipgrepSearchProvider(outputChannel));
+		this.registerTextSearchProvider(Schemas.vscodeUserData, new RipgrepSearchProvider(outputChannel));
 		if (initData.remote.isRemote && initData.remote.authority) {
 			this._registerEHSearchProviders();
 		}
@@ -47,6 +49,11 @@ export class NativeExtHostSearch extends ExtHostSearch {
 	}
 
 	private _registerEHSearchProviders(): void {
+		if (this._registeredEHSearchProvider) {
+			return;
+		}
+
+		this._registeredEHSearchProvider = true;
 		const outputChannel = new OutputChannel('RipgrepSearchEH', this._logService);
 		this.registerTextSearchProvider(Schemas.file, new RipgrepSearchProvider(outputChannel));
 		this.registerInternalFileSearchProvider(Schemas.file, new SearchService('fileSearchProvider'));
@@ -96,9 +103,7 @@ export class NativeExtHostSearch extends ExtHostSearch {
 	}
 
 	override $clearCache(cacheKey: string): Promise<void> {
-		if (this._internalFileSearchProvider) {
-			this._internalFileSearchProvider.clearCache(cacheKey);
-		}
+		this._internalFileSearchProvider?.clearCache(cacheKey);
 
 		return super.$clearCache(cacheKey);
 	}

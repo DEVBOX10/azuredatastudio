@@ -6,10 +6,9 @@
 import 'vs/css!./media/objectTypes/objecttypes';
 
 import * as dom from 'vs/base/browser/dom';
-import { localize } from 'vs/nls';
 import { ConnectionProfileGroup } from 'sql/platform/connection/common/connectionProfileGroup';
 import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
-import { ITree, IRenderer } from 'vs/base/parts/tree/browser/tree';
+import { ITree, IRenderer } from 'sql/base/parts/tree/browser/tree';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { TreeNode } from 'sql/workbench/services/objectExplorer/common/treeNode';
 import { InputBox } from 'vs/base/browser/ui/inputbox/inputBox';
@@ -18,6 +17,8 @@ import { URI } from 'vs/base/common/uri';
 import { DefaultServerGroupColor } from 'sql/workbench/services/serverGroup/common/serverGroupViewModel';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import { instanceOfSqlThemeIcon } from 'sql/workbench/services/objectExplorer/common/nodeType';
+import { IObjectExplorerService } from 'sql/workbench/services/objectExplorer/browser/objectExplorerService';
+import { localize } from 'vs/nls';
 
 export interface IConnectionTemplateData {
 	root: HTMLElement;
@@ -37,6 +38,10 @@ export interface IObjectExplorerTemplateData {
 	label: HTMLSpanElement;
 	icon: HTMLElement;
 	treeNode: TreeNode;
+}
+
+export function getLabelWithFilteredSuffix(label: string): string {
+	return localize('filteredTreeElementName', "{0} (filtered)", label);
 }
 
 /**
@@ -60,7 +65,8 @@ export class ServerTreeRenderer implements IRenderer {
 
 	constructor(
 		isCompact: boolean,
-		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService
+		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
 	) {
 		// isCompact defaults to false unless explicitly set by instantiation call.
 		if (isCompact) {
@@ -164,9 +170,9 @@ export class ServerTreeRenderer implements IRenderer {
 		if (treeNode.icon && !instanceOfSqlThemeIcon(treeNode.icon)) {
 			iconRenderer.putIcon(templateData.icon, treeNode.icon);
 		}
-
-		templateData.label.textContent = treeNode.label;
-		templateData.root.title = treeNode.label;
+		const nodeLabel = treeNode.filters?.length > 0 ? getLabelWithFilteredSuffix(treeNode.label) : treeNode.label;
+		templateData.label.textContent = nodeLabel;
+		templateData.root.title = nodeLabel;
 	}
 
 	private getIconPath(connection: ConnectionProfile): IconPath | undefined {
@@ -225,15 +231,13 @@ export class ServerTreeRenderer implements IRenderer {
 
 		let iconPath = this.getIconPath(connection);
 		this.renderServerIcon(templateData.icon, iconPath, isConnected);
-
-		let label = connection.title;
-		if (!connection.isConnectionOptionsValid) {
-			label = localize('loading', "Loading...");
+		if (this._objectExplorerService) {
+			const treeNode = this._objectExplorerService.getObjectExplorerNode(connection);
+			let label = treeNode?.filters?.length > 0 ? getLabelWithFilteredSuffix(connection.title) : connection.title;
+			templateData.label.textContent = label;
+			templateData.root.title = treeNode?.filters?.length > 0 ? getLabelWithFilteredSuffix(connection.title) : connection.serverInfo;
+			templateData.connectionProfile = connection;
 		}
-
-		templateData.label.textContent = label;
-		templateData.root.title = connection.serverInfo;
-		templateData.connectionProfile = connection;
 	}
 
 	private renderConnectionProfileGroup(connectionProfileGroup: ConnectionProfileGroup, templateData: IConnectionProfileGroupTemplateData): void {

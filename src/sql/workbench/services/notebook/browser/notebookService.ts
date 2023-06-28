@@ -15,20 +15,24 @@ import { INotebookEditOperation } from 'sql/workbench/api/common/sqlExtHostTypes
 import { ICellModel, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { NotebookChangeType, CellType } from 'sql/workbench/services/notebook/common/contracts';
 import { IBootstrapParams } from 'sql/workbench/services/bootstrap/common/bootstrapParams';
-import { BaseTextEditor } from 'vs/workbench/browser/parts/editor/textEditor';
+import { AbstractTextCodeEditor } from 'vs/workbench/browser/parts/editor/textCodeEditor';
 import { Range } from 'vs/editor/common/core/range';
-import { IEditorInput, IEditorPane } from 'vs/workbench/common/editor';
+import { IEditorPane } from 'vs/workbench/common/editor';
 import { INotebookInput } from 'sql/workbench/services/notebook/browser/interface';
 import { INotebookShowOptions } from 'sql/workbench/api/common/sqlExtHost.protocol';
 import { NotebookViewsExtension } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViewsExtension';
+import { ICodeEditorViewState } from 'vs/editor/common/editorCommon';
+import { JUPYTER_PROVIDER_ID } from 'sql/workbench/common/constants';
+import { IStandardKernelWithProvider } from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 
 export const SERVICE_ID = 'sqlNotebookService';
 export const INotebookService = createDecorator<INotebookService>(SERVICE_ID);
 
 export const DEFAULT_NOTEBOOK_PROVIDER = 'builtin';
-export const DEFAULT_NOTEBOOK_FILETYPE = '.ipynb';
 export const SQL_NOTEBOOK_PROVIDER = 'sql';
 export const OVERRIDE_EDITOR_THEMING_SETTING = 'notebook.overrideEditorTheming';
+
+export const DefaultNotebookProviders = [SQL_NOTEBOOK_PROVIDER, JUPYTER_PROVIDER_ID];
 
 export interface ILanguageMagic {
 	magic: string;
@@ -53,6 +57,7 @@ export interface INotebookService {
 	readonly onNotebookEditorAdd: Event<INotebookEditor>;
 	readonly onNotebookEditorRemove: Event<INotebookEditor>;
 	onNotebookEditorRename: Event<INotebookEditor>;
+	readonly onNotebookKernelsAdded: Event<IStandardKernelWithProvider[]>;
 
 	readonly isRegistrationComplete: boolean;
 	readonly registrationComplete: Promise<void>;
@@ -139,8 +144,6 @@ export interface INotebookService {
 	 */
 	notifyCellExecutionStarted(): void;
 
-	createNotebookInputFromContents(providerId: string, contents?: azdata.nb.INotebookContents, resource?: UriComponents): Promise<IEditorInput | undefined>;
-
 	openNotebook(resource: UriComponents, options: INotebookShowOptions): Promise<IEditorPane | undefined>;
 
 	getUntitledUriPath(originalTitle: string): string;
@@ -191,10 +194,9 @@ export interface INotebookSection {
 }
 
 export interface ICellEditorProvider {
-	hasEditor(): boolean;
 	isCellOutput: boolean;
 	cellGuid(): string;
-	getEditor(): BaseTextEditor;
+	getEditor(): AbstractTextCodeEditor<ICodeEditorViewState> | undefined;
 	deltaDecorations(newDecorationsRange: NotebookRange | NotebookRange[], oldDecorationsRange: NotebookRange | NotebookRange[]): void;
 }
 

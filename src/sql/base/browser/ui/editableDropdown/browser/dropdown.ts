@@ -4,15 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/dropdownList';
-import { IInputBoxStyles, InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
+import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
 import { DropdownDataSource, DropdownListRenderer, IDropdownListItem, SELECT_OPTION_ENTRY_TEMPLATE_ID } from 'sql/base/browser/ui/editableDropdown/browser/dropdownList';
 import * as DOM from 'vs/base/browser/dom';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
-import { IMessage, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
+import { IInputBoxStyles, IMessage, MessageType } from 'vs/base/browser/ui/inputbox/inputBox';
 import { IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
 import { IListStyles, List } from 'vs/base/browser/ui/list/listWidget';
-import { Color } from 'vs/base/common/color';
 import { Emitter, Event } from 'vs/base/common/event';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { Disposable } from 'vs/base/common/lifecycle';
@@ -21,8 +20,7 @@ import { mixin } from 'vs/base/common/objects';
 import { ScrollbarVisibility } from 'vs/base/common/scrollable';
 import * as nls from 'vs/nls';
 
-
-export interface IDropdownOptions extends IDropdownStyles {
+export interface IDropdownOptions extends Partial<IEditableDropdownStyles> {
 	/**
 	 * Whether or not a options in the list must be selected or a "new" option can be set
 	 */
@@ -51,11 +49,15 @@ export interface IDropdownOptions extends IDropdownStyles {
 	 * Value to use as aria-label for the input box
 	 */
 	ariaLabel?: string;
+	/**
+	 * Value to use as aria-description for the input box
+	 */
+	ariaDescription?: string;
 }
 
-export interface IDropdownStyles {
-	contextBackground?: Color;
-	contextBorder?: Color;
+export interface IEditableDropdownStyles extends IInputBoxStyles, IListStyles {
+	contextBackground?: string;
+	contextBorder?: string;
 }
 
 const errorMessage = nls.localize('editableDropdown.errorValidate', "Must be an option from the list");
@@ -86,26 +88,33 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 	private _onFocus = this._register(new Emitter<void>());
 	public onFocus: Event<void> = this._onFocus.event;
 	private readonly _widthControlElement: HTMLElement;
+	private readonly _widthControlElementContainer: HTMLElement;
 
 	constructor(
 		container: HTMLElement,
 		private readonly contextViewService: IContextViewProvider,
-		opt?: IDropdownOptions
+		opt: IDropdownOptions
 	) {
 		super();
 		this._options = opt || Object.create(null);
 		mixin(this._options, defaults, false);
-		this._widthControlElement = DOM.append(container, document.createElement('span'));
-		this._widthControlElement.classList.add('monaco-dropdown-width-control-element');
-		this._widthControlElement.setAttribute('aria-hidden', 'true');
+		// Set up the width measure control using the same classes and structure as the context menu to get the accurate width measurement.
+		this._widthControlElementContainer = DOM.append(container, document.createElement('div'));
+		this._widthControlElementContainer.classList.add('monaco-dropdown-width-control-element', 'context-view', 'fixed');
+		this._widthControlElementContainer.setAttribute('aria-hidden', 'true');
+		this._widthControlElement = DOM.append(this._widthControlElementContainer, document.createElement('span'));
+		this._widthControlElement.classList.add('editable-drop-option-text');
 
 		this._el = DOM.append(container, DOM.$('.monaco-dropdown'));
 		this._el.style.width = '100%';
+		this._el.style.height = '100%';
 
 		this._inputContainer = DOM.append(this._el, DOM.$('.dropdown-input.select-container'));
 		this._inputContainer.style.width = '100%';
+		this._inputContainer.style.height = '100%';
 		this._selectListContainer = DOM.$('div');
-
+		this._selectListContainer.style.backgroundColor = opt.contextBackground;
+		this._selectListContainer.style.outline = `1px solid ${opt.contextBorder}`;
 		this._input = new InputBox(this._inputContainer, contextViewService, {
 			validationOptions: {
 				// @SQLTODO
@@ -113,7 +122,9 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 				validation: v => this._inputValidator(v)
 			},
 			placeholder: this._options.placeholder,
-			ariaLabel: this._options.ariaLabel
+			ariaLabel: this._options.ariaLabel,
+			ariaDescription: this._options.ariaDescription,
+			inputBoxStyles: <IInputBoxStyles>this._options
 		});
 
 		// Clear title from input box element (defaults to placeholder value) since we don't want a tooltip for the selected value
@@ -166,7 +177,6 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 					this._input.validate();
 					this._onBlur.fire();
 					this._hideList();
-					e.stopPropagation();
 					break;
 				case KeyCode.DownArrow:
 					if (!this._isDropDownVisible) {
@@ -194,6 +204,7 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 				getWidgetRole: () => 'listbox'
 			}
 		});
+		this._selectList.style(<IListStyles>this._options);
 
 		this.values = this._options.values;
 		this._register(this._selectList.onDidBlur(() => {
@@ -309,6 +320,8 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 
 	private _updateDropDownList(): void {
 		this._selectList.splice(0, this._selectList.length, this._dataSource.filteredValues.map(v => { return { text: v }; }));
+		const selectedIndex = this._dataSource.filteredValues.indexOf(this.value);
+		this._selectList.setSelection(selectedIndex !== -1 ? [selectedIndex] : []);
 
 		let width = this._inputContainer.clientWidth;
 
@@ -364,13 +377,6 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 		this._hideList();
 	}
 
-	style(style: IListStyles & IInputBoxStyles & IDropdownStyles) {
-		this._selectList.style(style);
-		this._input.style(style);
-		this._selectListContainer.style.backgroundColor = style.contextBackground ? style.contextBackground.toString() : '';
-		this._selectListContainer.style.outline = `1px solid ${style.contextBorder}`;
-	}
-
 	private _inputValidator(value: string): IMessage | null {
 		if (!this._input.hasFocus() && this._input.isEnabled() && !this._selectList.isDOMFocused() && !this._dataSource.values.some(i => i === value)) {
 			if (this._options.strictSelection && this._options.errorMessage) {
@@ -407,5 +413,9 @@ export class Dropdown extends Disposable implements IListVirtualDelegate<string>
 
 	public get selectList(): List<IDropdownListItem> {
 		return this._selectList;
+	}
+
+	public get options(): IDropdownOptions {
+		return this._options;
 	}
 }

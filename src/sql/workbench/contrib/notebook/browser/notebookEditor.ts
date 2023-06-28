@@ -19,23 +19,23 @@ import { INotebookParams, INotebookService, NotebookRange } from 'sql/workbench/
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ACTION_IDS, NOTEBOOK_MAX_MATCHES, IFindNotebookController, FindWidget, IConfigurationChangedEvent } from 'sql/workbench/contrib/notebook/browser/find/notebookFindWidget';
 import { IOverlayWidget } from 'vs/editor/browser/editorBrowser';
-import { FindReplaceState, FindReplaceStateChangedEvent } from 'vs/editor/contrib/find/findState';
-import { IEditorAction } from 'vs/editor/common/editorCommon';
+import { ICodeEditorViewState, IEditorAction } from 'vs/editor/common/editorCommon';
 import { Event, Emitter } from 'vs/base/common/event';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { NotebookFindNextAction, NotebookFindPreviousAction } from 'sql/workbench/contrib/notebook/browser/notebookActions';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IWorkbenchThemeService } from 'vs/workbench/services/themes/common/workbenchThemeService';
-import { CellEditModes, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
+import { INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { INotebookFindModel } from 'sql/workbench/contrib/notebook/browser/models/notebookFindModel';
 import { IDisposable, DisposableStore } from 'vs/base/common/lifecycle';
 import { IModelDecorationsChangeAccessor, IModelDeltaDecoration } from 'vs/editor/common/model';
 import { NotebookFindDecorations } from 'sql/workbench/contrib/notebook/browser/find/notebookFindDecorations';
 import { TimeoutTimer } from 'vs/base/common/async';
-import { BaseTextEditor } from 'vs/workbench/browser/parts/editor/textEditor';
+import { AbstractTextCodeEditor } from 'vs/workbench/browser/parts/editor/textCodeEditor';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { FindReplaceState, FindReplaceStateChangedEvent } from 'vs/editor/contrib/find/browser/findState';
 
 export class NotebookEditor extends EditorPane implements IFindNotebookController {
 
@@ -94,7 +94,7 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 	public getLastPosition(): NotebookRange {
 		return this._previousMatch;
 	}
-	public getCellEditor(cellGuid: string): BaseTextEditor | undefined {
+	public getCellEditor(cellGuid: string): AbstractTextCodeEditor<ICodeEditorViewState> | undefined {
 		let editorImpl = this._notebookService.findNotebookEditor(this.notebookInput.notebookUri);
 		if (editorImpl) {
 			let cellEditorProvider = editorImpl.cellEditors.filter(c => c.cellGuid() === cellGuid)[0];
@@ -152,7 +152,7 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 	/**
 	 * @param parent Called to create the editor in the parent element.
 	 */
-	public createEditor(parent: HTMLElement): void {
+	protected createEditor(parent: HTMLElement): void {
 		this._overlay = document.createElement('div');
 		this._overlay.className = 'overlayWidgets monaco-editor';
 		this._overlay.style.width = '100%';
@@ -343,16 +343,10 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 			}
 		}
 		if (e.searchScope) {
+			this._findDecorations.clearDecorations();
 			await this.notebookInput.notebookFindModel.find(this._findState.searchString, this._findState.matchCase, this._findState.wholeWord, NOTEBOOK_MAX_MATCHES);
 			this._findDecorations.set(this.notebookFindModel.findMatches, this.notebookFindModel.findArray);
-			this._findState.changeMatchInfo(
-				this.notebookFindModel.getIndexByRange(this._currentMatch),
-				this._findDecorations.getCount(),
-				this._currentMatch
-			);
-			if (this._finder.getDomNode().style.visibility === 'visible' && this._previousMatch !== this._currentMatch) {
-				this._setCurrentFindMatch(this._currentMatch);
-			}
+			this._updateFinderMatchState();
 		}
 	}
 
@@ -372,18 +366,16 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 			matchesPosition: false,
 			matchesCount: false,
 			currentMatch: false,
-			loop: true
+			loop: true,
+			isSearching: false,
+			filters: false
 		};
 		this._notebookModel.cells?.forEach(cell => {
-			this._register(cell.onCellModeChanged((state) => {
-				if (state) {
-					this._onFindStateChange(changeEvent).catch(onUnexpectedError);
-				}
-			}));
 			this._register(cell.onCurrentEditModeChanged(editMode => {
-				if (editMode !== CellEditModes.WYSIWYG) {
-					this._onFindStateChange(changeEvent).catch(onUnexpectedError);
-				}
+				this._onFindStateChange(changeEvent).catch(onUnexpectedError);
+			}));
+			this._register(cell.onCellPreviewUpdated(previewUpdated => {
+				this._onFindStateChange(changeEvent).catch(onUnexpectedError);
 			}));
 		});
 		this._register(this._notebookModel.contentChanged(e => {
@@ -488,7 +480,9 @@ export class NotebookEditor extends EditorPane implements IFindNotebookControlle
 			matchesPosition: false,
 			matchesCount: false,
 			currentMatch: false,
-			loop: true
+			loop: true,
+			isSearching: false,
+			filters: false
 		};
 		this._onFindStateChange(changeEvent).catch(e => { onUnexpectedError(e); });
 	}

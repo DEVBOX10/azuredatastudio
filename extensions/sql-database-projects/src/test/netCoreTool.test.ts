@@ -9,10 +9,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
-import { NetCoreTool, DBProjectConfigurationKey, DotnetInstallLocationKey, NetCoreNonWindowsDefaultPath } from '../tools/netcoreTool';
+import { NetCoreTool, DBProjectConfigurationKey, DotnetInstallLocationKey } from '../tools/netcoreTool';
 import { getQuotedPath } from '../common/utils';
-import { isNullOrUndefined } from 'util';
-import { generateTestFolderPath } from './testUtils';
+import { deleteGeneratedTestFolder, generateTestFolderPath } from './testUtils';
 import { createContext, TestContext } from './testContext';
 
 let testContext: TestContext;
@@ -24,6 +23,10 @@ describe('NetCoreTool: Net core tests', function (): void {
 
 	beforeEach(function (): void {
 		testContext = createContext();
+	});
+
+	after(async function (): Promise<void> {
+		await deleteGeneratedTestFolder();
 	});
 
 	it('Should override dotnet default value with settings', async function (): Promise<void> {
@@ -48,20 +51,26 @@ describe('NetCoreTool: Net core tests', function (): void {
 
 		if (os.platform() === 'win32') {
 			// check that path should start with c:\program files
-			let result = isNullOrUndefined(netcoreTool.netcoreInstallLocation) || netcoreTool.netcoreInstallLocation.toLowerCase().startsWith('c:\\program files');
-			should(result).true('dotnet is either not present or in programfiles by default');
+			let result = !netcoreTool.netcoreInstallLocation || netcoreTool.netcoreInstallLocation.toLowerCase().startsWith('c:\\program files');
+			should(result).true('dotnet not present in programfiles by default');
 		}
 
-		if (os.platform() === 'linux' || os.platform() === 'darwin') {
+		if (os.platform() === 'linux') {
+			//check that path should start with /usr/share
+			let result = !netcoreTool.netcoreInstallLocation || netcoreTool.netcoreInstallLocation.toLowerCase() === '/usr/share/dotnet';
+			should(result).true('dotnet not present in /usr/share');
+		}
+
+		if (os.platform() === 'darwin') {
 			//check that path should start with /usr/local/share
-			let result = isNullOrUndefined(netcoreTool.netcoreInstallLocation) || netcoreTool.netcoreInstallLocation.toLowerCase().startsWith(NetCoreNonWindowsDefaultPath);
-			should(result).true('dotnet is either not present or in /usr/local/share by default');
+			let result = !netcoreTool.netcoreInstallLocation || netcoreTool.netcoreInstallLocation.toLowerCase() === '/usr/local/share/dotnet';
+			should(result).true('dotnet not present in /usr/local/share');
 		}
 	});
 
 	it('should run a command successfully', async function (): Promise<void> {
 		const netcoreTool = new NetCoreTool(testContext.outputChannel);
-		const dummyFile =  path.join(await generateTestFolderPath(), 'dummy.dacpac');
+		const dummyFile = path.join(await generateTestFolderPath(this.test), 'dummy.dacpac');
 
 		try {
 			await netcoreTool.runStreamedCommand('echo test > ' + getQuotedPath(dummyFile), undefined);
@@ -69,11 +78,11 @@ describe('NetCoreTool: Net core tests', function (): void {
 			should(text.toString().trim()).equal('test');
 		}
 		finally {
-			await fs.exists(dummyFile, async (existBool) => {
-				if (existBool) {
-					await fs.promises.unlink(dummyFile);
-				}
-			});
+			try {
+				await fs.promises.unlink(dummyFile);
+			} catch (err) {
+				console.warn(`Failed to clean up ${dummyFile}`);
+			}
 		}
 	});
 });

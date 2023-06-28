@@ -3,7 +3,7 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as azdata from 'azdata';
+import type * as azdata from 'azdata';
 import * as path from 'vs/base/common/path';
 
 import { Action, IAction, Separator } from 'vs/base/common/actions';
@@ -17,7 +17,6 @@ import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilit
 import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
 import { IConnectionDialogService } from 'sql/workbench/services/connection/common/connectionDialogService';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
-import { ICommandService } from 'vs/platform/commands/common/commands';
 import { CellType, NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
 import { getErrorMessage } from 'vs/base/common/errors';
 import { IEditorAction } from 'vs/editor/common/editorCommon';
@@ -31,12 +30,20 @@ import { CellContext } from 'sql/workbench/contrib/notebook/browser/cellViews/co
 import { URI } from 'vs/base/common/uri';
 import { Emitter, Event } from 'vs/base/common/event';
 import { IActionProvider } from 'vs/base/browser/ui/dropdown/dropdown';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
 import { KernelsLanguage } from 'sql/workbench/services/notebook/common/notebookConstants';
 import { INotebookViews } from 'sql/workbench/services/notebook/browser/notebookViews/notebookViews';
+import { FileAccess, Schemas } from 'vs/base/common/network';
+import { CONFIG_WORKBENCH_ENABLEPREVIEWFEATURES, CONFIG_WORKBENCH_USEVSCODENOTEBOOKS } from 'sql/workbench/common/constants';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { Task } from 'sql/workbench/services/tasks/browser/tasksRegistry';
+import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
+import { Action2 } from 'vs/platform/actions/common/actions';
+import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
+import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
 
 const msgLoading = localize('loading', "Loading kernels...");
 export const msgChanging = localize('changing', "Changing kernel...");
@@ -53,9 +60,9 @@ const maskedIconClass = 'masked-icon';
 export const kernelNotSupported: string = localize('kernelNotSupported', "This notebook cannot run with parameters as the kernel is not supported. Please use the supported kernels and format. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).");
 export const noParameterCell: string = localize('noParametersCell', "This notebook cannot run with parameters until a parameter cell is added. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).");
 export const noParametersInCell: string = localize('noParametersInCell', "This notebook cannot run with parameters until there are parameters added to the parameter cell. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).");
+export const untitledNotSupported: string = localize('untitledNotSupported', "Run with parameters is not supported for Untitled notebooks. Please save the notebook before continuing. [Learn more](https://docs.microsoft.com/sql/azure-data-studio/notebooks/notebooks-parameterization).");
 
-// Action to add a cell to notebook based on cell type(code/markdown).
-export class AddCellAction extends Action {
+export abstract class AddCellAction extends Action {
 	public cellType: CellType;
 
 	constructor(
@@ -78,12 +85,37 @@ export class AddCellAction extends Action {
 				context.model.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.AddCell, { cell_type: this.cellType });
 			}
 		} else {
-			//Add Cell after current selected cell.
+			// Add cell after currently selected cell, or at the end of the notebook if no cell is selected
 			const editor = this._notebookService.findNotebookEditor(context);
-			const index = editor.cells?.findIndex(cell => cell.active) ?? 0;
+			if (editor.cells) {
+				let currentCellIndex = editor.cells.findIndex(cell => cell.active);
+				index = currentCellIndex !== -1 ? currentCellIndex + 1 : editor.cells.length;
+			}
 			editor.addCell(this.cellType, index);
 			editor.model.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.AddCell, { cell_type: this.cellType });
 		}
+	}
+}
+
+/**
+ * Action to add a new Text cell to a Notebook
+ */
+export class AddTextCellAction extends AddCellAction {
+	public override cellType: CellType = 'markdown';
+
+	constructor(@INotebookService notebookService: INotebookService) {
+		super('notebook.AddTextCell', localize('textPreview', "Text cell"), 'masked-pseudo markdown', notebookService);
+	}
+}
+
+/**
+ * Action to add a new Code cell to a Notebook
+ */
+export class AddCodeCellAction extends AddCellAction {
+	public override cellType: CellType = 'code';
+
+	constructor(@INotebookService notebookService: INotebookService) {
+		super('notebook.AddCodeCell', localize('codePreview', "Code cell"), 'masked-pseudo code', notebookService);
 	}
 }
 
@@ -357,6 +389,9 @@ export class TrustedAction extends ToggleableAction {
 	public override async run(context: URI): Promise<void> {
 		const editor = this._notebookService.findNotebookEditor(context);
 		this.trusted = !this.trusted;
+		editor.model.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.TrustChanged, {
+			trust: this.trusted
+		});
 		editor.model.trustedMode = this.trusted;
 	}
 }
@@ -448,8 +483,16 @@ export class RunParametersAction extends TooltipFromLabelAction {
 	 * with injected parameters value from the QuickInput
 	*/
 	public override async run(context: URI): Promise<void> {
+		if (context.scheme === Schemas.untitled) {
+			// Run with parameters is not supported for untitled notebooks
+			this.notificationService.notify({
+				severity: Severity.Info,
+				message: untitledNotSupported,
+			});
+			return;
+		}
 		const editor = this._notebookService.findNotebookEditor(context);
-		// Only run action for kernels that are supported (Python, PySpark, PowerShell)
+		// Only run action for kernels that are supported (Python, PowerShell)
 		let supportedKernels: string[] = [KernelsLanguage.Python, KernelsLanguage.PowerShell];
 		if (!supportedKernels.includes(editor.model.languageInfo.name)) {
 			// If the kernel is not supported indicate to user to use supported kernels
@@ -459,6 +502,9 @@ export class RunParametersAction extends TooltipFromLabelAction {
 			});
 			return;
 		}
+		editor.model.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.RunWithParameters, {
+			kernel: editor.model.languageInfo.name
+		});
 		// Set defaultParameters to the parameter values in parameter cell
 		let defaultParameters = new Map<string, string>();
 		for (let cell of editor?.cells) {
@@ -577,6 +623,9 @@ export class KernelsDropdown extends SelectBox {
 		this.model = model as NotebookModel;
 		this._register(this.model.kernelChanged((changedArgs: azdata.nb.IKernelChangedArgs) => {
 			this.updateKernel(changedArgs.newValue, changedArgs.nbKernelAlias);
+		}));
+		this._register(this.model.kernelsAdded(kernel => {
+			this.updateKernel(kernel);
 		}));
 		let kernel = this.model.clientSession && this.model.clientSession.kernel;
 		this.updateKernel(kernel);
@@ -706,7 +755,10 @@ export class AttachToDropdown extends SelectBox {
 		} else {
 			let connections: string[] = [];
 			if (model.context && model.context.title && (connProviderIds.includes(this.model.context.providerName))) {
-				connections.push(model.context.title);
+				let textResult = model.context.title;
+				let fullTitleText = this._connectionManagementService.getEditorConnectionProfileTitle(model.context);
+				textResult = fullTitleText.length !== 0 ? fullTitleText : textResult;
+				connections.push(textResult);
 			} else if (this._configurationService.getValue(saveConnectionNameConfigName) && model.savedConnectionName) {
 				connections.push(model.savedConnectionName);
 			} else {
@@ -812,35 +864,83 @@ export class AttachToDropdown extends SelectBox {
 	}
 }
 
-export class NewNotebookAction extends Action {
+async function openNewNotebook(
+	telemetryService: IAdsTelemetryService,
+	notebookService: INotebookService,
+	configurationService: IConfigurationService,
+	commandService: ICommandService,
+	profile?: azdata.IConnectionProfile
+): Promise<void> {
+	telemetryService.createActionEvent(TelemetryKeys.TelemetryView.Notebook, TelemetryKeys.NbTelemetryAction.NewNotebookFromConnections)
+		.withConnectionInfo(profile)
+		.send();
 
-	public static readonly ID = 'notebook.command.new';
-	public static readonly LABEL = localize('newNotebookAction', "New Notebook");
+	const usePreviewFeatures = configurationService.getValue(CONFIG_WORKBENCH_ENABLEPREVIEWFEATURES);
+	const useVSCodeNotebooks = configurationService.getValue(CONFIG_WORKBENCH_USEVSCODENOTEBOOKS);
+	if (usePreviewFeatures && useVSCodeNotebooks) {
+		await commandService.executeCommand('ipynb.newUntitledIpynb');
+	} else {
+		await notebookService.openNotebook(URI.from({ scheme: 'untitled' }), { connectionProfile: profile });
+	}
+}
 
-	public static readonly INTERNAL_NEW_NOTEBOOK_CMD_ID = '_notebook.command.new';
-	constructor(
-		id: string,
-		label: string,
-		@ICommandService private commandService: ICommandService,
-		@IObjectExplorerService private objectExplorerService: IObjectExplorerService,
-		@IAdsTelemetryService private _telemetryService: IAdsTelemetryService,
-	) {
-		super(id, label);
-		this.class = 'notebook-action new-notebook';
+export class NewNotebookTask extends Task {
+	public static ID = 'newNotebook';
+	public static LABEL = localize('newNotebookTask.newNotebook', "New Notebook");
+	public static ICON = 'notebook';
+
+	constructor() {
+		super({
+			id: NewNotebookTask.ID,
+			title: NewNotebookTask.LABEL,
+			iconPath: undefined,
+			iconClass: NewNotebookTask.ICON
+		});
 	}
 
-	override async run(context?: azdata.ObjectExplorerContext): Promise<void> {
-		this._telemetryService.createActionEvent(TelemetryKeys.TelemetryView.Notebook, TelemetryKeys.NbTelemetryAction.NewNotebookFromConnections)
-			.withConnectionInfo(context?.connectionProfile)
-			.send();
+	public runTask(accessor: ServicesAccessor, profile: IConnectionProfile): Promise<void> {
+		const telemetryService = accessor.get(IAdsTelemetryService);
+		const notebookService = accessor.get(INotebookService);
+		const configurationService = accessor.get(IConfigurationService);
+		const commandService = accessor.get(ICommandService);
+		return openNewNotebook(telemetryService, notebookService, configurationService, commandService, profile);
+	}
+}
+
+export class NewNotebookAction extends Action2 {
+	public static readonly ID = 'notebook.command.new';
+	public static readonly LABEL_ORG = 'New Notebook';
+	public static readonly LABEL = localize('newNotebookAction', "New Notebook");
+
+	constructor() {
+		super({
+			id: NewNotebookAction.ID,
+			icon: {
+				light: FileAccess.asBrowserUri(`sql/workbench/services/connection/browser/media/light/new_notebook.svg`),
+				dark: FileAccess.asBrowserUri(`sql/workbench/services/connection/browser/media/dark/new_notebook_inverse.svg`)
+			},
+			title: { value: NewNotebookAction.LABEL, original: NewNotebookAction.LABEL_ORG },
+			keybinding: { weight: KeybindingWeight.WorkbenchContrib, primary: KeyMod.WinCtrl | KeyMod.Alt | KeyCode.KeyN },
+			f1: true
+		});
+	}
+
+	public override async run(accessor: ServicesAccessor, context?: azdata.ObjectExplorerContext): Promise<void> {
+		const objectExplorerService = accessor.get(IObjectExplorerService);
+		const telemetryService = accessor.get(IAdsTelemetryService);
+		const notebookService = accessor.get(INotebookService);
+		const configurationService = accessor.get(IConfigurationService);
+		const commandService = accessor.get(ICommandService);
+
 		let connProfile: azdata.IConnectionProfile;
 		if (context && context.nodeInfo) {
-			let node = await this.objectExplorerService.getTreeNode(context.connectionProfile.id, context.nodeInfo.nodePath);
+			let node = await objectExplorerService.getTreeNode(context.connectionProfile.id, context.nodeInfo.nodePath);
 			connProfile = TreeUpdateUtils.getConnectionProfile(node).toIConnectionProfile();
 		} else if (context && context.connectionProfile) {
 			connProfile = context.connectionProfile;
 		}
-		return this.commandService.executeCommand(NewNotebookAction.INTERNAL_NEW_NOTEBOOK_CMD_ID, { connectionProfile: connProfile });
+
+		await openNewNotebook(telemetryService, notebookService, configurationService, commandService, connProfile);
 	}
 }
 

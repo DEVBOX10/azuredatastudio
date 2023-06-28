@@ -14,7 +14,7 @@ import { URI, UriComponents } from 'vs/base/common/uri';
 import { IOpenerService } from 'vs/platform/opener/common/opener';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { IContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { WebviewContentOptions, IWebviewService, WebviewElement } from 'vs/workbench/contrib/webview/browser/webview';
+import { WebviewContentOptions, IWebviewService, IWebviewElement } from 'vs/workbench/contrib/webview/browser/webview';
 import { generateUuid } from 'vs/base/common/uuid';
 
 import { ComponentBase } from 'sql/workbench/browser/modelComponents/componentBase';
@@ -43,7 +43,7 @@ export default class WebViewComponent extends ComponentBase<WebViewProperties> i
 
 	private static readonly standardSupportedLinkSchemes = ['http', 'https', 'mailto'];
 
-	private _webview: WebviewElement;
+	private _webview: IWebviewElement;
 	private _renderedHtml: string;
 	private _extensionLocationUri: URI;
 	private _ready: Promise<void>;
@@ -73,11 +73,15 @@ export default class WebViewComponent extends ComponentBase<WebViewProperties> i
 	}
 
 	private _createWebview(): void {
-		this._webview = this.webviewService.createWebviewElement(this.id,
-			{},
-			{
-				allowScripts: true
-			}, undefined);
+		this._webview = this.webviewService.createWebviewElement({
+			providedViewType: this.id,
+			title: this.id,
+			contentOptions: {
+				allowScripts: true,
+			},
+			options: {},
+			extension: undefined
+		});
 
 		this._webview.mountTo(this._el.nativeElement);
 
@@ -114,7 +118,7 @@ export default class WebViewComponent extends ComponentBase<WebViewProperties> i
 	private setHtml(): void {
 		if (this._webview && this.html) {
 			this._renderedHtml = this.html;
-			this._webview.html = this._renderedHtml;
+			this._webview.setHtml(this._renderedHtml);
 		}
 	}
 

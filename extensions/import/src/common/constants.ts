@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
 import * as nls from 'vscode-nls';
 const localize = nls.loadMessageBundle();
 
@@ -11,7 +12,9 @@ export const providerId = 'FlatFileImport';
 export const configLogDebugInfo = 'logDebugInfo';
 export const sqlConfigSectionName = 'sql';
 export const mssqlProvider = 'MSSQL';
+export const packageName = 'Microsoft.import';
 
+// allow-any-unicode-next-line
 export const summaryErrorSymbol = '✗ ';
 
 export const supportedProviders = [mssqlProvider];

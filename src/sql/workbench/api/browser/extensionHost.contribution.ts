@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
+import './mainThreadAzureBlob';
 import './mainThreadAzureAccount';
 import './mainThreadAccountManagement';
 import './mainThreadBackgroundTaskManagement';
@@ -19,6 +19,8 @@ import './mainThreadNotebook';
 import './mainThreadNotebookDocumentsAndEditors';
 import './mainThreadObjectExplorer';
 import './mainThreadQueryEditor';
+import './mainThreadPerf';
 import './mainThreadResourceProvider';
+import './mainThreadErrorDiagnostics';
 import './mainThreadTasks';
 import './mainThreadWorkspace';

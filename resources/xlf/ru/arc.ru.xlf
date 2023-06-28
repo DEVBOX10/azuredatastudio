@@ -6,10 +6,6 @@
         <source xml:lang="en">USD</source>
         <target state="translated">Доллары США</target>
       </trans-unit>
-      <trans-unit id="arc.addingWorkerNodes">
-        <source xml:lang="en">adding worker nodes</source>
-        <target state="translated">добавление рабочих узлов</target>
-      </trans-unit>
       <trans-unit id="arc.apply">
         <source xml:lang="en">Apply</source>
         <target state="translated">Применить</target>
@@ -22,9 +18,21 @@
         <source xml:lang="en">Azure Arc Resources</source>
         <target state="translated">Ресурсы Azure Arc</target>
       </trans-unit>
+      <trans-unit id="arc.areYouSure">
+        <source xml:lang="en">Are you sure you want to apply the selected upgrade?</source>
+        <target state="translated">Продолжить выбранное обновление?</target>
+      </trans-unit>
       <trans-unit id="arc.available">
         <source xml:lang="en">Available</source>
         <target state="translated">Доступно</target>
+      </trans-unit>
+      <trans-unit id="arc.availableUpgrades">
+        <source xml:lang="en">Available Upgrades</source>
+        <target state="translated">Доступные обновления</target>
+      </trans-unit>
+      <trans-unit id="arc.availableUpgradesDescription">
+        <source xml:lang="en">Available upgrades for this resource are listed below. You can apply upgrades by clicking the upgrade button.</source>
+        <target state="translated">Доступные обновления для этого ресурса перечислены ниже. Вы можете применить их, нажав кнопку обновления.</target>
       </trans-unit>
       <trans-unit id="arc.backup">
         <source xml:lang="en">Backup</source>
@@ -37,6 +45,14 @@
       <trans-unit id="arc.backupsStorage">
         <source xml:lang="en">{0} backups</source>
         <target state="translated">Резервные копии: {0}</target>
+      </trans-unit>
+      <trans-unit id="arc.booleanfalse">
+        <source xml:lang="en">False</source>
+        <target state="translated">ЛОЖЬ</target>
+      </trans-unit>
+      <trans-unit id="arc.booleantrue">
+        <source xml:lang="en">True</source>
+        <target state="translated">ИСТИНА</target>
       </trans-unit>
       <trans-unit id="arc.businessCriticalLabel">
         <source xml:lang="en">BusinessCritical</source>
@@ -78,17 +94,17 @@
         <source xml:lang="en">without downtime and by</source>
         <target state="translated">без простоев и</target>
       </trans-unit>
+      <trans-unit id="arc.computeConfiguration">
+        <source xml:lang="en">Compute Configuration</source>
+        <target state="translated">Настройка вычислений</target>
+      </trans-unit>
       <trans-unit id="arc.condition">
         <source xml:lang="en">Condition</source>
         <target state="translated">Условие</target>
       </trans-unit>
-      <trans-unit id="arc.configurationCoordinatorNode">
+      <trans-unit id="arc.configurationPerNode">
         <source xml:lang="en">Configuration</source>
         <target state="translated">Конфигурация</target>
-      </trans-unit>
-      <trans-unit id="arc.configurationPerNode">
-        <source xml:lang="en">Configuration (per node)</source>
-        <target state="translated">Конфигурация (по каждому узлу)</target>
       </trans-unit>
       <trans-unit id="arc.configureRP">
         <source xml:lang="en">Configure retention policy</source>
@@ -101,10 +117,6 @@
       <trans-unit id="arc.confirmNewPassword">
         <source xml:lang="en">Confirm the new password</source>
         <target state="translated">Подтвердите новый пароль</target>
-      </trans-unit>
-      <trans-unit id="arc.connecToServer">
-        <source xml:lang="en">Connect to Server</source>
-        <target state="translated">Подключиться к серверу</target>
       </trans-unit>
       <trans-unit id="arc.connect">
         <source xml:lang="en">Connect</source>
@@ -127,16 +139,20 @@
         <target state="translated">Не удалось подключиться к управляемому экземпляру SQL — экземпляр Azure Arc {0}. {1}</target>
       </trans-unit>
       <trans-unit id="arc.connectToPGSql">
-        <source xml:lang="en">Connect to PostgreSQL Hyperscale - Azure Arc ({0})</source>
-        <target state="translated">Подключиться к гипермасштабированию PostgreSQL — Azure Arc ({0})</target>
+        <source xml:lang="en">Connect to PostgreSQL server - Azure Arc ({0})</source>
+        <target state="translated">Подключиться к серверу PostgreSQL — Azure Arc ({0})</target>
       </trans-unit>
       <trans-unit id="arc.connectToPGSqlFailed">
-        <source xml:lang="en">Could not connect to PostgreSQL Hyperscale - Azure Arc Instance {0}. {1}</source>
-        <target state="translated">Не удалось подключиться к гипермасштабированию PostgreSQL {0} — экземпляр Azure Arc. {1}</target>
+        <source xml:lang="en">Could not connect to PostgreSQL server - Azure Arc Instance {0}. {1}</source>
+        <target state="translated">Не удалось подключиться к серверу PostgreSQL — экземпляр Azure Arc {0}. {1}</target>
       </trans-unit>
       <trans-unit id="arc.connectToPostgresDescription">
         <source xml:lang="en">A connection to the server is required to show and set database engine settings, which will require the PostgreSQL Extension to be installed.</source>
         <target state="translated">Для отображения и настройки параметров ядра СУБД требуется подключение к серверу, которое потребует установки расширения PostgreSQL.</target>
+      </trans-unit>
+      <trans-unit id="arc.connectToServer">
+        <source xml:lang="en">Connect to Server</source>
+        <target state="translated">Подключиться к серверу</target>
       </trans-unit>
       <trans-unit id="arc.connectionMode">
         <source xml:lang="en">Connection Mode</source>
@@ -199,33 +215,9 @@
         <source xml:lang="en">Coordinator</source>
         <target state="translated">Координатор</target>
       </trans-unit>
-      <trans-unit id="arc.coordinatorCoresLimit">
-        <source xml:lang="en">Coordinator Node CPU limit</source>
-        <target state="translated">Предел ЦП для узла-координатора</target>
-      </trans-unit>
-      <trans-unit id="arc.coordinatorCoresRequest">
-        <source xml:lang="en">Coordinator Node CPU request</source>
-        <target state="translated">Запрос ЦП для узла-координатора</target>
-      </trans-unit>
       <trans-unit id="arc.coordinatorEndpoint">
         <source xml:lang="en">Coordinator endpoint</source>
         <target state="translated">Конечная точка координатора</target>
-      </trans-unit>
-      <trans-unit id="arc.coordinatorMemoryLimit">
-        <source xml:lang="en">Coordinator Node Memory limit (in GB)</source>
-        <target state="translated">Предельный объем памяти узла-координатора (в ГБ)</target>
-      </trans-unit>
-      <trans-unit id="arc.coordinatorMemoryRequest">
-        <source xml:lang="en">Coordinator Node Memory request (in GB)</source>
-        <target state="translated">Запрос памяти узла-координатора (в ГБ)</target>
-      </trans-unit>
-      <trans-unit id="arc.coordinatorNode">
-        <source xml:lang="en">Coordinator Node</source>
-        <target state="translated">Узел-координатор</target>
-      </trans-unit>
-      <trans-unit id="arc.coordinatorNodeConfigurationInformation">
-        <source xml:lang="en">You can configure the number of CPU cores and storage size that will apply to the coordinator node. Adjust the number of CPU cores and memory settings for your server group. To reset the requests and/or limits, pass in empty value.</source>
-        <target state="translated">Можно настроить количество ядер ЦП и размер хранилища, которые будут применяться к узлу-координатору. Настройте количество ядер ЦП и параметры памяти для группы серверов. Чтобы сбросить запросы и/или ограничения, передайте пустое значение.</target>
       </trans-unit>
       <trans-unit id="arc.coordinatorNodeParameters">
         <source xml:lang="en">Coordinator Node Parameters</source>
@@ -268,6 +260,10 @@
       <trans-unit id="arc.createNew">
         <source xml:lang="en">New Instance</source>
         <target state="translated">Новый экземпляр</target>
+      </trans-unit>
+      <trans-unit id="arc.currentVersion">
+        <source xml:lang="en">Current version</source>
+        <target state="translated">Текущая версия</target>
       </trans-unit>
       <trans-unit id="arc.dataController">
         <source xml:lang="en">Data controller</source>
@@ -357,6 +353,18 @@
         <source xml:lang="en">Emergency</source>
         <target state="translated">Аварийный режим</target>
       </trans-unit>
+      <trans-unit id="arc.enableTrustServerCert">
+        <source xml:lang="en">Enable Trust Server Certificate</source>
+        <target state="translated">Включить сертификат доверенного сервера</target>
+      </trans-unit>
+      <trans-unit id="arc.encrypt">
+        <source xml:lang="en">Encrypt</source>
+        <target state="translated">Шифровать</target>
+      </trans-unit>
+      <trans-unit id="arc.encryptDescription">
+        <source xml:lang="en">When true, SQL Server uses SSL encryption for all data sent between the client and server if the server has a certificate installed.</source>
+        <target state="translated">Если задано значение ИСТИНА, SQL Server использует шифрование SSL для всех данных, которыми сервер обменивается с клиентом, если на сервере установлен сертификат.</target>
+      </trans-unit>
       <trans-unit id="arc.endpoint">
         <source xml:lang="en">Endpoint</source>
         <target state="translated">Конечная точка</target>
@@ -372,6 +380,14 @@
       <trans-unit id="arc.errorConnectingToController">
         <source xml:lang="en">Error connecting to controller. {0}</source>
         <target state="translated">Ошибка при подключении к контроллеру. {0}</target>
+      </trans-unit>
+      <trans-unit id="arc.errorGettingConnectionMode">
+        <source xml:lang="en">Error getting data controller connection mode.</source>
+        <target state="translated">Ошибка при получении режима подключения контроллера данных.</target>
+      </trans-unit>
+      <trans-unit id="arc.errorListingLogAnalyticsWorkspaces">
+        <source xml:lang="en">Error listing Log Analytics workspaces {0}</source>
+        <target state="translated">Ошибка при перечислении рабочих областей Log Analytics: {0}</target>
       </trans-unit>
       <trans-unit id="arc.errorVerifyingPassword">
         <source xml:lang="en">Error encountered while verifying password. {0}</source>
@@ -546,12 +562,12 @@
         <target state="translated">Последняя точка во времени</target>
       </trans-unit>
       <trans-unit id="arc.learnAboutNodeParameters">
-        <source xml:lang="en">Learn more about database engine settings for Azure Arc-enabled PostgreSQL Hyperscale</source>
-        <target state="translated">Дополнительные сведения о параметрах ядра СУБД для гипермасштабирования PostgreSQL с поддержкой Azure Arc</target>
+        <source xml:lang="en">Learn more about database engine settings for Azure Arc-enabled PostgreSQL</source>
+        <target state="translated">Дополнительные сведения о параметрах ядра базы данных для PostgreSQL с поддержкой Azure Arc</target>
       </trans-unit>
       <trans-unit id="arc.learnAboutPostgresClients">
-        <source xml:lang="en">Learn more about Azure PostgreSQL Hyperscale client interfaces</source>
-        <target state="translated">Дополнительные сведения о клиентских интерфейсах гипермасштабирования PostgreSQL Azure</target>
+        <source xml:lang="en">Learn more about Azure PostgreSQL client interfaces</source>
+        <target state="translated">Дополнительные сведения о клиентских интерфейсах Azure PostgreSQL.</target>
       </trans-unit>
       <trans-unit id="arc.learnMore">
         <source xml:lang="en">Learn More.</source>
@@ -617,6 +633,10 @@
         <source xml:lang="en">SQL managed instance - Azure Arc</source>
         <target state="translated">Управляемый экземпляр SQL — Azure Arc</target>
       </trans-unit>
+      <trans-unit id="arc.miaaVersionError">
+        <source xml:lang="en">Error getting SQL managed instance version number.</source>
+        <target state="translated">Ошибка при получении номера версии Управляемого экземпляра SQL.</target>
+      </trans-unit>
       <trans-unit id="arc.missingExtension">
         <source xml:lang="en">The {0} extension is required to view engine settings. Do you wish to install it now?</source>
         <target state="translated">Для просмотра параметров модуля требуется расширение {0}. Вы хотите установить его сейчас?</target>
@@ -624,6 +644,14 @@
       <trans-unit id="arc.monitor">
         <source xml:lang="en">Monitor</source>
         <target state="translated">Монитор</target>
+      </trans-unit>
+      <trans-unit id="arc.monitorUpgrade">
+        <source xml:lang="en">You can check the status of the upgrade by running the following command:</source>
+        <target state="translated">Чтобы проверить состояние обновления, выполните следующую команду:</target>
+      </trans-unit>
+      <trans-unit id="arc.msgPromptSSLCertificateValidationFailed">
+        <source xml:lang="en">Encryption was enabled on this connection, review your SSL and certificate configuration for the target SQL Server, or set 'Trust server certificate' to 'true' in the settings file. Note: A self-signed certificate offers only limited protection and is not a recommended practice for production environments. Do you want to enable 'Trust server certificate' on this connection and retry?</source>
+        <target state="translated">Для этого подключения было включено шифрование, проверьте конфигурацию SSL и сертификата для целевого SQL Server или установите для параметра «Сертификат доверенного сервера» значение «true» в файле настроек. Примечание. Самозаверяющий сертификат обеспечивает лишь ограниченную защиту и не рекомендуется для производственных сред. Вы хотите включить «Сертификат доверенного сервера» для этого подключения и повторить попытку?</target>
       </trans-unit>
       <trans-unit id="arc.name">
         <source xml:lang="en">Name</source>
@@ -666,8 +694,12 @@
         <target state="translated">Параметры сервера рабочих ролей не найдены…</target>
       </trans-unit>
       <trans-unit id="arc.noPodIssuesDetected">
-        <source xml:lang="en">There aren’t any known issues affecting this PostgreSQL Hyperscale instance.</source>
-        <target state="translated">Нет известных проблем, затрагивающих этот экземпляр гипермасштабирования PostgreSQL.</target>
+        <source xml:lang="en">There aren’t any known issues affecting this PostgreSQL instance.</source>
+        <target state="translated">Нет известных проблем,этот экземпляр PostgreSQL.</target>
+      </trans-unit>
+      <trans-unit id="arc.noUpgrades">
+        <source xml:lang="en">The current version is the latest version. No upgrades available.</source>
+        <target state="translated">Текущая версия — последняя версия. Нет доступных обновлений.</target>
       </trans-unit>
       <trans-unit id="arc.noWorkerPods">
         <source xml:lang="en">No worker pods in this configuration.</source>
@@ -676,10 +708,6 @@
       <trans-unit id="arc.node">
         <source xml:lang="en">node</source>
         <target state="translated">узел</target>
-      </trans-unit>
-      <trans-unit id="arc.nodeConfiguration">
-        <source xml:lang="en">Node configuration</source>
-        <target state="translated">Конфигурация узла</target>
       </trans-unit>
       <trans-unit id="arc.nodes">
         <source xml:lang="en">nodes</source>
@@ -724,6 +752,14 @@
       <trans-unit id="arc.online">
         <source xml:lang="en">Online</source>
         <target state="translated">В Интернете</target>
+      </trans-unit>
+      <trans-unit id="arc.onlyNextImmediateVersion">
+        <source xml:lang="en">Currently, only upgrading to the next immediate version is supported.</source>
+        <target state="translated">Сейчас поддерживается обновление только до следующей версии.</target>
+      </trans-unit>
+      <trans-unit id="arc.onlyNextImmediateVersionMiaa">
+        <source xml:lang="en">The version of a SQL Managed Instance can not be newer than the version of its data controller. Currently, only upgrading to the next immediate version is supported.</source>
+        <target state="translated">Версия Управляемого экземпляра SQL не может быть новее версии контроллера данных. Сейчас поддерживается обновление только до следующей по порядку версии.</target>
       </trans-unit>
       <trans-unit id="arc.openDashboardFailed">
         <source xml:lang="en">Error opening dashboard. {0}</source>
@@ -774,8 +810,8 @@
         <target state="translated">Для отображения и настройки параметров ядра СУБД требуется подключение.</target>
       </trans-unit>
       <trans-unit id="arc.pgSqlType">
-        <source xml:lang="en">PostgreSQL Hyperscale - Azure Arc</source>
-        <target state="translated">Гипермасштабирование PostgreSQL — Azure Arc</target>
+        <source xml:lang="en">PostgreSQL server - Azure Arc</source>
+        <target state="translated">Сервер PostgreSQL — Azure Arc</target>
       </trans-unit>
       <trans-unit id="arc.pitr">
         <source xml:lang="en">Point in time restore</source>
@@ -822,8 +858,8 @@
         <target state="translated">Выберите pod в раскрывающемся списке ниже, чтобы получить подробные сведения о работоспособности</target>
       </trans-unit>
       <trans-unit id="arc.postgres.computeAndStorageDescriptionPartTwo">
-        <source xml:lang="en">PostgreSQL Hyperscale server group by</source>
-        <target state="translated">Группирование серверов гипермасштабирования PostgreSQL по</target>
+        <source xml:lang="en">PostgreSQL by</source>
+        <target state="translated">PostgreSQL от</target>
       </trans-unit>
       <trans-unit id="arc.postgresAdminUsername">
         <source xml:lang="en">Admin username</source>
@@ -838,8 +874,8 @@
         <target state="translated">Вы можете масштабировать поддерживающий Azure Arc…</target>
       </trans-unit>
       <trans-unit id="arc.postgresDashboard">
-        <source xml:lang="en">PostgreSQL Hyperscale - Azure Arc Dashboard - {0}</source>
-        <target state="translated">Гипермасштабирование PostgreSQL — панель мониторинга Azure Arc — {0}</target>
+        <source xml:lang="en">PostgreSQL server - Azure Arc Dashboard (Preview) - {0}</source>
+        <target state="translated">Сервер PostgreSQL — панель мониторинга Azure Arc (предварительная версия) — {0}</target>
       </trans-unit>
       <trans-unit id="arc.postgresExtension">
         <source xml:lang="en">microsoft.azuredatastudio-postgresql</source>
@@ -877,6 +913,10 @@
         <source xml:lang="en">Value is expected to be in the range {0} - {1}</source>
         <target state="translated">Значение должно находиться в диапазоне от {0} до {1}</target>
       </trans-unit>
+      <trans-unit id="arc.readMore">
+        <source xml:lang="en">Read more</source>
+        <target state="translated">Дополнительные сведения</target>
+      </trans-unit>
       <trans-unit id="arc.ready">
         <source xml:lang="en">Ready</source>
         <target state="translated">Готово</target>
@@ -904,6 +944,14 @@
       <trans-unit id="arc.region">
         <source xml:lang="en">Region</source>
         <target state="translated">Регион</target>
+      </trans-unit>
+      <trans-unit id="arc.releaseDate">
+        <source xml:lang="en">Release Date</source>
+        <target state="translated">Дата выпуска</target>
+      </trans-unit>
+      <trans-unit id="arc.releaseNotes">
+        <source xml:lang="en">Release Notes</source>
+        <target state="translated">Заметки о выпуске</target>
       </trans-unit>
       <trans-unit id="arc.rememberPassword">
         <source xml:lang="en">Remember Password</source>
@@ -1013,13 +1061,13 @@
         <source xml:lang="en">Select from available client connection strings below.</source>
         <target state="translated">Выберите строку подключения клиента из доступных строк ниже.</target>
       </trans-unit>
+      <trans-unit id="arc.server">
+        <source xml:lang="en">Server</source>
+        <target state="translated">Сервер</target>
+      </trans-unit>
       <trans-unit id="arc.serverEndpoint">
         <source xml:lang="en">Server Endpoint</source>
         <target state="translated">Конечная точка сервера</target>
-      </trans-unit>
-      <trans-unit id="arc.serverGroupNodes">
-        <source xml:lang="en">Server group nodes</source>
-        <target state="translated">Узлы группы серверов</target>
       </trans-unit>
       <trans-unit id="arc.serverGroupType">
         <source xml:lang="en">Server group type</source>
@@ -1036,6 +1084,10 @@
       <trans-unit id="arc.settings">
         <source xml:lang="en">Settings</source>
         <target state="translated">Параметры</target>
+      </trans-unit>
+      <trans-unit id="arc.showMiaaError">
+        <source xml:lang="en">Error showing details of SQL managed instance.</source>
+        <target state="translated">Ошибка при отображении сведений об Управляемом экземпляре SQL.</target>
       </trans-unit>
       <trans-unit id="arc.sourceDatabase">
         <source xml:lang="en">Source database</source>
@@ -1081,6 +1133,10 @@
         <source xml:lang="en">Suspect</source>
         <target state="translated">Подозрительный</target>
       </trans-unit>
+      <trans-unit id="arc.syncSecondaryToCommit">
+        <source xml:lang="en">Sync Secondary To Commit</source>
+        <target state="translated">Синхронизировать получателя для фиксации</target>
+      </trans-unit>
       <trans-unit id="arc.thePasswordsDoNotMatch">
         <source xml:lang="en">The passwords do not match. Confirm the password or press escape to exit.</source>
         <target state="translated">Пароли не совпадают. Подтвердите пароль или нажмите клавишу ESC для выхода.</target>
@@ -1088,6 +1144,14 @@
       <trans-unit id="arc.troubleshoot">
         <source xml:lang="en">Troubleshoot</source>
         <target state="translated">Устранение неполадок</target>
+      </trans-unit>
+      <trans-unit id="arc.trustServerCertDescription">
+        <source xml:lang="en">When true (and encrypt=true), SQL Server uses SSL encryption for all data sent between the client and server without validating the server certificate.</source>
+        <target state="translated">Если задано значение ИСТИНА (и encrypt=true), SQL Server использует шифрование SSL для всех данных, которыми сервер обменивается с клиентом, без проверки сертификата сервера.</target>
+      </trans-unit>
+      <trans-unit id="arc.trustServerCertificate">
+        <source xml:lang="en">Trust Server Certificate</source>
+        <target state="translated">Сертификат доверенного сервера</target>
       </trans-unit>
       <trans-unit id="arc.type">
         <source xml:lang="en">Type</source>
@@ -1113,6 +1177,54 @@
         <source xml:lang="en">Updating instance '{0}'...</source>
         <target state="translated">Обновление экземпляра "{0}"…</target>
       </trans-unit>
+      <trans-unit id="arc.upgrade">
+        <source xml:lang="en">Upgrade</source>
+        <target state="translated">Обновить</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradeDataController">
+        <source xml:lang="en">Upgrade Data Controller</source>
+        <target state="translated">Обновление контроллера данных</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradeDialogController">
+        <source xml:lang="en">During a data controller upgrade, portions of the data control plane such as Custom Resource Definitions (CRDs) and containers may be upgraded. An upgrade of the data controller will not cause downtime for the data services (SQL Managed Instance or PostgreSQL server).</source>
+        <target state="translated">При обновлении контроллера данных могут быть обновлены части уровня управления данными, такие как настраиваемые определения ресурсов (CRD) и контейнеры. Обновление контроллера данных не приведет к простою служб данных (Управляемый экземпляр SQL или сервер PostgreSQL).</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradeDialogMiaa">
+        <source xml:lang="en">During a SQL managed instance upgrade, portions of the data control plane such as Custom Resource Definitions (CRDs) and containers may be upgraded. An upgrade of the SQL managed instance will not cause downtime for the data services (SQL Managed Instance or PostgreSQL server).</source>
+        <target state="translated">При обновлении Управляемого экземпляра SQL могут быть обновлены части уровня управления данными, такие как настраиваемые определения ресурсов (CRD) и контейнеры. Обновление Управляемого экземпляра SQL не приведет к простою служб данных (Управляемый экземпляр SQL или сервер PostgreSQL).</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradeManagement">
+        <source xml:lang="en">Upgrade Management</source>
+        <target state="translated">Управление обновлениями</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradeMiaa">
+        <source xml:lang="en">Upgrade SQL Managed Instance</source>
+        <target state="translated">Обновление Управляемого экземпляра SQL</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradingController">
+        <source xml:lang="en">Data controller is being upgraded. You can check the status of the upgrade by running the following command: 'kubectl get datacontrollers -A'</source>
+        <target state="translated">Выполняется обновление контроллера данных. Чтобы проверить состояние обновления, выполните следующую команду: “kubectl get datacontrollers -A”</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradingDirectDC">
+        <source xml:lang="en">Upgrading data controller '{0}' with command 'az arcdata dc upgrade --desired-version {1} --name {0} --resource-group {2}'</source>
+        <target state="translated">Обновление контроллера данных "{0}" с помощью команды "az arcdata dc upgrade --desired-version {1} --name {0} --resource-group {2}"</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradingDirectMiaa">
+        <source xml:lang="en">Upgrading SQL MIAA '{0}' with command 'az sql mi-arc upgrade --name {0} --resource-group {1}'</source>
+        <target state="translated">Обновление SQL MIAA "{0}" с помощью команды "az sql mi-arc upgrade --name {0} --resource-group {1}"</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradingIndirectDC">
+        <source xml:lang="en">Upgrading data controller '{0}' with command 'az arcdata dc upgrade --desired-version {1} --name {0} --k8s-namespace {2} --use-k8s'</source>
+        <target state="translated">Обновление контроллера данных "{0}" с помощью команды "az arcdata dc upgrade --desired-version {1} --name {0} --k8s-namespace {2} --use-k8s"</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradingIndirectMiaa">
+        <source xml:lang="en">Upgrading SQL MIAA '{0}' with command 'az sql mi-arc upgrade --name {0} --k8s-namespace {1} --use-k8s'</source>
+        <target state="translated">Обновление SQL MIAA "{0}" с командой "az sql mi-arc upgrade --name {0} --k8s-namespace {1} --use-k8s"</target>
+      </trans-unit>
+      <trans-unit id="arc.upgradingMiaa">
+        <source xml:lang="en">SQL managed instance is being upgraded. You can check the status of the upgrade by running the following command: 'kubectl get sqlmi -A'</source>
+        <target state="translated">Выполняется обновление Управляемого экземпляра SQL. Чтобы проверить состояние обновления, выполните следующую команду: “kubectl get sqlmi -A”</target>
+      </trans-unit>
       <trans-unit id="arc.userCancelledError">
         <source xml:lang="en">User cancelled the dialog</source>
         <target state="translated">Пользователь отменил это диалоговое окно</target>
@@ -1129,33 +1241,21 @@
         <source xml:lang="en">Value</source>
         <target state="translated">Значение</target>
       </trans-unit>
+      <trans-unit id="arc.version">
+        <source xml:lang="en">Version</source>
+        <target state="translated">Версия</target>
+      </trans-unit>
+      <trans-unit id="arc.versionLog">
+        <source xml:lang="en">Learn more about each release here.</source>
+        <target state="translated">Подробнее о каждом выпуске здесь.</target>
+      </trans-unit>
       <trans-unit id="arc.worker">
         <source xml:lang="en">Worker</source>
         <target state="translated">Рабочая роль</target>
       </trans-unit>
-      <trans-unit id="arc.workerCoresLimit">
-        <source xml:lang="en">Worker Nodes CPU limit</source>
-        <target state="translated">Ограничение ЦП для рабочих узлов</target>
-      </trans-unit>
-      <trans-unit id="arc.workerCoresRequest">
-        <source xml:lang="en">Worker Nodes CPU request</source>
-        <target state="translated">Запрос ЦП рабочих узлов</target>
-      </trans-unit>
-      <trans-unit id="arc.workerMemoryLimit">
-        <source xml:lang="en">Worker Nodes Memory limit (in GB)</source>
-        <target state="translated">Ограничение на объем памяти для рабочих узлов (в ГБ)</target>
-      </trans-unit>
-      <trans-unit id="arc.workerMemoryRequest">
-        <source xml:lang="en">Worker Nodes Memory request (in GB)</source>
-        <target state="translated">Запрос памяти рабочих узлов (в ГБ)</target>
-      </trans-unit>
       <trans-unit id="arc.workerNodeCount">
         <source xml:lang="en">Worker node count</source>
         <target state="translated">Число рабочих узлов</target>
-      </trans-unit>
-      <trans-unit id="arc.workerNodeInformation">
-        <source xml:lang="en">It is possible to scale in and out your server group by reducing or increasing the number of worker nodes. The value must be 0 or greater than 1.</source>
-        <target state="translated">Вы можете горизонтально увеличивать и уменьшать масштаб группы серверов, уменьшая или увеличивая число рабочих узлов. Значение должно быть равно 0 или превышать 1.</target>
       </trans-unit>
       <trans-unit id="arc.workerNodeParameters">
         <source xml:lang="en">Worker Node Parameters</source>
@@ -1165,21 +1265,9 @@
         <source xml:lang="en">Worker Nodes</source>
         <target state="translated">Рабочие узлы</target>
       </trans-unit>
-      <trans-unit id="arc.workerNodesConfigurationInformation">
-        <source xml:lang="en">You can configure the number of CPU cores and storage size that will apply to all worker nodes. Adjust the number of CPU cores and memory settings for your server group. To reset the requests and/or limits, pass in empty value.</source>
-        <target state="translated">Вы можете настроить количество ядер ЦП и размер хранилища, которые будут применяться ко всем рабочим узлам. Настройте количество ядер ЦП и параметры памяти для группы серверов. Чтобы сбросить запросы и/или ограничения, укажите пустое значение.</target>
-      </trans-unit>
-      <trans-unit id="arc.workerNodesDescription">
-        <source xml:lang="en">Expand your server group and scale your database by adding worker nodes.</source>
-        <target state="translated">Разверните группу серверов и масштабируйте свою базу данных, добавив рабочие узлы.</target>
-      </trans-unit>
       <trans-unit id="arc.workerNodesParametersDescription">
         <source xml:lang="en"> These server parameters of the Worker nodes can be set to custom (non-default) values. Search to find parameters.</source>
         <target state="translated"> Для этих параметров сервера рабочих узлов могут быть заданы пользовательские значения (отличные от значений по умолчанию). Воспользуйтесь поиском, чтобы найти параметры.</target>
-      </trans-unit>
-      <trans-unit id="arc.workerOneNodeValidationMessage">
-        <source xml:lang="en">Value of 1 is not supported.</source>
-        <target state="translated">Значение 1 не поддерживается.</target>
       </trans-unit>
       <trans-unit id="arc.yes">
         <source xml:lang="en">Yes</source>
@@ -1249,21 +1337,49 @@
         <source xml:lang="en">I accept {0} and {1}.</source>
         <target state="translated">Я принимаю {0} и {1}.</target>
       </trans-unit>
+      <trans-unit id="arc.agreement.help.text.azure.marketplace.terms">
+        <source xml:lang="en">Azure Marketplace Terms</source>
+        <target state="translated">Условия Azure Marketplace</target>
+      </trans-unit>
+      <trans-unit id="arc.agreement.help.text.learn.more">
+        <source xml:lang="en">Learn more</source>
+        <target state="translated">Подробнее</target>
+      </trans-unit>
+      <trans-unit id="arc.agreement.help.text.privacy.policy">
+        <source xml:lang="en">Privacy policy</source>
+        <target state="translated">Политика конфиденциальности</target>
+      </trans-unit>
+      <trans-unit id="arc.agreement.help.text.terms.of.use">
+        <source xml:lang="en">Terms of use</source>
+        <target state="translated">Условия использования</target>
+      </trans-unit>
+      <trans-unit id="arc.agreement.postgres.help.text">
+        <source xml:lang="en">PostgreSQL Server - Azure Arc is one of the database engines available as part of Azure Arc-enabled data services and it can be deployed on the infrastructure of your choice. {0}. 
+ 
+ By clicking 'Script to notebook' or 'Deploy', I (a) agree to the legal terms and privacy statement(s) associated with the Marketplace offering(s) listed below; (b) authorize Microsoft to bill my current payment method for the fees associated with the offering(s), with the same billing frequency as my Azure subscription; and (c) agree that Microsoft may share my contact, usage and transactional information with the provider(s) of the offering(s) for support, billing and other transactional activities. Microsoft does not provide rights for third-party offerings. For additional details see {1}, {2}, and {3}.</source>
+        <target state="translated">Управляемый экземпляр с поддержкой Azure Arc обеспечивает доступ к SQL Server и совместимость функций, которые можно развернуть в любой инфраструктуре по вашему вкусу. {0}. 
+ 
+ Нажимая кнопку "Сохранить сценарий в записную книжку" или "Развернуть", я (а) соглашаюсь с юридическими условиями и заявлениями о конфиденциальности, связанными с указанными ниже предложениями Marketplace; (б) разрешаю корпорации Майкрософт выставлять мне счета по сборам, связанным с этими предложениями, с использованием моего текущего метода оплаты и с той же периодичностью, что и для моей подписки Azure; и (в) соглашаюсь, что корпорация Майкрософт имеет право передавать мои контактные данные, а также сведения об использовании и транзакциях поставщикам предложений для целей предоставления поддержки, выставления счетов и других действий с транзакциями. Корпорация Майкрософт не предоставляет права на сторонние предложения. Дополнительные сведения см. в {1}, {2} и {3}.</target>
+      </trans-unit>
+      <trans-unit id="arc.agreement.postgres.help.text.learn.more.ariaLabel">
+        <source xml:lang="en">Learn more about PostgreSQL Server - Azure Arc</source>
+        <target state="translated">Подробнее о PostgreSQL Server — Azure Arc</target>
+      </trans-unit>
       <trans-unit id="arc.agreement.postgres.terms.conditions">
-        <source xml:lang="en">Azure Arc-enabled PostgreSQL Hyperscale terms and conditions</source>
-        <target state="translated">Условия использования гипермасштабирования PostgreSQL с поддержкой Azure Arc</target>
+        <source xml:lang="en">PostgreSQL Server - Azure Arc terms and conditions</source>
+        <target state="translated">PostgreSQL Server — условия и положения Azure Arc</target>
       </trans-unit>
       <trans-unit id="arc.agreement.sql.help.text">
-        <source xml:lang="en">Azure Arc enabled Managed Instance provides SQL Server access and feature compatibility that can be deployed on the infrastructure of your choice. {0}</source>
-        <target state="translated">Управляемый экземпляр с поддержкой Azure Arc предоставляет доступ к SQL Server и совместимые функции, которые можно развернуть в любой удобной инфраструктуре. {0}</target>
-      </trans-unit>
-      <trans-unit id="arc.agreement.sql.help.text.learn.more">
-        <source xml:lang="en">Learn more</source>
-        <target state="translated">Дополнительные сведения</target>
+        <source xml:lang="en">Azure Arc-enabled Managed Instance provides SQL Server access and feature compatibility that can be deployed on the infrastructure of your choice. {0}. 
+ 
+ By clicking 'Script to notebook' or 'Deploy', I (a) agree to the legal terms and privacy statement(s) associated with the Marketplace offering(s) listed below; (b) authorize Microsoft to bill my current payment method for the fees associated with the offering(s), with the same billing frequency as my Azure subscription; and (c) agree that Microsoft may share my contact, usage and transactional information with the provider(s) of the offering(s) for support, billing and other transactional activities. Microsoft does not provide rights for third-party offerings. For additional details see {1}, {2}, and {3}.</source>
+        <target state="translated">Управляемый экземпляр с поддержкой Azure Arc обеспечивает доступ к SQL Server и совместимость функций, которые можно развернуть в любой инфраструктуре по вашему вкусу. {0}. 
+ 
+ Щелкая "Сохранить сценарий в записную книжку" или "Развернуть", я (а) соглашаюсь с юридическими условиями и заявлениями о конфиденциальности, связанными с указанными ниже предложениями Marketplace; (б) разрешаю корпорации Майкрософт выставлять мне счета по сборам, связанным с этими предложениями, с использованием моего текущего метода оплаты и с той же периодичностью, что и для моей подписки Azure; и (в) соглашаюсь, что корпорация Майкрософт имеет право передавать мои контактные данные, а также сведения об использовании и транзакциях поставщикам предложений для целей предоставления поддержки, выставления счетов и других действий с транзакциями. Корпорация Майкрософт не предоставляет права на сторонние предложения. Дополнительные сведения см. в {1}, {2} и {3}.</target>
       </trans-unit>
       <trans-unit id="arc.agreement.sql.help.text.learn.more.ariaLabel">
-        <source xml:lang="en">Learn more about Azure Arc enabled Managed Instance</source>
-        <target state="translated">Подробнее об управляемом экземпляре с поддержкой Azure Arc</target>
+        <source xml:lang="en">Learn more about Azure Arc-enabled Managed Instance</source>
+        <target state="translated">Подробнее об управляемом экземпляре Azure Arc</target>
       </trans-unit>
       <trans-unit id="arc.agreement.sql.terms.conditions">
         <source xml:lang="en">Azure SQL managed instance - Azure Arc terms and conditions</source>
@@ -1309,10 +1425,6 @@
         <source xml:lang="en">Cores Request</source>
         <target state="translated">Запрос ядер</target>
       </trans-unit>
-      <trans-unit id="arc.data.controller.agreement">
-        <source xml:lang="en">I accept {0} and {1}.</source>
-        <target state="translated">Я принимаю {0} и {1}.</target>
-      </trans-unit>
       <trans-unit id="arc.data.controller.auto.upload.logs">
         <source xml:lang="en">Auto-upload Logs</source>
         <target state="translated">Автоматически отправлять журналы</target>
@@ -1330,8 +1442,12 @@
         <target state="translated">Включить автоматическую отправку метрик. Только прямой режим.</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.cluster.config.profile">
-        <source xml:lang="en">Config profile</source>
-        <target state="translated">Профиль конфигурации</target>
+        <source xml:lang="en">Kubernetes configuration template</source>
+        <target state="translated">Шаблон конфигурации Kubernetes</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.cluster.config.profile.description">
+        <source xml:lang="en">Choose the Kubernetes configuration template that matches with your Kubernetes distribution. This template provides defaults for storage class, service type, etc.</source>
+        <target state="translated">Выберите шаблон конфигурации Kubernetes, соответствующий вашему дистрибутиву Kubernetes. Этот шаблон предоставляет значения по умолчанию для класса хранения, типа службы и т. д.</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.cluster.config.profile.loading">
         <source xml:lang="en">Loading config profiles</source>
@@ -1348,6 +1464,14 @@
       <trans-unit id="arc.data.controller.cluster.environment.title">
         <source xml:lang="en">What is your target existing Kubernetes cluster environment?</source>
         <target state="translated">Какова целевая существующая среда кластера Kubernetes?</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.cluster.name">
+        <source xml:lang="en">Cluster Name</source>
+        <target state="translated">Имя кластера</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.cluster.name.description">
+        <source xml:lang="en">The name of the cluster. Direct mode only.</source>
+        <target state="translated">Имя кластера. Только прямой режим.</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.connectivity.mode">
         <source xml:lang="en">Connectivity mode</source>
@@ -1374,12 +1498,28 @@
         <target state="translated">Имя настраиваемого расположения. Только прямой режим.</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.details.description">
-        <source xml:lang="en">For indirect mode, provide a namespace, name and storage class for your Azure Arc data controller. This name will be used to identify your Arc instance for remote management and monitoring. For direct mode you do not need to provide a namespace, but please provide the custom location name.</source>
-        <target state="translated">Для непрямого режима необходимо указать пространство имен, имя и класс хранение для контроллера данных Azure Arc. Это имя будет использоваться для идентификации вашего экземпляра Arc для удаленного управления и мониторинга. Для прямого режима не требуется пространство имен, но нужно указать имя настраиваемого расположения.</target>
+        <source xml:lang="en">For indirect mode, namespace, name and storage class are required. This name will be used to identify your Arc instance for remote management and monitoring. For direct mode, custom location name is required.</source>
+        <target state="translated">Для непрямого режима требуются: пространство имен, имя и класс хранилища. Это имя будет использоваться для идентификации вашего экземпляра Arc для удаленного управления и мониторинга. Для прямого режима требуется имя настраиваемого расположения.</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.details.title">
         <source xml:lang="en">Data controller details</source>
         <target state="translated">Сведения о контроллере данных</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.direct.display.name">
+        <source xml:lang="en">Direct</source>
+        <target state="translated">Прямое</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.help.text">
+        <source xml:lang="en">The Kubernetes cluster must already be arc-enabled with the az connectedk8s connect command. Please use our {0} to learn more.</source>
+        <target state="translated">Кластер Kubernetes уже должен быть включен с помощью команды az connectedk8s connect. Используйте наш {0} для получения дополнительных сведений.</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.help.text.documentation.page">
+        <source xml:lang="en">documentation page</source>
+        <target state="translated">страница документации</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.indirect.display.name">
+        <source xml:lang="en">Indirect</source>
+        <target state="translated">Непрямое</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.infrastructure">
         <source xml:lang="en">Infrastructure</source>
@@ -1392,6 +1532,22 @@
       <trans-unit id="arc.data.controller.location">
         <source xml:lang="en">Location</source>
         <target state="translated">Расположение</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.location.description">
+        <source xml:lang="en">Location is only used for indirect mode deployment. This field will be ignored for direct mode.</source>
+        <target state="translated">Расположение используется только в режиме непрямого развертывания. Это поле будет игнорироваться для прямого режима.</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.log.analytics.primary.key">
+        <source xml:lang="en">Log Analytics primary key</source>
+        <target state="translated">Первичный ключ Log Analytics</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.log.analytics.workspace.id">
+        <source xml:lang="en">Log Analytics workspace ID</source>
+        <target state="translated">ИД рабочей области Log Analytics</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.log.analytics.workspace.names">
+        <source xml:lang="en">Log Analytics workspace</source>
+        <target state="translated">Рабочая область Log Analytics</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.metrics.and.logs.dashboard.credentials.confirm.password">
         <source xml:lang="en">Confirm password</source>
@@ -1430,8 +1586,8 @@
         <target state="translated">Пространство имен контроллера данных</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.namespace.description">
-        <source xml:lang="en">Indirect mode only.</source>
-        <target state="translated">Только непрямой режим.</target>
+        <source xml:lang="en">Data controller namespace. Indirect mode only.</source>
+        <target state="translated">Пространство имен контроллера данных. Только непрямой режим.</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.namespace.validation.description">
         <source xml:lang="en">Namespace must consist of lower case alphanumeric characters or '-', start/end with an alphanumeric character, and be 63 characters or fewer in length.</source>
@@ -1485,9 +1641,17 @@
         <source xml:lang="en">Cluster context</source>
         <target state="translated">Контекст кластера</target>
       </trans-unit>
+      <trans-unit id="arc.data.controller.summary.cluster.name">
+        <source xml:lang="en">Cluster name</source>
+        <target state="translated">Имя кластера</target>
+      </trans-unit>
       <trans-unit id="arc.data.controller.summary.controller">
         <source xml:lang="en">Controller</source>
         <target state="translated">Контроллер</target>
+      </trans-unit>
+      <trans-unit id="arc.data.controller.summary.data.controller.custom.location">
+        <source xml:lang="en">Data controller custom location</source>
+        <target state="translated">Пользовательское расположение контроллера данных</target>
       </trans-unit>
       <trans-unit id="arc.data.controller.summary.data.controller.infrastructure">
         <source xml:lang="en">Data controller infrastructure</source>
@@ -1573,133 +1737,117 @@
         <source xml:lang="en">Password</source>
         <target state="translated">Пароль</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.cores.limit.description">
+      <trans-unit id="arc.postgres.server.cores.limit.description">
         <source xml:lang="en">The maximum number of CPU cores for the Postgres instance that can be used on the coordinator node. Fractional cores are supported.</source>
         <target state="translated">Максимальное числ ядер процессора для экземпляра Postgres, которое может использоваться в узле-координаторе. Поддерживается дробное количество ядер.</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.cores.limit.label">
+      <trans-unit id="arc.postgres.server.cores.limit.label">
         <source xml:lang="en">CPU limit</source>
         <target state="translated">Ограничение на использование ЦП</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.cores.request.description">
+      <trans-unit id="arc.postgres.server.cores.request.description">
         <source xml:lang="en">The minimum number of CPU cores that must be available on the coordinator node to schedule the service. Fractional cores are supported.</source>
         <target state="translated">Минимальное число ядер процессора, которое должно быть доступно в узле-координаторе, чтобы запланировать службу. Поддерживается дробное количество ядер.</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.cores.request.label">
+      <trans-unit id="arc.postgres.server.cores.request.label">
         <source xml:lang="en">CPU request</source>
         <target state="translated">Запрос ЦП</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.memory.limit.description">
-        <source xml:lang="en">The memory limit of the Postgres instance on the coordinator node in GB.</source>
-        <target state="translated">Ограничение памяти экземпляра Postgres в узле-координаторе (ГБ).</target>
+      <trans-unit id="arc.postgres.server.dev.use.description">
+        <source xml:lang="en">Check the box to indicate this instance will be used for development or testing purposes only. This instance will not be billed.</source>
+        <target state="translated">Установите этот флажок, чтобы указать, что этот экземпляр будет использоваться только для разработки и тестирования. За этот экземпляр не будет взиматься оплата.</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.memory.limit.label">
-        <source xml:lang="en">Memory limit (GB)</source>
-        <target state="translated">Предельный объем памяти (ГБ)</target>
+      <trans-unit id="arc.postgres.server.dev.use.label">
+        <source xml:lang="en">For development use only</source>
+        <target state="translated">Только для разработки</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.memory.request.description">
-        <source xml:lang="en">The memory request of the Postgres instance on the coordinator node in GB.</source>
-        <target state="translated">Запрос памяти экземпляра Postgres в узле-координаторе (ГБ).</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.coordinator.memory.request.label">
-        <source xml:lang="en">Memory request (GB)</source>
-        <target state="translated">Запрос памяти (ГБ)</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.engine.version">
+      <trans-unit id="arc.postgres.server.engine.version">
         <source xml:lang="en">Engine Version</source>
         <target state="translated">Версия подсистемы</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.extensions.description">
+      <trans-unit id="arc.postgres.server.extensions.description">
         <source xml:lang="en">A comma-separated list of the Postgres extensions that should be loaded on startup. Please refer to the postgres documentation for supported values.</source>
         <target state="translated">Разделенный запятыми список расширений Postgres, которые должны загружаться при запуске. Поддерживаемые значения см. в документации по Postgres.</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.extensions.label">
+      <trans-unit id="arc.postgres.server.extensions.label">
         <source xml:lang="en">Extensions</source>
         <target state="translated">Расширения</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.name">
-        <source xml:lang="en">Server group name</source>
-        <target state="translated">Имя группы серверов</target>
+      <trans-unit id="arc.postgres.server.invalid.username">
+        <source xml:lang="en">That username is disabled; please choose another username.</source>
+        <target state="translated">Это имя пользователя отключено, выберите другое имя пользователя</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.name.validation.description">
-        <source xml:lang="en">Server group name must consist of lower case alphanumeric characters or '-', start with a letter, end with an alphanumeric character, and be 11 characters or fewer in length.</source>
-        <target state="translated">Имя группы серверов должно состоять из строчных букв и цифр или дефисов "-", начинаться с буквы, заканчиваться буквой или цифрой и содержать не более 11 символов.</target>
+      <trans-unit id="arc.postgres.server.memory.limit.description">
+        <source xml:lang="en">The memory limit of the Postgres instance on the coordinator node in GB.</source>
+        <target state="translated">Ограничение памяти экземпляра Postgres в узле-координаторе (ГБ).</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.port">
+      <trans-unit id="arc.postgres.server.memory.limit.label">
+        <source xml:lang="en">Memory limit (GB)</source>
+        <target state="translated">Предельный объем памяти (ГБ)</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.memory.request.description">
+        <source xml:lang="en">The memory request of the Postgres instance on the coordinator node in GB.</source>
+        <target state="translated">Запрос памяти экземпляра Postgres в узле-координаторе (ГБ).</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.memory.request.label">
+        <source xml:lang="en">Memory request (GB)</source>
+        <target state="translated">Запрос памяти (ГБ)</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.name">
+        <source xml:lang="en">Server name</source>
+        <target state="translated">Имя сервера</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.name.placeholder">
+        <source xml:lang="en">Enter server name</source>
+        <target state="translated">Введите имя сервера</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.name.validation.description">
+        <source xml:lang="en">Server name must consist of lower case alphanumeric characters or '-', start with a letter, end with an alphanumeric character, and be 11 characters or fewer in length.</source>
+        <target state="translated">Имя экземпляра должно состоять из строчных букв и цифр или дефисов "-", начинаться с буквы, заканчиваться буквой или цифрой и содержать не более 11 символов.</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.port">
         <source xml:lang="en">Port</source>
         <target state="translated">Порт</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.volume.size.backups.description">
+      <trans-unit id="arc.postgres.server.service.type">
+        <source xml:lang="en">Service type</source>
+        <target state="translated">Тип службы</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.username">
+        <source xml:lang="en">Admin username</source>
+        <target state="translated">Имя администратора</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.username.placeholder">
+        <source xml:lang="en">Enter server admin login name</source>
+        <target state="translated">Введите имя для входа администратора сервера</target>
+      </trans-unit>
+      <trans-unit id="arc.postgres.server.volume.size.backups.description">
         <source xml:lang="en">The size of the storage volume to be used for backups in GB.</source>
         <target state="translated">Размер тома хранилища, используемого для резервных копий (ГБ).</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.volume.size.backups.label">
+      <trans-unit id="arc.postgres.server.volume.size.backups.label">
         <source xml:lang="en">Volume Size GB (Backups)</source>
         <target state="translated">Размер тома в ГБ (резервные копии)</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.volume.size.data.description">
+      <trans-unit id="arc.postgres.server.volume.size.data.description">
         <source xml:lang="en">The size of the storage volume to be used for data in GB.</source>
         <target state="translated">Размер тома хранилища, используемого для данных (ГБ).</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.volume.size.data.label">
+      <trans-unit id="arc.postgres.server.volume.size.data.label">
         <source xml:lang="en">Volume Size GB (Data)</source>
         <target state="translated">Размер тома в ГБ (данные)</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.volume.size.logs.description">
+      <trans-unit id="arc.postgres.server.volume.size.logs.description">
         <source xml:lang="en">The size of the storage volume to be used for logs in GB.</source>
         <target state="translated">Размер тома хранилища, используемого для журналов (ГБ).</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.volume.size.logs.label">
+      <trans-unit id="arc.postgres.server.volume.size.logs.label">
         <source xml:lang="en">Volume Size GB (Logs)</source>
         <target state="translated">Размер тома в ГБ (журналы)</target>
       </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.cores.limit.description">
-        <source xml:lang="en">The maximum number of CPU cores for the Postgres instance that can be used per node. Fractional cores are supported.</source>
-        <target state="translated">Максимальное число ядер процессора для экземпляра Postgres, которое может использоваться на узел. Поддерживается дробное количество ядер.</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.cores.limit.label">
-        <source xml:lang="en">CPU limit (cores per node)</source>
-        <target state="translated">Ограничение ЦП (ядер на узел)</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.cores.request.description">
-        <source xml:lang="en">The minimum number of CPU cores that must be available per node to schedule the service. Fractional cores are supported.</source>
-        <target state="translated">Минимальное количество ядер процессора, которое должно быть доступно каждому узлу, чтобы запланировать службу. Поддерживается дробное количество ядер.</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.cores.request.label">
-        <source xml:lang="en">CPU request (cores per node)</source>
-        <target state="translated">Запрос ЦП (ядер на узел)</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.description">
-        <source xml:lang="en">The number of worker nodes to provision in a sharded cluster, or zero (the default) for single-node Postgres.</source>
-        <target state="translated">Число рабочих узлов для подготовки в сегментированном кластере или нуль (по умолчанию) для Postgres с одним узлом.</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.label">
-        <source xml:lang="en">Number of workers</source>
-        <target state="translated">Число рабочих ролей</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.memory.limit.description">
-        <source xml:lang="en">The memory limit of the Postgres instance per node in GB.</source>
-        <target state="translated">Ограничение памяти экземпляра Postgres на узел (ГБ).</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.memory.limit.label">
-        <source xml:lang="en">Memory limit (GB per node)</source>
-        <target state="translated">Предельный объем памяти (ГБ на узел)</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.memory.request.description">
-        <source xml:lang="en">The memory request of the Postgres instance per node in GB.</source>
-        <target state="translated">Запрос памяти экземпляра Postgres на узел (ГБ).</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.server.group.workers.memory.request.label">
-        <source xml:lang="en">Memory request (GB per node)</source>
-        <target state="translated">Запрос памяти (ГБ на узел)</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.settings.resource.coordinator.title">
-        <source xml:lang="en">Coordinator Node Compute Configuration</source>
-        <target state="translated">Конфигурация вычисления узла-координатора</target>
-      </trans-unit>
-      <trans-unit id="arc.postgres.settings.resource.worker.title">
-        <source xml:lang="en">Worker Nodes Compute Configuration</source>
-        <target state="translated">Конфигурация вычисления рабочих узлов</target>
+      <trans-unit id="arc.postgres.settings.resource.compute.config.title">
+        <source xml:lang="en">Compute Configuration</source>
+        <target state="translated">Настройка вычислений</target>
       </trans-unit>
       <trans-unit id="arc.postgres.settings.section.title">
         <source xml:lang="en">General settings</source>
@@ -1722,12 +1870,12 @@
         <target state="translated">Класс хранения, используемый для постоянных томов журналов</target>
       </trans-unit>
       <trans-unit id="arc.postgres.wizard.page1.title">
-        <source xml:lang="en">Provide Azure enabled PostgreSQL Hyperscale server group parameters</source>
-        <target state="translated">Укажите параметры группы серверов гипермасштабирования PostgreSQL с поддержкой Azure</target>
+        <source xml:lang="en">Provide PostgreSQL server parameters</source>
+        <target state="translated">Предоставление параметров сервера PostgreSQL</target>
       </trans-unit>
       <trans-unit id="arc.postgres.wizard.title">
-        <source xml:lang="en">Deploy an Azure Arc-enabled PostgreSQL Hyperscale server group</source>
-        <target state="new">Deploy an Azure Arc-enabled PostgreSQL Hyperscale server group</target>
+        <source xml:lang="en">Deploy a PostgreSQL Server - Azure Arc (Preview)</source>
+        <target state="translated">Развертывание PostgreSQL Server — Azure Arc (предварительная версия)</target>
       </trans-unit>
       <trans-unit id="arc.sql.connection.settings.section.title">
         <source xml:lang="en">SQL Connection information</source>
@@ -1760,6 +1908,10 @@
       <trans-unit id="arc.sql.cost.summary.basics">
         <source xml:lang="en">Basics</source>
         <target state="translated">Основное</target>
+      </trans-unit>
+      <trans-unit id="arc.sql.cost.summary.billable.replicas">
+        <source xml:lang="en">Billable replicas</source>
+        <target state="translated">Оплачиваемые реплики</target>
       </trans-unit>
       <trans-unit id="arc.sql.cost.summary.business.critical">
         <source xml:lang="en">Business Critical</source>
@@ -1803,7 +1955,7 @@
       </trans-unit>
       <trans-unit id="arc.sql.cost.summary.service.tier.learn.more.description">
         <source xml:lang="en">Select from the latest vCore service tiers available for SQL Managed Instance - Azure Arc including General Purpose and Business Critical.</source>
-        <target state="new">Select from the latest vCore service tiers available for SQL Managed Instance - Azure Arc including General Purpose and Business Critical.</target>
+        <target state="translated">Выберите один из последних уровней обслуживания для виртуальных ядер, которые доступны для Управляемых экземпляров SQL — Azure Arc, включая уровни обслуживания \"Общего назначения\" и \"Критически важный для бизнеса\".</target>
       </trans-unit>
       <trans-unit id="arc.sql.cost.summary.service.tier.learn.more.text">
         <source xml:lang="en">Learn more</source>
@@ -1843,15 +1995,19 @@
       </trans-unit>
       <trans-unit id="arc.sql.high.availability">
         <source xml:lang="en">High availability</source>
-        <target state="new">High availability</target>
+        <target state="translated">Высокий уровень доступности</target>
       </trans-unit>
       <trans-unit id="arc.sql.high.availability.description">
         <source xml:lang="en">Enable additional replicas for high availabilty. The compute and storage configuration selected below will be applied to all replicas.</source>
-        <target state="new">Enable additional replicas for high availabilty. The compute and storage configuration selected below will be applied to all replicas.</target>
+        <target state="translated">Включите дополнительные реплики для высокого уровня доступности. Выбранная ниже конфигурация вычислений и хранилища будет применена ко всем репликам.</target>
       </trans-unit>
       <trans-unit id="arc.sql.instance.name">
         <source xml:lang="en">Instance name</source>
         <target state="translated">Имя экземпляра</target>
+      </trans-unit>
+      <trans-unit id="arc.sql.instance.name.placeholder">
+        <source xml:lang="en">Enter instance name</source>
+        <target state="translated">Введите имя экземпляра</target>
       </trans-unit>
       <trans-unit id="arc.sql.instance.retention.policy.title">
         <source xml:lang="en">SQL Instance Backup Retention Policy</source>
@@ -1866,8 +2022,8 @@
         <target state="translated">Имя экземпляра должно состоять из строчных букв и цифр или дефисов "-", начинаться с буквы, заканчиваться буквой или цифрой и содержать не более 13 символов.</target>
       </trans-unit>
       <trans-unit id="arc.sql.invalid.username">
-        <source xml:lang="en">sa username is disabled, please choose another username</source>
-        <target state="translated">Имя пользователя sa отключено, выберите другое имя пользователя</target>
+        <source xml:lang="en">That username is disabled; please choose another username.</source>
+        <target state="translated">Это имя пользователя отключено, выберите другое имя пользователя</target>
       </trans-unit>
       <trans-unit id="arc.sql.license.type.description">
         <source xml:lang="en">Apply the Azure Hybrid Benefit if you already own a SQL Server License</source>
@@ -1887,7 +2043,7 @@
       </trans-unit>
       <trans-unit id="arc.sql.one.replica">
         <source xml:lang="en">1 replica</source>
-        <target state="new">1 replica</target>
+        <target state="translated">1 реплика</target>
       </trans-unit>
       <trans-unit id="arc.sql.pitr.description">
         <source xml:lang="en">Point in time restore</source>
@@ -1896,6 +2052,14 @@
       <trans-unit id="arc.sql.pitr.retention.description">
         <source xml:lang="en">Configure retention for point-in-time backups. {0}</source>
         <target state="translated">Настройте хранение резервных копий до определенного момента во времени. {0}</target>
+      </trans-unit>
+      <trans-unit id="arc.sql.readable.secondaries.description">
+        <source xml:lang="en">The number of readable secondary replicas.</source>
+        <target state="translated">Число вторичных реплик для чтения.</target>
+      </trans-unit>
+      <trans-unit id="arc.sql.readable.secondaries.label">
+        <source xml:lang="en">Readable secondary replicas</source>
+        <target state="translated">Вторичные реплики для чтения</target>
       </trans-unit>
       <trans-unit id="arc.sql.retention.days.description">
         <source xml:lang="en">Specify how long you want to keep your point-in-time backups.</source>
@@ -1906,24 +2070,24 @@
         <target state="translated">Хранение до точки во времени (в днях)</target>
       </trans-unit>
       <trans-unit id="arc.sql.service.tier.business.critical">
-        <source xml:lang="en">[PREVIEW] Business Critical (Unlimited vCores and RAM, advanced high availability)</source>
-        <target state="new">[PREVIEW] Business Critical (Unlimited vCores and RAM, advanced high availability)</target>
+        <source xml:lang="en">Business Critical (Unlimited vCores and RAM, advanced high availability)</source>
+        <target state="translated">Критически важный для бизнеса (неограниченное количество виртуальных ядер и объем ОЗУ, расширенные функции высокого уровня доступности)</target>
       </trans-unit>
       <trans-unit id="arc.sql.service.tier.description">
         <source xml:lang="en">Select from the latest vCore service tiers available for SQL Managed Instance - Azure Arc including General Purpose and Business Critical.</source>
-        <target state="new">Select from the latest vCore service tiers available for SQL Managed Instance - Azure Arc including General Purpose and Business Critical.</target>
+        <target state="translated">Выберите один из последних уровней обслуживания для виртуальных ядер, которые доступны для Управляемых экземпляров SQL — Azure Arc, включая уровни обслуживания \"Общего назначения\" и \"Критически важный для бизнеса\".</target>
       </trans-unit>
       <trans-unit id="arc.sql.service.tier.general.purpose">
         <source xml:lang="en">General Purpose (Up to 24 vCores and 128 Gi of RAM, standard high availability)</source>
-        <target state="new">General Purpose (Up to 24 vCores and 128 Gi of RAM, standard high availability)</target>
+        <target state="translated">Общего назначения (до 24 виртуальных ядер и 128 ГБ ОЗУ, стандартные функции высокого уровня доступности)</target>
       </trans-unit>
       <trans-unit id="arc.sql.service.tier.label">
         <source xml:lang="en">Service Tier</source>
         <target state="translated">Уровень служб</target>
       </trans-unit>
       <trans-unit id="arc.sql.storage-class.backups.description">
-        <source xml:lang="en">The storage class to be used for backup persistent volumes. If no value is specified, the default storage class will be used.</source>
-        <target state="translated">Класс хранения для постоянных томов резервного копирования. Если значение не указано, будет использоваться класс по умолчанию.</target>
+        <source xml:lang="en">The storage class to be used for Backups. If no value is specified, backups will be stored in same storage class assigned to Data. Must be a RWX capable storage class.</source>
+        <target state="translated">Класс хранения, используемый для создания резервных копий. Если значение не указано, резервные копии будут храниться в том же классе хранения, который назначен данным. Должен быть классом хранилища с поддержкой RWX.</target>
       </trans-unit>
       <trans-unit id="arc.sql.storage-class.data.description">
         <source xml:lang="en">The storage class to be used for data (.mdf). If no value is specified, the default storage class will be used.</source>
@@ -1945,17 +2109,29 @@
         <source xml:lang="en">by Microsoft</source>
         <target state="translated">от Майкрософт</target>
       </trans-unit>
+      <trans-unit id="arc.sql.sync.secondaries.description">
+        <source xml:lang="en">The number of synchronous replicas required to commit a transaction before the primary replica is allowed to commit. Setting this value to -1 will set the number of required synchronized secondaries to '(# of replicas - 1) / 2', rounded down.</source>
+        <target state="translated">Количество синхронных реплик, необходимых для фиксации транзакции, прежде чем первичная реплика будет разрешена для фиксации. Если задано значение -1, количество обязательных синхронных получателей рассчитывается по формуле "(количество реплик – 1) / 2" (округляется в меньшую сторону).</target>
+      </trans-unit>
+      <trans-unit id="arc.sql.sync.secondaries.label">
+        <source xml:lang="en">Synchronized secondaries required to commit</source>
+        <target state="translated">Синхронизированные вторичные серверы, необходимые для фиксации</target>
+      </trans-unit>
       <trans-unit id="arc.sql.three.replicas">
         <source xml:lang="en">3 replicas</source>
-        <target state="new">3 replicas</target>
+        <target state="translated">3 реплики</target>
       </trans-unit>
       <trans-unit id="arc.sql.two.replicas">
         <source xml:lang="en">2 replicas</source>
-        <target state="new">2 replicas</target>
+        <target state="translated">2 реплики</target>
       </trans-unit>
       <trans-unit id="arc.sql.username">
-        <source xml:lang="en">Username</source>
-        <target state="translated">Имя пользователя</target>
+        <source xml:lang="en">Managed Instance admin login</source>
+        <target state="translated">Имя для входа администратора Управляемого экземпляра</target>
+      </trans-unit>
+      <trans-unit id="arc.sql.username.placeholder">
+        <source xml:lang="en">Enter admin name</source>
+        <target state="translated">Введите имя администратора</target>
       </trans-unit>
       <trans-unit id="arc.sql.volume.size.backups.description">
         <source xml:lang="en">The size of the storage volume to be used for backups in gibibytes.</source>
@@ -1995,11 +2171,19 @@
       </trans-unit>
       <trans-unit id="arc.sql.wizard.title">
         <source xml:lang="en">Deploy Azure SQL managed instance - Azure Arc</source>
-        <target state="new">Deploy Azure SQL managed instance - Azure Arc</target>
+        <target state="translated">Создание управляемого экземпляра SQL Azure — Azure Arc</target>
       </trans-unit>
       <trans-unit id="arc.storage-class.backups.label">
         <source xml:lang="en">Storage Class (Backups)</source>
         <target state="translated">Класс хранения (резервные копии)</target>
+      </trans-unit>
+      <trans-unit id="arc.storage-class.backups.warning">
+        <source xml:lang="en">({0})</source>
+        <target state="translated">({0})</target>
+      </trans-unit>
+      <trans-unit id="arc.storage-class.backups.warning.link">
+        <source xml:lang="en">RWX capable</source>
+        <target state="translated">С поддержкой RWX</target>
       </trans-unit>
       <trans-unit id="arc.storage-class.data.label">
         <source xml:lang="en">Storage Class (Data)</source>
@@ -2084,12 +2268,12 @@
         <target state="translated">Объем запрошенной памяти не должен превышать предельный</target>
       </trans-unit>
       <trans-unit id="resource.type.arc.postgres.description">
-        <source xml:lang="en">Deploy PostgreSQL Hyperscale server groups into an Azure Arc environment</source>
-        <target state="translated">Развертывание групп серверов гипермасштабирования PostgreSQL в среде Azure Arc</target>
+        <source xml:lang="en">Deploy a PostgreSQL server into an Azure Arc environment</source>
+        <target state="translated">Развертывание сервера PostgreSQL в среде Azure Arc</target>
       </trans-unit>
       <trans-unit id="resource.type.arc.postgres.display.name">
-        <source xml:lang="en">PostgreSQL Hyperscale server groups - Azure Arc</source>
-        <target state="new">PostgreSQL Hyperscale server groups - Azure Arc</target>
+        <source xml:lang="en">PostgreSQL Server - Azure Arc (Preview)</source>
+        <target state="translated">Сервер PostgreSQL — Azure Arc (предварительная версия)</target>
       </trans-unit>
       <trans-unit id="resource.type.arc.sql.description">
         <source xml:lang="en">Managed SQL Instance service for app developers in a customer-managed environment</source>
@@ -2097,11 +2281,11 @@
       </trans-unit>
       <trans-unit id="resource.type.arc.sql.display.name">
         <source xml:lang="en">Azure SQL managed instance - Azure Arc</source>
-        <target state="new">Azure SQL managed instance - Azure Arc</target>
+        <target state="translated">Управляемый экземпляр SQL Azure — Azure Arc</target>
       </trans-unit>
       <trans-unit id="resource.type.azure.arc.description">
-        <source xml:lang="en">Creates an Azure Arc data controller</source>
-        <target state="translated">Создание контроллера данных Azure Arc</target>
+        <source xml:lang="en">Creates an Azure Arc data controller. Ensure that you have run az login before starting this wizard.</source>
+        <target state="translated">Создает контроллер данных Azure Arc. Перед запуском этого мастера убедитесь, что вы уже запускали учетную запись AZ.</target>
       </trans-unit>
       <trans-unit id="resource.type.azure.arc.display.name">
         <source xml:lang="en">Azure Arc data controller</source>

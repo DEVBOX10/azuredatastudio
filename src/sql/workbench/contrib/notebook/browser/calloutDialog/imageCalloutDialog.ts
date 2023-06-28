@@ -5,7 +5,6 @@
 
 import 'vs/css!./media/imageCalloutDialog';
 import * as DOM from 'vs/base/browser/dom';
-import * as styler from 'vs/platform/theme/common/styler';
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import * as constants from 'sql/workbench/contrib/notebook/browser/calloutDialog/common/constants';
 import { URI } from 'vs/base/common/uri';
@@ -17,7 +16,6 @@ import { IPathService } from 'vs/workbench/services/path/common/pathService';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { ILogService } from 'vs/platform/log/common/log';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
 import { Deferred } from 'sql/base/common/promise';
@@ -27,6 +25,8 @@ import { RadioButton } from 'sql/base/browser/ui/radioButton/radioButton';
 import { attachCalloutDialogStyler } from 'sql/workbench/common/styler';
 import * as path from 'vs/base/common/path';
 import { unquoteText } from 'sql/workbench/contrib/notebook/browser/calloutDialog/common/utils';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
+import { defaultInputBoxStyles } from 'vs/platform/theme/browser/defaultStyles';
 
 export interface IImageCalloutDialogOptions {
 	insertTitle?: string,
@@ -149,7 +149,8 @@ export class ImageCalloutDialog extends Modal {
 			this._contextViewService,
 			{
 				placeholder: constants.pathPlaceholder,
-				ariaLabel: constants.pathInputLabel
+				ariaLabel: constants.pathInputLabel,
+				inputBoxStyles: defaultInputBoxStyles
 			});
 		let browseButtonContainer = DOM.$('.button-icon');
 		this._imageBrowseButton = DOM.$('a.codicon.masked-icon.browse-local');
@@ -194,8 +195,9 @@ export class ImageCalloutDialog extends Modal {
 	}
 
 	private registerListeners(): void {
-		this._register(styler.attachInputBoxStyler(this._imageUrlInputBox, this._themeService));
-		this._register(styler.attachCheckboxStyler(this._imageEmbedCheckbox, this._themeService));
+		// {{SQL CARBON TODO}} - attach styles?
+		// this._register(styler.attachInputBoxStyler(this._imageUrlInputBox, this._themeService));
+		// this._register(styler.attachToggleStyler(this._imageEmbedCheckbox, this._themeService));
 	}
 
 	public insert(): void {

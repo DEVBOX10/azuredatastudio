@@ -23,16 +23,14 @@ import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
 import { URI } from 'vs/base/common/uri';
 import { Schemas } from 'vs/base/common/network';
 import * as nls from 'vs/nls';
-import { IModelService } from 'vs/editor/common/services/modelService';
 import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
 import { Command } from 'vs/editor/browser/editorExtensions';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
 import { ContextKeyExpr, IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
-import { CommonFindController, FindStartFocusAction } from 'vs/editor/contrib/find/findController';
 import * as types from 'vs/base/common/types';
-import { attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
+import { attachSelectBoxStyler } from 'sql/platform/theme/common/vsstyler';
 import { ColorScheme } from 'vs/platform/theme/common/theme';
 import { CancellationToken } from 'vs/base/common/cancellation';
 import { IStorageService } from 'vs/platform/storage/common/storage';
@@ -48,12 +46,17 @@ import { CopyKeybind } from 'sql/base/browser/ui/table/plugins/copyKeybind.plugi
 import { IClipboardService } from 'sql/platform/clipboard/common/clipboardService';
 import { CellSelectionModel } from 'sql/base/browser/ui/table/plugins/cellSelectionModel.plugin';
 import { handleCopyRequest } from 'sql/workbench/contrib/profiler/browser/profilerCopyHandler';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
 import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
 import { attachTabbedPanelStyler } from 'sql/workbench/common/styler';
 import { UntitledTextEditorModel } from 'vs/workbench/services/untitled/common/untitledTextEditorModel';
 import { IEditorOptions } from 'vs/platform/editor/common/editor';
 import { IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
+import { IModelService } from 'vs/editor/common/services/model';
+import { CommonFindController, FindStartFocusAction } from 'vs/editor/contrib/find/browser/findController';
+import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
+import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
+import { IComponentContextService } from 'sql/workbench/services/componentContext/browser/componentContextService';
 
 class BasicView implements IView {
 	public get element(): HTMLElement {
@@ -171,7 +174,10 @@ export class ProfilerEditor extends EditorPane {
 		@IStorageService storageService: IStorageService,
 		@IClipboardService private _clipboardService: IClipboardService,
 		@ITextResourcePropertiesService private readonly textResourcePropertiesService: ITextResourcePropertiesService,
-		@IEditorGroupsService editorGroupsService: IEditorGroupsService
+		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
+		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
+		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IComponentContextService private readonly _componentContextService: IComponentContextService
 	) {
 		super(ProfilerEditor.ID, telemetryService, themeService, storageService);
 		this._profilerEditorContextKey = CONTEXT_PROFILER_EDITOR.bindTo(this._contextKeyService);
@@ -318,19 +324,19 @@ export class ProfilerEditor extends EditorPane {
 		let theme = this.themeService.getColorTheme();
 		if (theme.type === ColorScheme.DARK) {
 			profilerTableContainer.classList.add(VS_DARK_THEME);
-		} else if (theme.type === ColorScheme.HIGH_CONTRAST) {
+		} else if (theme.type === ColorScheme.HIGH_CONTRAST_DARK) {
 			profilerTableContainer.classList.add(VS_HC_THEME);
 		}
 		this.themeService.onDidColorThemeChange(e => {
 			profilerTableContainer.classList.remove(VS_DARK_THEME, VS_HC_THEME);
 			if (e.type === ColorScheme.DARK) {
 				profilerTableContainer.classList.add(VS_DARK_THEME);
-			} else if (e.type === ColorScheme.HIGH_CONTRAST) {
+			} else if (e.type === ColorScheme.HIGH_CONTRAST_DARK) {
 				profilerTableContainer.classList.add(VS_HC_THEME);
 			}
 		});
 		this._profilerTableEditor = this._instantiationService.createInstance(ProfilerTableEditor);
-		this._profilerTableEditor.createEditor(profilerTableContainer);
+		(<any>this._profilerTableEditor).createEditor(profilerTableContainer);
 		this._profilerTableEditor.onSelectedRowsChanged((e, args) => {
 			let data = this.input.data.getItem(args.rows[0]);
 			if (data) {
@@ -387,7 +393,7 @@ export class ProfilerEditor extends EditorPane {
 		detailTableContainer.style.width = '100%';
 		detailTableContainer.style.height = '100%';
 		this._detailTableData = new TableDataView<IDetailData>();
-		this._detailTable = new Table(detailTableContainer, {
+		this._detailTable = new Table(detailTableContainer, this._accessibilityService, this._quickInputService, {
 			dataProvider: this._detailTableData, columns: [
 				{
 					id: 'label',
@@ -404,7 +410,8 @@ export class ProfilerEditor extends EditorPane {
 			]
 		}, {
 			forceFitColumns: true,
-			dataItemColumnValueExtractor: slickGridDataItemColumnValueExtractor
+			dataItemColumnValueExtractor: slickGridDataItemColumnValueExtractor,
+			enableInGridTabNavigation: false
 		});
 
 		this._detailTableData.onRowCountChange(() => {
@@ -424,6 +431,7 @@ export class ProfilerEditor extends EditorPane {
 		});
 		this._detailTable.setSelectionModel(new CellSelectionModel());
 		this._detailTable.registerPlugin(detailTableCopyKeybind);
+		this._register(this._componentContextService.registerTable(this._detailTable));
 
 
 		this._tabbedPanel.pushTab({
@@ -666,7 +674,7 @@ const command = new StartSearchProfilerTableCommand({
 	id: PROFILER_TABLE_COMMAND_SEARCH,
 	precondition: ContextKeyExpr.and(CONTEXT_PROFILER_EDITOR),
 	kbOpts: {
-		primary: KeyMod.CtrlCmd | KeyCode.KEY_F,
+		primary: KeyMod.CtrlCmd | KeyCode.KeyF,
 		weight: KeybindingWeight.EditorContrib
 	}
 });

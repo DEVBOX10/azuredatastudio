@@ -9,31 +9,38 @@ import * as assert from 'assert';
 
 import * as objects from 'vs/base/common/objects';
 
-import { CellTypes } from 'sql/workbench/services/notebook/common/contracts';
+import { CellTypes, NotebookChangeType } from 'sql/workbench/services/notebook/common/contracts';
 import { ModelFactory } from 'sql/workbench/services/notebook/browser/models/modelFactory';
 import { NotebookModelStub, ClientSessionStub, KernelStub, FutureStub } from 'sql/workbench/contrib/notebook/test/stubs';
 import { EmptyFuture } from 'sql/workbench/contrib/notebook/test/emptySessionClasses';
 import { CellEditModes, ICellModel, ICellModelOptions, IClientSession, INotebookModel } from 'sql/workbench/services/notebook/browser/models/modelInterfaces';
 import { Deferred } from 'sql/base/common/promise';
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
 import { isUndefinedOrNull } from 'vs/base/common/types';
 import { Schemas } from 'vs/base/common/network';
 import { URI } from 'vs/base/common/uri';
-import { IModelContentChangedEvent } from 'vs/editor/common/model/textModelEvents';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 import { TestNotificationService } from 'vs/platform/notification/test/common/testNotificationService';
-import { ICommandService, NullCommandService } from 'vs/platform/commands/common/commands';
+import { ICommandService } from 'vs/platform/commands/common/commands';
 import { ControlType, IChartOption } from 'sql/workbench/contrib/charts/browser/chartOptions';
 import { CellModel } from 'sql/workbench/services/notebook/browser/models/cell';
+import { IModelContentChangedEvent } from 'vs/editor/common/textModelEvents';
+import { INotebookService } from 'sql/workbench/services/notebook/browser/notebookService';
+import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
+import { mock } from 'vs/base/test/common/mock';
+import { NullCommandService } from 'vs/platform/commands/test/common/nullCommandService';
 
-let instantiationService: IInstantiationService;
+let instantiationService: TestInstantiationService;
 
 suite('Cell Model', function (): void {
+
 	let serviceCollection = new ServiceCollection();
 	serviceCollection.set(ICommandService, NullCommandService);
-	instantiationService = new InstantiationService(serviceCollection, true);
+	instantiationService = new TestInstantiationService(serviceCollection);
+	instantiationService.stub(INotebookService, new class extends mock<INotebookService>() {
+		override async serializeNotebookStateChange(notebookUri: URI, changeType: NotebookChangeType, cell?: ICellModel, isTrusted?: boolean): Promise<void> { }
+		override notifyCellExecutionStarted(): void { }
+	});
 
 	let factory = new ModelFactory(instantiationService);
 	test('Should set default values if none defined', async function (): Promise<void> {
@@ -89,23 +96,6 @@ suite('Cell Model', function (): void {
 		assert.strictEqual(cell.language, 'python');
 	});
 
-	test('Should set cell language to python if defined as pyspark in languageInfo', async function (): Promise<void> {
-		let cellData: nb.ICellContents = {
-			cell_type: CellTypes.Code,
-			source: 'print(\'1\')',
-			metadata: { language: 'python' },
-			execution_count: 1
-		};
-
-		let notebookModel = new NotebookModelStub({
-			name: 'pyspark',
-			version: '',
-			mimetype: ''
-		});
-		let cell = factory.createCell(cellData, { notebook: notebookModel, isTrusted: false });
-		assert.strictEqual(cell.language, 'python');
-	});
-
 	test('Should keep cell language as python if cell has language override', async function (): Promise<void> {
 		let cellData: nb.ICellContents = {
 			cell_type: CellTypes.Code,
@@ -115,7 +105,7 @@ suite('Cell Model', function (): void {
 		};
 
 		let notebookModel = new NotebookModelStub({
-			name: 'scala',
+			name: 'powershell',
 			version: '',
 			mimetype: ''
 		});
@@ -554,7 +544,7 @@ suite('Cell Model', function (): void {
 				notebook: new NotebookModelStub({
 					name: '',
 					version: '',
-					mimetype: 'x-scala'
+					mimetype: ''
 				}),
 				isTrusted: false
 			});
@@ -1009,7 +999,7 @@ suite('Cell Model', function (): void {
 		let createCellModePromise = () => {
 			return new Promise((resolve, reject) => {
 				setTimeout((error) => reject(error), 2000);
-				model.onCellModeChanged(isEditMode => {
+				model.onCellEditModeChanged(isEditMode => {
 					resolve(isEditMode);
 				});
 			});
@@ -1077,6 +1067,115 @@ suite('Cell Model', function (): void {
 
 		let serializedCell = model.toJSON();
 		assert.deepStrictEqual(serializedCell.attachments, undefined, 'JSON should not include attachments if attachments do not exist');
+	});
+
+	test('Should not include image in attachments if image is added in html image tag', async function () {
+		const cellAttachment = JSON.parse('{"ads.png":{"image/png":"iVBORw0KGgoAAAANSUhEUgAAAggg=="}}');
+		let notebookModel = new NotebookModelStub({
+			name: '',
+			version: '',
+			mimetype: ''
+		});
+		let contents: nb.ICellContents = {
+			cell_type: CellTypes.Markdown,
+			source: '![ads.png](attachment:ads.png)',
+			attachments: cellAttachment
+		};
+		let model = factory.createCell(contents, { notebook: notebookModel, isTrusted: false });
+		let imageElement = '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAggg=="';
+		model.source = '![ads.png](attachment:ads.png) \n Test image: ' + imageElement;
+
+		assert.deepStrictEqual(model.attachments, contents.attachments, 'Should not add the image represented in html tag to the attachments of cell source');
+	});
+
+	test('Should remove unused attachments name when updating cell source', async function () {
+		const cellAttachment = JSON.parse('{"ads.png":{"image/png":"iVBORw0KGgoAAAANSUhEUgAAAggg=="}}');
+		let notebookModel = new NotebookModelStub({
+			name: '',
+			version: '',
+			mimetype: ''
+		});
+		let contents: nb.ICellContents = {
+			cell_type: CellTypes.Markdown,
+			source: '',
+			attachments: cellAttachment
+		};
+		let model = factory.createCell(contents, { notebook: notebookModel, isTrusted: false });
+		assert.deepStrictEqual(model.attachments, contents.attachments, 'Attachments do not match in cellModel');
+
+		model.source = 'Test';
+
+		assert.notDeepStrictEqual(model.attachments, contents.attachments, 'Unused attachments are not removed after updating cell source');
+	});
+
+	test('Should not remove attachments that are still referenced in cell after updating the cell source', async function () {
+		const cellAttachment = JSON.parse('{"ads.png":{"image/png":"iVBORw0KGgoAAAANSUhEUgAAAggg=="}}');
+		let notebookModel = new NotebookModelStub({
+			name: '',
+			version: '',
+			mimetype: ''
+		});
+		let contents: nb.ICellContents = {
+			cell_type: CellTypes.Markdown,
+			source: '![ads.png](attachment:ads.png)',
+			attachments: cellAttachment
+		};
+		let model = factory.createCell(contents, { notebook: notebookModel, isTrusted: false });
+
+		model.source = '![ads.png](attachment:ads.png) \n Test';
+
+		assert.deepStrictEqual(model.attachments, contents.attachments, 'Attachments referenced in cell were removed');
+	});
+
+	test('Should update cell attachments', async function () {
+		const cellAttachment = JSON.parse('{"ads.png":{"image/png":"iVBORw0KGgoAAAANSUhEUgAAAggg=="}}');
+		let notebookModel = new NotebookModelStub({
+			name: '',
+			version: '',
+			mimetype: ''
+		});
+		let contents: nb.ICellContents = {
+			cell_type: CellTypes.Markdown,
+			source: '![ads.png](attachment:ads.png)'
+		};
+		let model = factory.createCell(contents, { notebook: notebookModel, isTrusted: false });
+		model.updateAttachmentsFromSource('![ads.png](attachment:ads.png)', cellAttachment);
+
+		assert.deepStrictEqual(model.attachments, cellAttachment, 'Cell attachments are not updated correctly');
+	});
+
+	test('Should not update cell attachments if they are not referenced in cell source', async function () {
+		const cellAttachment = JSON.parse('{"ads.png":{"image/png":"iVBORw0KGgoAAAANSUhEUgAAAggg=="}}');
+		let notebookModel = new NotebookModelStub({
+			name: '',
+			version: '',
+			mimetype: ''
+		});
+		let contents: nb.ICellContents = {
+			cell_type: CellTypes.Markdown,
+			source: '![ads.png](attachment:ads.png)'
+		};
+		let model = factory.createCell(contents, { notebook: notebookModel, isTrusted: false });
+		model.updateAttachmentsFromSource('test', cellAttachment);
+
+		assert.notDeepStrictEqual(model.attachments, cellAttachment, 'Cell attachments are updated when they are not referenced in cell source');
+	});
+
+	test('Should not update cell attachments if the attachment reference is not in the correct format', async function () {
+		const cellAttachment = JSON.parse('{"ads.png":{"image/png":"iVBORw0KGgoAAAANSUhEUgAAAggg=="}}');
+		let notebookModel = new NotebookModelStub({
+			name: '',
+			version: '',
+			mimetype: ''
+		});
+		let contents: nb.ICellContents = {
+			cell_type: CellTypes.Markdown,
+			source: '![ads.png](attachment:ads.png)'
+		};
+		let model = factory.createCell(contents, { notebook: notebookModel, isTrusted: false });
+		model.updateAttachmentsFromSource('ads.png', cellAttachment);
+
+		assert.notDeepStrictEqual(model.attachments, cellAttachment, 'Cell attachments are updated when the reference is not in the correct format');
 	});
 
 	test('Should not have cache chart data after new cell created', async function () {
@@ -1417,5 +1516,4 @@ suite('Cell Model', function (): void {
 		assert.strictEqual(cellModel.currentMode, CellEditModes.MARKDOWN, 'Should persist lastEditMode and be in markdown only');
 
 	});
-
 });

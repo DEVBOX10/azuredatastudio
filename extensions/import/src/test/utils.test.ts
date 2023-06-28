@@ -37,12 +37,12 @@ export class ImportTestUtils {
 	}
 
 	public static async getExtensionPath(): Promise<string> {
-		return await vscode.extensions.getExtension('Microsoft.import').extensionPath;
+		return vscode.extensions.getExtension('Microsoft.import').extensionPath;
 	}
 
 	public static async getTestExtensionContext(): Promise<TestExtensionContext> {
 		let testContext = new TestExtensionContext();
-		testContext.extensionPath = await vscode.extensions.getExtension('Microsoft.import').extensionPath;
+		testContext.extensionPath = vscode.extensions.getExtension('Microsoft.import').extensionPath;
 		return testContext;
 	}
 }
@@ -76,6 +76,9 @@ export class TestQueryProvider implements azdata.QueryProvider {
 		throw new Error('Method not implemented.');
 	}
 	saveResults(requestParams: azdata.SaveResultsRequestParams): Thenable<azdata.SaveResultRequestResult> {
+		throw new Error('Method not implemented.');
+	}
+	copyResults(requestParams: azdata.CopyResultsRequestParams): Thenable<void> {
 		throw new Error('Method not implemented.');
 	}
 	setQueryExecutionOptions(ownerUri: string, options: azdata.QueryExecutionOptions): Thenable<void> {

@@ -24,19 +24,25 @@ export class WorkspaceService implements IWorkspaceService {
 	readonly onDidWorkspaceProjectsChange: vscode.Event<void> = this._onDidWorkspaceProjectsChange?.event;
 
 	private openedProjects: vscode.Uri[] | undefined = undefined;
+	private excludedProjects: string[] | undefined;
+	private _isProjectProviderAvailable: boolean = false;
 
 	constructor() {
-		this.getProjectsInWorkspace(undefined, true).catch(err => console.error('Error initializing projects in workspace ', err));
+		Logger.log(`Calling getProjectsInWorkspace() from WorkspaceService constructor`);
+		this.updateIfProjectProviderAvailable();
+		this.getProjectsInWorkspace(undefined, true).catch(err => Logger.error(`Error initializing projects in workspace ${err}`));
 	}
 
 	get isProjectProviderAvailable(): boolean {
-		for (const extension of vscode.extensions.all) {
-			const projectTypes = extension.packageJSON.contributes && extension.packageJSON.contributes.projects as string[];
-			if (projectTypes && projectTypes.length > 0) {
-				return true;
-			}
-		}
-		return false;
+		return this._isProjectProviderAvailable;
+	}
+
+	public updateIfProjectProviderAvailable(): void {
+		Logger.log(`Checking ${vscode.extensions.all.length} extensions to see if there is a project provider is available`);
+		const startTime = new Date().getTime();
+
+		this._isProjectProviderAvailable = vscode.extensions.all.some(e => e.packageJSON.contributes?.projects?.length > 0);
+		Logger.log(`isProjectProviderAvailable is ${this._isProjectProviderAvailable}. Total time = ${new Date().getTime() - startTime}ms`);
 	}
 
 	/**
@@ -75,7 +81,7 @@ export class WorkspaceService implements IWorkspaceService {
 			vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders?.length || 0, undefined, ...(newWorkspaceFolders.map(folder => ({ uri: vscode.Uri.file(folder) }))));
 		}
 
-		// 2. Compare projcets being added against prior (cached) list of projects in the workspace
+		// 2. Compare projects being added against prior (cached) list of projects in the workspace
 
 		const previousProjects: string[] = (await this.getProjectsInWorkspace(undefined, false)).map(p => p.path);
 		let newProjectAdded: boolean = false;
@@ -127,6 +133,8 @@ export class WorkspaceService implements IWorkspaceService {
 	 * @returns array of file URIs for projects
 	 */
 	public async getProjectsInWorkspace(ext?: string, refreshFromDisk: boolean = false): Promise<vscode.Uri[]> {
+		Logger.log(`Getting projects in workspace`);
+		const startTime = new Date().getTime();
 
 		if (refreshFromDisk || this.openedProjects === undefined) { // always check if nothing cached
 			await this.refreshProjectsFromDisk();
@@ -137,8 +145,10 @@ export class WorkspaceService implements IWorkspaceService {
 		}
 
 		// remove excluded projects specified in workspace file
-		const excludedProjects = this.getWorkspaceConfigurationValue<string[]>(ExcludedProjectsConfigurationName);
-		this.openedProjects = this.openedProjects.filter(project => !excludedProjects.find(excludedProject => excludedProject === vscode.workspace.asRelativePath(project)));
+		this.excludedProjects = this.getWorkspaceConfigurationValue<string[]>(ExcludedProjectsConfigurationName);
+		this.openedProjects = this.openedProjects.filter(project => !this.excludedProjects?.find(excludedProject => excludedProject === vscode.workspace.asRelativePath(project)));
+
+		Logger.log(`Finished looking for projects in workspace. Opened: ${this.openedProjects.length}. Excluded: ${this.excludedProjects.length}. Total time = ${new Date().getTime() - startTime}ms`);
 
 		// filter by specified extension
 		if (ext) {
@@ -158,7 +168,13 @@ export class WorkspaceService implements IWorkspaceService {
 
 		try {
 			const projectPromises = vscode.workspace.workspaceFolders?.map(f => this.getAllProjectsInFolder(f.uri)) ?? [];
-			this.openedProjects = (await Promise.all(projectPromises)).reduce((prev, curr) => prev.concat(curr), []);
+			const allProjects = (await Promise.all(projectPromises)).reduce((prev, curr) => prev.concat(curr), []);
+
+			// convert to Set to make sure all the fsPaths are unique so projects aren't listed multiple times if they are included by multiple workspace folders.
+			// Need to use fsPath for the set to be able to filter out duplicates because it's a string, rather than the vscode.Uri
+			const uniqueProjects = [...new Set(allProjects.map(p => p.fsPath))];
+			this.openedProjects = uniqueProjects.map(p => vscode.Uri.file(p));
+
 			this.getProjectsPromise.resolve();
 		} catch (err) {
 			this.getProjectsPromise.reject(err);
@@ -166,6 +182,13 @@ export class WorkspaceService implements IWorkspaceService {
 		} finally {
 			this.getProjectsPromise = undefined;
 		}
+	}
+
+	/**
+	 * Fire event to refresh projects tree
+	 */
+	public refreshProjectsTree(): void {
+		this._onDidWorkspaceProjectsChange.fire();
 	}
 
 	/**
@@ -237,8 +260,9 @@ export class WorkspaceService implements IWorkspaceService {
 	/**
 	 * Ensure the project provider extension for the specified project is loaded
 	 * @param projectType The file extension of the project, if not specified, all project provider extensions will be loaded.
+	 * @param forceActivate forces project providing extensions to be activated if true
 	 */
-	private async ensureProviderExtensionLoaded(projectType: string | undefined = undefined): Promise<void> {
+	public async ensureProviderExtensionLoaded(projectType: string | undefined = undefined, forceActivate: boolean = false): Promise<void> {
 		const projType = projectType ? projectType.toUpperCase() : undefined;
 		let extension: vscode.Extension<any>;
 		for (extension of vscode.extensions.all) {
@@ -247,20 +271,41 @@ export class WorkspaceService implements IWorkspaceService {
 			if (projectTypes && projectTypes.length > 0) {
 				if (projType) {
 					if (projectTypes.findIndex((proj: string) => proj.toUpperCase() === projType) !== -1) {
-						await this.handleProjectProviderExtension(extension);
+						await this.handleProjectProviderExtension(extension, forceActivate);
 						break;
 					}
 				} else {
-					await this.handleProjectProviderExtension(extension);
+					await this.handleProjectProviderExtension(extension, forceActivate);
 				}
 			}
 		}
 	}
 
-	private async handleProjectProviderExtension(extension: vscode.Extension<any>): Promise<void> {
+	/**
+	 * Ensures project provider extension is activated and registered
+	 * @param extension Extension to activate and register
+	 * @param forceActivate Activates the extension if true. If false, only activates the extension if the workspace contains a file with the extension's project type
+	 */
+	private async handleProjectProviderExtension(extension: vscode.Extension<any>, forceActivate: boolean = false): Promise<void> {
 		try {
 			if (!extension.isActive) {
-				await extension.activate();
+				if (forceActivate) {
+					await extension.activate();
+				} else {
+					const projectTypes = extension.packageJSON.contributes?.projects as string[] | undefined;
+					if (!projectTypes) {
+						return;
+					}
+
+					for (const projType of projectTypes) {
+						const projFilesInWorkspace = await vscode.workspace.findFiles(`**/*.${projType}`);
+						if (projFilesInWorkspace.length > 0) {
+							// only try to activate the extension if the workspace has at least one project with that extension
+							await extension.activate();
+							break;
+						}
+					}
+				}
 			}
 		} catch (err) {
 			Logger.error(constants.ExtensionActivationError(extension.id, err));

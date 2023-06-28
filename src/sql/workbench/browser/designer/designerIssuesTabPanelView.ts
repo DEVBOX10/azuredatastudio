@@ -12,9 +12,12 @@ import { IListAccessibilityProvider, List } from 'vs/base/browser/ui/list/listWi
 import { IListRenderer, IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
 import { localize } from 'vs/nls';
 import { IColorTheme, ICssStyleCollector, IThemeService, registerThemingParticipant } from 'vs/platform/theme/common/themeService';
-import { attachListStyler } from 'vs/platform/theme/common/styler';
+import { attachListStyler } from 'sql/platform/theme/common/vsstyler';
 import { problemsErrorIconForeground, problemsInfoIconForeground, problemsWarningIconForeground } from 'vs/platform/theme/common/colorRegistry';
 import { Codicon } from 'vs/base/common/codicons';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { Link } from 'vs/platform/opener/browser/link';
+import { ThemeIcon } from 'vs/base/common/themables';
 
 export class DesignerIssuesTabPanelView extends Disposable implements IPanelView {
 	private _container: HTMLElement;
@@ -23,13 +26,16 @@ export class DesignerIssuesTabPanelView extends Disposable implements IPanelView
 
 	public readonly onIssueSelected: Event<DesignerPropertyPath> = this._onIssueSelected.event;
 
-	constructor(@IThemeService private _themeService: IThemeService) {
+	constructor(
+		@IThemeService private _themeService: IThemeService,
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) {
 		super();
 	}
 
 	render(container: HTMLElement): void {
 		this._container = container.appendChild(DOM.$('.issues-container'));
-		this._issueList = new List<DesignerIssue>('designerIssueList', this._container, new DesignerIssueListDelegate(), [new TableFilterListRenderer()], {
+		this._issueList = new List<DesignerIssue>('designerIssueList', this._container, new DesignerIssueListDelegate(), [this._instantiationService.createInstance(TableFilterListRenderer)], {
 			multipleSelectionSupport: false,
 			keyboardSupport: true,
 			mouseSupport: true,
@@ -87,14 +93,21 @@ class DesignerIssueListDelegate implements IListVirtualDelegate<DesignerIssue> {
 interface DesignerIssueListItemTemplate {
 	issueText: HTMLDivElement;
 	issueIcon: HTMLDivElement;
+	issueMoreInfoLink: HTMLDivElement;
 }
 
 class TableFilterListRenderer implements IListRenderer<DesignerIssue, DesignerIssueListItemTemplate> {
+
+	constructor(
+		@IInstantiationService private _instantiationService: IInstantiationService
+	) { }
+
 	renderTemplate(container: HTMLElement): DesignerIssueListItemTemplate {
 		const data: DesignerIssueListItemTemplate = Object.create(null);
 		const issueItem = container.appendChild(DOM.$('.issue-item'));
 		data.issueIcon = issueItem.appendChild(DOM.$(''));
 		data.issueText = issueItem.appendChild(DOM.$('.issue-text'));
+		data.issueMoreInfoLink = issueItem.appendChild(DOM.$('.issue-more-info'));
 		return data;
 	}
 
@@ -104,16 +117,25 @@ class TableFilterListRenderer implements IListRenderer<DesignerIssue, DesignerIs
 		let iconClass;
 		switch (element.severity) {
 			case 'warning':
-				iconClass = Codicon.warning.classNames;
+				iconClass = ThemeIcon.asClassName(Codicon.warning);
 				break;
 			case 'information':
-				iconClass = Codicon.info.classNames;
+				iconClass = ThemeIcon.asClassName(Codicon.info);
 				break;
 			default:
-				iconClass = Codicon.error.classNames;
+				iconClass = ThemeIcon.asClassName(Codicon.error);
 				break;
 		}
 		templateData.issueIcon.className = `issue-icon ${iconClass}`;
+		if (element.moreInfoLink) {
+			this._instantiationService.createInstance(Link, templateData.issueMoreInfoLink,
+				{
+					label: localize('designer.moreInfoLink', "More information"),
+					href: element.moreInfoLink
+				}, undefined);
+		} else {
+			DOM.clearNode(templateData.issueMoreInfoLink);
+		}
 	}
 
 	public disposeTemplate(templateData: DesignerIssueListItemTemplate): void {

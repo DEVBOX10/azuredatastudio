@@ -11,6 +11,7 @@
 		"dist/configurationEditingMain": {
 			"cwd": "Répertoire de travail actif de l'exécuteur de tâches au démarrage",
 			"defaultBuildTask": "Nom de la tâche de build par défaut. S'il y en a plusieurs, une recherche rapide s'affiche pour choisir la tâche de build.",
+			"extensionInstallFolder": "Chemin d’accès où une extension est installée.",
 			"file": "Fichier ouvert actif",
 			"fileBasename": "Nom de base du fichier ouvert actif",
 			"fileBasenameNoExtension": "Nom de base du fichier ouvert actif, sans extension de fichier",
@@ -42,8 +43,7 @@
 			"assocLabelPath": "Fichiers avec chemin",
 			"derivedDescription": "Faites correspondre les fichiers ayant des frères portant le même nom, mais avec une extension distincte.",
 			"derivedLabel": "Fichiers avec frères par nom",
-			"dirty": "indicateur d'intégrité si l'intégrité de l'éditeur actif est compromise",
-			"falseDescription": "Désactivez le modèle.",
+			"dirty": "un indicateur pour quand l’éditeur actif a des modifications non enregistrées.",
 			"fileDescription": "Faites correspondre tous les fichiers ayant une extension de fichier spécifique.",
 			"fileLabel": "Fichiers par extension",
 			"filesDescription": "Faites correspondre tous les fichiers, indépendamment de leurs extensions.",
@@ -52,8 +52,6 @@
 			"folderLabel": "Dossier par nom (tous les emplacements)",
 			"folderName": "nom du dossier de l'espace de travail auquel le fichier appartient (ex: monDossier)",
 			"folderPath": "chemin d’accès du dossier de l'espace de travail auquel le fichier appartient (ex: /Users/Development/myFolder)",
-			"languageSpecificEditorSettings": "Paramètres d'éditeur spécifiques au langage",
-			"languageSpecificEditorSettingsDescription": "Remplacer les paramètres de l'éditeur pour le langage",
 			"remoteName": "par ex., SSH",
 			"rootName": "nom de l’espace de travail (ex: monDossier ou monEspaceDeTravail)",
 			"rootPath": "chemin d’accès de l’espace de travail (ex: /Users/Development/myWorkspace)",
@@ -62,8 +60,7 @@
 			"topFolderDescription": "Faites correspondre un dossier de premier niveau portant un nom spécifique.",
 			"topFolderLabel": "Dossier par nom (premier niveau)",
 			"topFoldersDescription": "Faites correspondre plusieurs dossiers de premier niveau.",
-			"topFoldersLabel": "Dossiers avec plusieurs noms (premier niveau)",
-			"trueDescription": "Activez le modèle."
+			"topFoldersLabel": "Dossiers avec plusieurs noms (premier niveau)"
 		},
 		"package": {
 			"description": "Fournit des fonctionnalités (IntelliSense avancé, correction automatique) dans les fichiers de configuration comme les fichiers de paramètres, de lancement et de recommandation d'extension.",

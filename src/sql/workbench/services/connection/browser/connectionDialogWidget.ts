@@ -19,14 +19,14 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { localize } from 'vs/nls';
 import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import * as styler from 'vs/platform/theme/common/styler';
+import * as styler from 'sql/platform/theme/common/vsstyler';
 import * as DOM from 'vs/base/browser/dom';
 import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IThemeService, IColorTheme } from 'vs/platform/theme/common/themeService';
 import { ILogService } from 'vs/platform/log/common/log';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { entries } from 'sql/base/common/collections';
 import { attachTabbedPanelStyler, attachModalDialogStyler } from 'sql/workbench/common/styler';
@@ -35,15 +35,18 @@ import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
 import { IConnectionProfile } from 'azdata';
 import { TreeUpdateUtils } from 'sql/workbench/services/objectExplorer/browser/treeUpdateUtils';
 import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
-import { ICancelableEvent } from 'vs/base/parts/tree/browser/treeDefaults';
+import { ICancelableEvent } from 'sql/base/parts/tree/browser/treeDefaults';
 import { RecentConnectionActionsProvider, RecentConnectionTreeController } from 'sql/workbench/services/connection/browser/recentConnectionTreeController';
-import { ClearRecentConnectionsAction } from 'sql/workbench/services/connection/browser/connectionActions';
-import { ITree } from 'vs/base/parts/tree/browser/tree';
+import { ClearRecentConnectionsAction1 } from 'sql/workbench/services/connection/browser/connectionActions';
+import { ITree } from 'sql/base/parts/tree/browser/tree';
 import { AsyncServerTree } from 'sql/workbench/services/objectExplorer/browser/asyncServerTree';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { ConnectionBrowseTab } from 'sql/workbench/services/connection/browser/connectionBrowseTab';
 import { ElementSizeObserver } from 'vs/editor/browser/config/elementSizeObserver';
 import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilitiesService';
+import { onUnexpectedError } from 'vs/base/common/errors';
+import { FieldSet } from 'sql/base/browser/ui/fieldset/fieldset';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 export interface OnShowUIResponse {
 	selectedProviderDisplayName: string;
@@ -63,7 +66,6 @@ export class ConnectionDialogWidget extends Modal {
 	private _connectionTypeContainer: HTMLElement;
 	private _connectionDetailTitle: HTMLElement;
 	private _connectButton: Button;
-	private _closeButton: Button;
 	private _providerTypeSelectBox: SelectBox;
 	private _newConnectionParams: INewConnectionParams;
 	private _recentConnectionTree: AsyncServerTree | ITree;
@@ -182,10 +184,10 @@ export class ConnectionDialogWidget extends Modal {
 
 		// Remove duplicate listings (CMS uses the same display name)
 		let uniqueProvidersMap = this.connectionManagementService.getUniqueConnectionProvidersByNameMap(filteredProviderMap);
-		this._providerTypeSelectBox.setOptions(Object.keys(uniqueProvidersMap).map(k => uniqueProvidersMap[k]));
+		this._providerTypeSelectBox?.setOptions(Object.keys(uniqueProvidersMap).map(k => uniqueProvidersMap[k]));
 	}
 
-	protected renderBody(container: HTMLElement): void {
+	protected override renderBody(container: HTMLElement): void {
 		this._body = DOM.append(container, DOM.$('.connection-dialog'));
 
 		const connectTypeLabel = localize('connectType', "Connection type");
@@ -219,29 +221,32 @@ export class ConnectionDialogWidget extends Modal {
 
 		this._register(this.browsePanel.view.onSelectedConnectionChanged(e => {
 			this._connectionSource = e.source;
-			this.onConnectionClick(e.connectionProfile, e.connect);
+			this.onConnectionClick(e.connectionProfile, e.connect).catch(onUnexpectedError);
 		}));
 
 		this._panel.pushTab(this.browsePanel);
+		const connectionDetailsGroupLabel = localize('connectionDetailsTitle', "Connection Details");
+		const connectionDetailsFieldSet = new FieldSet(this._body, { ariaLabel: connectionDetailsGroupLabel });
+		this._register(connectionDetailsFieldSet);
+		this._connectionDetailTitle = DOM.append(connectionDetailsFieldSet.element, DOM.$('.connection-details-title'));
 
-		this._connectionDetailTitle = DOM.append(this._body, DOM.$('.connection-details-title'));
+		this._connectionDetailTitle.innerText = connectionDetailsGroupLabel;
 
-		this._connectionDetailTitle.innerText = localize('connectionDetailsTitle', "Connection Details");
-
-		this._connectionTypeContainer = DOM.append(this._body, DOM.$('.connection-type'));
+		this._connectionTypeContainer = DOM.append(connectionDetailsFieldSet.element, DOM.$('.connection-type'));
 		const table = DOM.append(this._connectionTypeContainer, DOM.$('table.connection-table-content'));
+		table.setAttribute('role', 'presentation');
 		DialogHelper.appendInputSelectBox(
 			DialogHelper.appendRow(table, connectTypeLabel, 'connection-label', 'connection-input'), this._providerTypeSelectBox);
 
 		this._connectionUIContainer = DOM.$('.connection-provider-info', { id: 'connectionProviderInfo' });
-		this._body.append(this._connectionUIContainer);
+		connectionDetailsFieldSet.element.append(this._connectionUIContainer);
 
 		this._register(this._themeService.onDidColorThemeChange(e => this.updateTheme(e)));
 		this.updateTheme(this._themeService.getColorTheme());
-		this._panelSizeObserver = new ElementSizeObserver(this._panel.element, undefined, () => {
+		this._panelSizeObserver = this._register(new ElementSizeObserver(this._panel.element, undefined));
+		this._register(this._panelSizeObserver.onDidChange(() => {
 			this._panel.layout(new DOM.Dimension(this._panel.element.clientWidth, this._panel.element.clientHeight));
-		});
-		this._register(this._panelSizeObserver);
+		}));
 		this._panelSizeObserver.startObserving();
 	}
 
@@ -255,7 +260,7 @@ export class ConnectionDialogWidget extends Modal {
 		const cancelLabel = localize('connectionDialog.cancel', "Cancel");
 		this._connectButton = this.addFooterButton(connectLabel, () => this.connect());
 		this._connectButton.enabled = false;
-		this._closeButton = this.addFooterButton(cancelLabel, () => this.cancel(), 'right', true);
+		this.addFooterButton(cancelLabel, () => this.cancel(), 'right', true);
 		this.registerListeners();
 		this.onProviderTypeSelected(this._providerTypeSelectBox.value);
 	}
@@ -276,9 +281,6 @@ export class ConnectionDialogWidget extends Modal {
 	private registerListeners(): void {
 		// Theme styler
 		this._register(styler.attachSelectBoxStyler(this._providerTypeSelectBox, this._themeService));
-		this._register(styler.attachButtonStyler(this._connectButton, this._themeService));
-		this._register(styler.attachButtonStyler(this._closeButton, this._themeService));
-
 		this._register(this._providerTypeSelectBox.onDidSelect(selectedProviderType => {
 			this.onProviderTypeSelected(selectedProviderType.selected);
 		}));
@@ -294,7 +296,7 @@ export class ConnectionDialogWidget extends Modal {
 	private connect(element?: IConnectionProfile): void {
 		this.logService.debug('ConnectionDialogWidget: Connect button is clicked');
 		if (this._connectButton.enabled) {
-			this._telemetryService.createActionEvent(TelemetryKeys.TelemetryView.ConnectionDialog, TelemetryKeys.TelemetryAction.ConnectToServer).withAdditionalProperties(
+			this._telemetryService.createActionEvent(TelemetryKeys.TelemetryView.ConnectionErrorDialog, TelemetryKeys.TelemetryAction.ConnectToServer).withAdditionalProperties(
 				{ [TelemetryKeys.TelemetryPropertyName.ConnectionSource]: this._connectionSource }
 			).send();
 			this._connecting = true;
@@ -336,7 +338,7 @@ export class ConnectionDialogWidget extends Modal {
 		this._recentConnectionActionBarContainer = DOM.append(recentConnectionContainer, DOM.$('.recent-titles-container'));
 		const actionsContainer = DOM.append(this._recentConnectionActionBarContainer, DOM.$('.connection-history-actions'));
 		this._actionbar = this._register(new ActionBar(actionsContainer, { animated: false }));
-		const clearAction = this.instantiationService.createInstance(ClearRecentConnectionsAction, ClearRecentConnectionsAction.ID, ClearRecentConnectionsAction.LABEL);
+		const clearAction = this.instantiationService.createInstance(ClearRecentConnectionsAction1, ClearRecentConnectionsAction1.ID, ClearRecentConnectionsAction1.LABEL);
 		clearAction.useConfirmationMessage = true;
 		clearAction.onRecentConnectionsRemoved(() => this.open(false));
 		this._actionbar.push(clearAction, { icon: true, label: true });
@@ -347,41 +349,59 @@ export class ConnectionDialogWidget extends Modal {
 			if (element instanceof ConnectionProfile) {
 				const isDoubleClick = origin === 'mouse' && (eventish as MouseEvent).detail === 2;
 				this._connectionSource = 'recent';
-				this.onConnectionClick(element, isDoubleClick);
+				this.onConnectionClick(element, isDoubleClick).catch(onUnexpectedError);
 			}
 		};
 		const actionProvider = this.instantiationService.createInstance(RecentConnectionActionsProvider);
 		const controller = new RecentConnectionTreeController(leftClick, actionProvider, this.connectionManagementService, this.contextMenuService);
-		actionProvider.onRecentConnectionRemoved(() => {
-			const recentConnections: ConnectionProfile[] = this.connectionManagementService.getRecentConnections();
-			this.open(recentConnections.length > 0).catch(err => this.logService.error(`Unexpected error opening connection widget after a recent connection was removed from action provider: ${err}`));
-			// We're just using the connections to determine if there are connections to show, dispose them right after to clean up their handlers
-			recentConnections.forEach(conn => conn.dispose());
-		});
-		controller.onRecentConnectionRemoved(() => {
-			const recentConnections: ConnectionProfile[] = this.connectionManagementService.getRecentConnections();
-			this.open(recentConnections.length > 0).catch(err => this.logService.error(`Unexpected error opening connection widget after a recent connection was removed from controller : ${err}`));
-			// We're just using the connections to determine if there are connections to show, dispose them right after to clean up their handlers
-			recentConnections.forEach(conn => conn.dispose());
-		});
+		this._register(actionProvider.onRecentConnectionRemoved(async () => {
+			await this.refreshTree();
+		}));
+		this._register(controller.onRecentConnectionRemoved(async () => {
+			await this.refreshTree();
+		}));
+
+		this._register(this.connectionManagementService.onRecentConnectionProfileDeleted(async (e) => {
+			await this.refreshTree();
+		}));
+
 		this._recentConnectionTree = TreeCreationUtils.createConnectionTree(treeContainer, this.instantiationService, this._configurationService, localize('connectionDialog.recentConnections', "Recent Connections"), controller);
 		if (this._recentConnectionTree instanceof AsyncServerTree) {
-			this._recentConnectionTree.onMouseClick(e => {
+			this._register(this._recentConnectionTree.onMouseClick(e => {
 				if (e.element instanceof ConnectionProfile) {
 					this._connectionSource = 'recent';
-					this.onConnectionClick(e.element, false);
+					this.onConnectionClick(e.element, false).catch(onUnexpectedError);
 				}
-			});
-			this._recentConnectionTree.onMouseDblClick(e => {
+			}));
+
+			this._register(this._recentConnectionTree.onMouseDblClick(e => {
 				if (e.element instanceof ConnectionProfile) {
 					this._connectionSource = 'recent';
-					this.onConnectionClick(e.element, true);
+					this.onConnectionClick(e.element, true).catch(onUnexpectedError);
 				}
-			});
+			}));
+			this._register(this._recentConnectionTree.onKeyDown(e => {
+				const keyboardEvent = new StandardKeyboardEvent(e);
+				if (keyboardEvent.keyCode === KeyCode.Delete) {
+					const element = this._recentConnectionTree.getSelection()[0];
+					if (element instanceof ConnectionProfile) {
+						this.connectionManagementService.clearRecentConnection(element);
+					}
+				}
+			}));
 		}
 
 		// Theme styler
 		this._register(styler.attachListStyler(this._recentConnectionTree, this._themeService));
+	}
+
+	private async refreshTree() {
+		try {
+			const recentConnections: ConnectionProfile[] = this.connectionManagementService.getRecentConnections();
+			await this.open(recentConnections.length > 0);
+		} catch (err) {
+			this.logService.error(`Unexpected error opening connection widget after a recent connection was removed from controller : ${err}`);
+		}
 	}
 
 	private createRecentConnections() {
@@ -391,11 +411,18 @@ export class ConnectionDialogWidget extends Modal {
 		DOM.append(noRecentConnectionContainer, DOM.$('.no-recent-connections')).innerText = noRecentHistoryLabel;
 	}
 
-	private onConnectionClick(element: IConnectionProfile, connect: boolean = false): void {
-		if (connect) {
-			this.connect(element);
-		} else {
-			this._onFillinConnectionInputs.fire(element);
+	private async onConnectionClick(element: IConnectionProfile, connect: boolean = false): Promise<void> {
+		if (this._capabilitiesService.providers[element.providerName] !== undefined) {
+			if (connect) {
+				this.connect(element);
+			} else {
+				this._onFillinConnectionInputs.fire(element);
+			}
+		}
+		else {
+			if (await this.connectionManagementService.handleUnsupportedProvider(element.providerName)) {
+				this.close();
+			}
 		}
 	}
 
@@ -465,9 +492,10 @@ export class ConnectionDialogWidget extends Modal {
 	}
 
 	public updateProvider(providerDisplayName: string) {
-		this._providerTypeSelectBox.selectWithOptionName(providerDisplayName);
-
-		this.onProviderTypeSelected(providerDisplayName);
+		if (this._providerTypeSelectBox) {
+			this._providerTypeSelectBox.selectWithOptionName(providerDisplayName);
+			this.onProviderTypeSelected(providerDisplayName);
+		}
 	}
 
 	public set databaseDropdownExpanded(val: boolean) {

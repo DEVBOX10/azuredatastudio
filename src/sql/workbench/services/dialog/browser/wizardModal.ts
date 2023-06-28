@@ -11,9 +11,7 @@ import { bootstrapAngular } from 'sql/workbench/services/bootstrap/browser/boots
 import { DialogMessage } from 'sql/workbench/api/common/sqlExtHostTypes';
 import { DialogModule } from 'sql/workbench/services/dialog/browser/dialog.module';
 import { Button } from 'vs/base/browser/ui/button/button';
-import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { Emitter } from 'vs/base/common/event';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -21,7 +19,7 @@ import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService
 import { append, $ } from 'vs/base/browser/dom';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { ILogService } from 'vs/platform/log/common/log';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { attachModalDialogStyler } from 'sql/workbench/common/styler';
@@ -61,7 +59,7 @@ export class WizardModal extends Modal {
 		this._useDefaultMessageBoxLocation = false;
 	}
 
-	public layout(): void {
+	protected layout(): void {
 
 	}
 
@@ -71,7 +69,6 @@ export class WizardModal extends Modal {
 
 		if (this.backButton) {
 			this.backButton.onDidClick(() => this.cancel());
-			attachButtonStyler(this.backButton, this._themeService, { buttonBackground: SIDE_BAR_BACKGROUND, buttonHoverBackground: SIDE_BAR_BACKGROUND });
 		}
 
 		this._wizard.customButtons.forEach(button => {
@@ -96,7 +93,21 @@ export class WizardModal extends Modal {
 		};
 
 		messageChangeHandler(this._wizard.message);
-		this._wizard.onMessageChange(message => messageChangeHandler(message));
+		this._register(this._wizard.onMessageChange(message => messageChangeHandler(message)));
+
+		this._register(this._wizard.onLoadingChange((loadingState) => {
+			this.spinner = loadingState;
+		}));
+		this._register(this._wizard.onLoadingChange((loadingState) => {
+			this.spinner = loadingState;
+		}));
+		this._register(this._wizard.onLoadingTextChange((loadingText) => {
+			this._modalOptions.spinnerTitle = loadingText;
+
+		}));
+		this._register(this._wizard.onLoadingCompletedTextChange((loadingCompletedText) => {
+			this._modalOptions.onSpinnerHideText = loadingCompletedText;
+		}));
 	}
 
 	private addDialogButton(button: DialogButton, onSelect: () => void = () => undefined, registerClickEvent: boolean = true, requirePageValid: boolean = false, index?: number): Button {
@@ -108,7 +119,6 @@ export class WizardModal extends Modal {
 		button.onUpdate(() => {
 			this.updateButtonElement(buttonElement, button, requirePageValid);
 		});
-		attachButtonStyler(buttonElement, this._themeService);
 		this.updateButtonElement(buttonElement, button, requirePageValid);
 		return buttonElement;
 	}

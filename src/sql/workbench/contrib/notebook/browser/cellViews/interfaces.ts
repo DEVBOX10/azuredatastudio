@@ -10,10 +10,11 @@ import { AngularDisposable } from 'sql/base/browser/lifecycle';
 import { ICellEditorProvider, INotebookService, NotebookRange } from 'sql/workbench/services/notebook/browser/notebookService';
 import { MarkdownRenderOptions } from 'vs/base/browser/markdownRenderer';
 import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { BaseTextEditor } from 'vs/workbench/browser/parts/editor/textEditor';
+import { AbstractTextCodeEditor } from 'vs/workbench/browser/parts/editor/textCodeEditor';
 import { nb } from 'azdata';
 import { NotebookModel } from 'sql/workbench/services/notebook/browser/models/notebookModel';
 import { NotebookInput } from 'sql/workbench/contrib/notebook/browser/models/notebookInput';
+import { ICodeEditorViewState } from 'vs/editor/common/editorCommon';
 
 export const findHighlightClass = 'rangeHighlight';
 export const findRangeSpecificClass = 'rangeSpecificHighlight';
@@ -33,12 +34,8 @@ export abstract class CellView extends AngularDisposable implements OnDestroy, I
 
 	public abstract layout(): void;
 
-	public getEditor(): BaseTextEditor | undefined {
+	public getEditor(): AbstractTextCodeEditor<ICodeEditorViewState> | undefined {
 		return undefined;
-	}
-
-	public hasEditor(): boolean {
-		return false;
 	}
 
 	public abstract cellGuid(): string;
@@ -72,16 +69,18 @@ export abstract class CellView extends AngularDisposable implements OnDestroy, I
 				let elements = this.getHtmlElements();
 				if (elements?.length >= range.startLineNumber) {
 					let elementContainingText = elements[range.startLineNumber - 1];
+					let isCellActive = range.cell.active;
 					let markCurrent = new Mark(elementContainingText); // to highlight the current item of them all.
-
 					markCurrent.markRanges([{
 						start: range.startColumn - 1, //subtracting 1 since markdown html is 0 indexed.
 						length: range.endColumn - range.startColumn
 					}], {
 						className: findRangeSpecificClass,
 						each: function (node, range) {
-							// node is the marked DOM element
-							node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+							if (isCellActive) {
+								// node is the marked DOM element
+								node.scrollIntoView({ block: 'center' });
+							}
 						}
 					});
 				}

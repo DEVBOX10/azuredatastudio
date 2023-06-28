@@ -8,7 +8,6 @@ import { Event, Emitter } from 'vs/base/common/event';
 import { Schemas } from 'vs/base/common/network';
 import { URI } from 'vs/base/common/uri';
 import { ITextModel } from 'vs/editor/common/model';
-import { IModelService } from 'vs/editor/common/services/modelService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
 import { UntitledTextEditorModel } from 'vs/workbench/services/untitled/common/untitledTextEditorModel';
@@ -17,11 +16,10 @@ import * as nls from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
 import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResourceEditorModel';
 import * as editorCommon from 'vs/editor/common/editorCommon';
-import { BaseTextEditor } from 'vs/workbench/browser/parts/editor/textEditor';
+import { AbstractTextCodeEditor } from 'vs/workbench/browser/parts/editor/textCodeEditor';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IStorageService } from 'vs/platform/storage/common/storage';
-import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfigurationService';
 import { IEditorOpenContext } from 'vs/workbench/common/editor';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { CancellationToken } from 'vs/base/common/cancellation';
@@ -29,13 +27,17 @@ import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editor
 import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';
 import { ITextEditorOptions } from 'vs/platform/editor/common/editor';
 import { onUnexpectedError } from 'vs/base/common/errors';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IModelService } from 'vs/editor/common/services/model';
+import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
+import { IFileService } from 'vs/platform/files/common/files';
 
 class DesignerCodeEditor extends CodeEditorWidget {
 }
 
 let DesignerScriptEditorInstanceId = 0;
 
-export class DesignerScriptEditor extends BaseTextEditor implements DesignerTextEditor {
+export class DesignerScriptEditor extends AbstractTextCodeEditor<editorCommon.ICodeEditorViewState> implements DesignerTextEditor {
 	private _content: string;
 	private _contentChangeEventEmitter: Emitter<string> = new Emitter<string>();
 	readonly onDidContentChange: Event<string> = this._contentChangeEventEmitter.event;
@@ -54,9 +56,10 @@ export class DesignerScriptEditor extends BaseTextEditor implements DesignerText
 		@ITextResourceConfigurationService configurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorService editorService: IEditorService,
-		@IEditorGroupsService editorGroupService: IEditorGroupsService
+		@IEditorGroupsService editorGroupService: IEditorGroupsService,
+		@IFileService fileService: IFileService
 	) {
-		super(DesignerScriptEditor.ID, telemetryService, instantiationService, storageService, configurationService, themeService, editorService, editorGroupService);
+		super(DesignerScriptEditor.ID, telemetryService, instantiationService, storageService, configurationService, themeService, editorService, editorGroupService, fileService);
 		this.create(this._container);
 		this.setVisible(true);
 		this._untitledTextEditorModel = this.instantiationService.createInstance(UntitledTextEditorModel, URI.from({ scheme: Schemas.untitled, path: `DesignerScriptEditor-${DesignerScriptEditorInstanceId++}` }), false, undefined, 'sql', undefined);
@@ -68,8 +71,10 @@ export class DesignerScriptEditor extends BaseTextEditor implements DesignerText
 		});
 	}
 
-	public override createEditorControl(parent: HTMLElement, configuration: IEditorOptions): editorCommon.IEditor {
-		return this.instantiationService.createInstance(DesignerCodeEditor, parent, configuration, {});
+	protected override createEditorControl(parent: HTMLElement, configuration: IEditorOptions): editorCommon.IEditor {
+		this.editorControl = this.instantiationService.createInstance(DesignerCodeEditor, parent, configuration, {});
+
+		return this.editorControl;
 	}
 
 	protected override getConfigurationOverrides(): IEditorOptions {
@@ -81,7 +86,7 @@ export class DesignerScriptEditor extends BaseTextEditor implements DesignerText
 			options.folding = false;
 			options.renderWhitespace = 'all';
 			options.wordWrap = 'off';
-			options.renderIndentGuides = false;
+			options.guides = { indentation: false };
 			options.rulers = [];
 			options.glyphMargin = true;
 		}
@@ -118,5 +123,9 @@ export class DesignerScriptEditor extends BaseTextEditor implements DesignerText
 			this._untitledTextEditorModel.setDirty(false);
 			this.layout(new DOM.Dimension(this._container.clientWidth, this._container.clientHeight));
 		}
+	}
+
+	protected tracksEditorViewState(input: EditorInput): boolean {
+		return input.typeId === DesignerScriptEditor.ID;
 	}
 }

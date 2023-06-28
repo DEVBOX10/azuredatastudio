@@ -32,13 +32,6 @@ export interface IOpenExtensionWindowResult {
 	success: boolean;
 }
 
-/**
- * Like a IProcessEnvironment, but the value "null" deletes an environment variable
- */
-export interface INullableProcessEnvironment {
-	[key: string]: string | null;
-}
-
 export interface IExtensionHostDebugService {
 	readonly _serviceBrand: undefined;
 
@@ -54,5 +47,5 @@ export interface IExtensionHostDebugService {
 	terminateSession(sessionId: string, subId?: string): void;
 	readonly onTerminateSession: Event<ITerminateSessionEvent>;
 
-	openExtensionDevelopmentHostWindow(args: string[], env: INullableProcessEnvironment | undefined, debugRenderer: boolean): Promise<IOpenExtensionWindowResult>;
+	openExtensionDevelopmentHostWindow(args: string[], debugRenderer: boolean): Promise<IOpenExtensionWindowResult>;
 }

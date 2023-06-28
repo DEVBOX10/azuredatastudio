@@ -101,7 +101,16 @@ export class DataTierApplicationWizard {
 			this.model.database = profile.databaseName;
 		}
 
-		this.connection = await azdata.connection.getCurrentConnection();
+		// get the connection of the node the wizard was launched from
+		if (profile?.id) {
+			this.connection = await azdata.connection.getConnection(await azdata.connection.getUriForConnection((profile.id)));
+		}
+
+		// if no profile was passed in if launched from command palette, try using the current active connection
+		if (!this.connection) {
+			this.connection = await azdata.connection.getCurrentConnection();
+		}
+
 		if (!this.connection || (profile && this.connection.connectionId !== profile.id)) {
 			// check if there are any active connections
 			const connections = await azdata.connection.getConnections(true);
@@ -115,7 +124,7 @@ export class DataTierApplicationWizard {
 			// don't open the wizard if connection dialog is cancelled
 			if (!this.connection) {
 				//Reporting Dacpac wizard cancelled event to Telemetry
-				TelemetryReporter.sendActionEvent(TelemetryViews.DataTierApplicationWizard, 'ConnectionDialogCancelled');
+				TelemetryReporter.sendActionEvent(TelemetryViews.DataTierApplicationWizard, TelemetryAction.ConnectionDialogCancelled);
 				return false;
 			}
 		}
@@ -279,8 +288,8 @@ export class DataTierApplicationWizard {
 			}
 		}
 
-		if (!result || !result.success) {
-			vscode.window.showErrorMessage(this.getOperationErrorMessage(this.selectedOperation, result?.errorMessage));
+		if (!result?.success && result.errorMessage) {
+			vscode.window.showErrorMessage(this.getOperationErrorMessage(this.selectedOperation, result.errorMessage));
 		}
 
 		return result;
@@ -305,7 +314,7 @@ export class DataTierApplicationWizard {
 
 	// Cancel button on click event is using to send the data loss information to telemetry
 	private cancelDataTierApplicationWizard(): void {
-		TelemetryReporter.createActionEvent(TelemetryViews.DataTierApplicationWizard, 'WizardCanceled')
+		TelemetryReporter.createActionEvent(TelemetryViews.DataTierApplicationWizard, TelemetryAction.WizardCanceled)
 			.withAdditionalProperties({
 				isPotentialDataLoss: this.model.potentialDataLoss?.toString(),
 				page: this.wizard.currentPage.toString(),
@@ -326,7 +335,7 @@ export class DataTierApplicationWizard {
 		additionalMeasurements.totalDurationMs = (new Date().getTime() - deployStartTime);
 		additionalMeasurements.deployDacpacFileSizeBytes = await utils.tryGetFileSize(this.model.filePath);
 		additionalProps.upgradeExistingDatabase = this.model.upgradeExisting.toString();
-		additionalProps.potentialDataLoss = this.model.potentialDataLoss.toString();
+		additionalProps.potentialDataLoss = this.model.potentialDataLoss?.toString();
 
 		this.sendDacFxOperationTelemetryEvent(result, TelemetryAction.DeployDacpac, additionalProps, additionalMeasurements);
 
@@ -477,14 +486,14 @@ export class DataTierApplicationWizard {
 		return this.dacfxService;
 	}
 
-	private sendDacFxOperationTelemetryEvent(result: azdata.ResultStatus, telemetryAction: string, additionalProps: TelemetryEventProperties, additionalMeasurements: TelemetryEventMeasures): void {
+	private sendDacFxOperationTelemetryEvent(result: azdata.ResultStatus, telemetryAction: TelemetryAction, additionalProps: TelemetryEventProperties, additionalMeasurements: TelemetryEventMeasures): void {
 		if (result?.success) {
 			TelemetryReporter.createActionEvent(TelemetryViews.DataTierApplicationWizard, telemetryAction)
 				.withAdditionalProperties(additionalProps)
 				.withAdditionalMeasurements(additionalMeasurements)
 				.send();
 		} else {
-			TelemetryReporter.createErrorEvent(TelemetryViews.DataTierApplicationWizard, telemetryAction)
+			TelemetryReporter.createErrorEvent2(TelemetryViews.DataTierApplicationWizard, telemetryAction)
 				.withAdditionalProperties(additionalProps)
 				.withAdditionalMeasurements(additionalMeasurements)
 				.send();

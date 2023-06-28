@@ -13,6 +13,7 @@ import { GridPanelState } from 'sql/workbench/common/editor/query/gridTableState
 import { QueryModelViewState } from 'sql/workbench/common/editor/query/modelViewState';
 import { URI } from 'vs/base/common/uri';
 import { ExecutionPlanState } from 'sql/workbench/common/editor/query/executionPlanState';
+import { IEditorModel, IEditorOptions } from 'vs/platform/editor/common/editor';
 
 export class ResultsViewState {
 	public readonly gridPanelState: GridPanelState = new GridPanelState();
@@ -29,7 +30,6 @@ export class ResultsViewState {
 		this.gridPanelState.dispose();
 		this.chartState.dispose();
 		this.queryPlanState.dispose();
-		this.executionPlanState.clearExecutionPlanState();
 		this.dynamicModelViewTabsState.forEach((state: QueryModelViewState, identifier: string) => {
 			state.dispose();
 		});
@@ -69,7 +69,7 @@ export class QueryResultsInput extends EditorInput {
 		return false;
 	}
 
-	override resolve(refresh?: boolean): Promise<any> {
+	override async resolve(options?: IEditorOptions): Promise<IEditorModel | null> {
 		return Promise.resolve(null);
 	}
 

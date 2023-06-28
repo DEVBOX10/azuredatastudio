@@ -3,7 +3,7 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorFactoryRegistry, IEditorInput, IEditorSerializer, EditorExtensions } from 'vs/workbench/common/editor';
+import { IEditorFactoryRegistry, IEditorSerializer, EditorExtensions } from 'vs/workbench/common/editor';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { QueryResultsInput } from 'sql/workbench/common/editor/query/queryResultsInput';
@@ -23,6 +23,7 @@ import { IFileService } from 'vs/platform/files/common/files';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IQueryEditorService } from 'sql/workbench/services/queryEditor/common/queryEditorService';
 import { IQueryEditorConfiguration } from 'sql/platform/query/common/query';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 
 const editorFactoryRegistry = Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory);
 
@@ -30,10 +31,9 @@ export class QueryEditorLanguageAssociation implements ILanguageAssociation {
 	static readonly isDefault = true;
 	/**
 	 * The language IDs that are associated with the query editor. These are case sensitive for comparing with what's
-	 * registered in the ModeService registry.
+	 * registered in the LanguageService registry.
 	 */
-	static readonly languages = ['Kusto', 'LogAnalytics', 'SQL'];	//TODO Add language id here for new languages supported in query editor. Make it easier to contribute new extension's languageID
-
+	static readonly languages = ['kusto', 'loganalytics', 'sql'];	//TODO Add language id here for new languages supported in query editor. Make it easier to contribute new extension's languageID
 
 	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IObjectExplorerService private readonly objectExplorerService: IObjectExplorerService,
@@ -41,7 +41,7 @@ export class QueryEditorLanguageAssociation implements ILanguageAssociation {
 		@IEditorService private readonly editorService: IEditorService,
 		@IQueryEditorService private readonly queryEditorService: IQueryEditorService) { }
 
-	async convertInput(activeEditor: IEditorInput): Promise<QueryEditorInput | undefined> {
+	async convertInput(activeEditor: EditorInput): Promise<QueryEditorInput | undefined> {
 		if (!(activeEditor instanceof FileEditorInput) && !(activeEditor instanceof UntitledTextEditorInput)) {
 			return undefined;
 		}
@@ -53,7 +53,7 @@ export class QueryEditorLanguageAssociation implements ILanguageAssociation {
 			const content = (await activeEditor.resolve()).textEditorModel.getValue();
 			queryEditorInput = await this.queryEditorService.newSqlEditor({
 				resource: this.editorService.isOpened(activeEditor) ? activeEditor.resource : undefined,
-				open: false, initalContent: content
+				open: false, initialContent: content
 			}) as UntitledQueryEditorInput;
 		}
 
@@ -61,13 +61,13 @@ export class QueryEditorLanguageAssociation implements ILanguageAssociation {
 		return queryEditorInput;
 	}
 
-	syncConvertInput(activeEditor: IEditorInput): QueryEditorInput | undefined {
+	syncConvertInput(activeEditor: EditorInput): QueryEditorInput | undefined {
 		const queryResultsInput = this.instantiationService.createInstance(QueryResultsInput, activeEditor.resource.toString(true));
 		let queryEditorInput: QueryEditorInput;
 		if (activeEditor instanceof FileEditorInput) {
 			queryEditorInput = this.instantiationService.createInstance(FileQueryEditorInput, '', activeEditor, queryResultsInput);
 		} else if (activeEditor instanceof UntitledTextEditorInput) {
-			queryEditorInput = this.instantiationService.createInstance(UntitledQueryEditorInput, '', activeEditor, queryResultsInput);
+			queryEditorInput = this.instantiationService.createInstance(UntitledQueryEditorInput, '', activeEditor, queryResultsInput, undefined);
 		} else {
 			return undefined;
 		}
@@ -94,7 +94,7 @@ export class QueryEditorLanguageAssociation implements ILanguageAssociation {
 		}
 	}
 
-	createBase(activeEditor: QueryEditorInput): IEditorInput {
+	createBase(activeEditor: QueryEditorInput): EditorInput {
 		return activeEditor.text;
 	}
 }
@@ -115,7 +115,7 @@ export class FileQueryEditorSerializer implements IEditorSerializer {
 	deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): FileQueryEditorInput | undefined {
 		const factory = editorFactoryRegistry.getEditorSerializer(FILE_EDITOR_INPUT_ID);
 		const fileEditorInput = factory.deserialize(instantiationService, serializedEditorInput) as FileEditorInput;
-		// only successfully deserilize the file if the resource actually exists
+		// only successfully deserialize the file if the resource actually exists
 		if (this.fileService.exists(fileEditorInput.resource)) {
 			const queryResultsInput = instantiationService.createInstance(QueryResultsInput, fileEditorInput.resource.toString());
 			return instantiationService.createInstance(FileQueryEditorInput, '', fileEditorInput, queryResultsInput);
@@ -146,7 +146,7 @@ export class UntitledQueryEditorSerializer implements IEditorSerializer {
 		const factory = editorFactoryRegistry.getEditorSerializer(UntitledTextEditorInput.ID);
 		const untitledEditorInput = factory.deserialize(instantiationService, serializedEditorInput) as UntitledTextEditorInput;
 		const queryResultsInput = instantiationService.createInstance(QueryResultsInput, untitledEditorInput.resource.toString());
-		return instantiationService.createInstance(UntitledQueryEditorInput, '', untitledEditorInput, queryResultsInput);
+		return instantiationService.createInstance(UntitledQueryEditorInput, '', untitledEditorInput, queryResultsInput, undefined);
 	}
 
 	canSerialize(): boolean { // we can always serialize query inputs

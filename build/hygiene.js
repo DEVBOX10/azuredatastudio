@@ -5,14 +5,13 @@
 
 const filter = require('gulp-filter');
 const es = require('event-stream');
-const gulpeslint = require('gulp-eslint');
-const tsfmt = require('typescript-formatter');
 const VinylFile = require('vinyl');
 const vfs = require('vinyl-fs');
 const path = require('path');
 const fs = require('fs');
 const pall = require('p-all');
-const { all, copyrightFilter, indentationFilter, jsHygieneFilter, tsHygieneFilter } = require('./filters');
+
+const { all, copyrightFilter, unicodeFilter, indentationFilter, tsFormattingFilter, eslintFilter, stylelintFilter } = require('./filters');
 
 const copyrightHeaderLines = [
 	'/*---------------------------------------------------------------------------------------------',
@@ -21,7 +20,10 @@ const copyrightHeaderLines = [
 	' *--------------------------------------------------------------------------------------------*/',
 ];
 
-function hygiene(some) {
+function hygiene(some, linting = true) {
+	const gulpeslint = require('gulp-eslint');
+	const gulpstylelint = require('./stylelint');
+	const tsfmt = require('typescript-formatter');
 	let errorCount = 0;
 
 	const productJson = es.through(function (file) {
@@ -35,8 +37,35 @@ function hygiene(some) {
 		this.emit('data', file);
 	});
 
-	const indentation = es.through(function (file) {
+	const unicode = es.through(function (file) {
 		const lines = file.contents.toString('utf8').split(/\r\n|\r|\n/);
+		file.__lines = lines;
+
+		let skipNext = false;
+		lines.forEach((line, i) => {
+			if (/allow-any-unicode-next-line/.test(line)) {
+				skipNext = true;
+				return;
+			}
+			if (skipNext) {
+				skipNext = false;
+				return;
+			}
+			// Please do not add symbols that resemble ASCII letters!
+			const m = /([^\t\n\r\x20-\x7E⊃⊇✔︎✓🎯⚠️🛑🔴🚗🚙🚕🎉✨❗⇧⌥⌘×÷¦⋯…↑↓￫→←↔⟷·•●◆▼⟪⟫┌└├⏎↩√φ]+)/g.exec(line);
+			if (m) {
+				console.error(
+					file.relative + `(${i + 1},${m.index + 1}): Unexpected unicode character: "${m[0]}" (charCode: ${m[0].charCodeAt(0)}). To suppress, use // allow-any-unicode-next-line`
+				);
+				errorCount++;
+			}
+		});
+
+		this.emit('data', file);
+	});
+
+	const indentation = es.through(function (file) {
+		const lines = file.__lines || file.contents.toString('utf8').split(/\r\n|\r|\n/);
 		file.__lines = lines;
 
 		lines.forEach((line, i) => {
@@ -88,8 +117,8 @@ function hygiene(some) {
 			})
 			.then(
 				(result) => {
-					let original = result.src.replace(/\r\n/gm, '\n');
-					let formatted = result.dest.replace(/\r\n/gm, '\n');
+					const original = result.src.replace(/\r\n/gm, '\n');
+					const formatted = result.dest.replace(/\r\n/gm, '\n');
 
 					if (original !== formatted) {
 						console.error(
@@ -120,6 +149,7 @@ function hygiene(some) {
 	}
 
 	const productJsonFilter = filter('product.json', { restore: true });
+	const unicodeFilterStream = filter(unicodeFilter, { restore: true });
 
 	const result = input
 		.pipe(filter((f) => !f.stat.isDirectory()))
@@ -128,29 +158,47 @@ function hygiene(some) {
 		.pipe(productJsonFilter.restore)
 		.pipe(filter(indentationFilter))
 		.pipe(indentation)
+		.pipe(unicodeFilterStream)
+		.pipe(unicode)
+		.pipe(unicodeFilterStream.restore)
 		.pipe(filter(copyrightFilter))
 		.pipe(copyrights);
 
-	const typescript = result.pipe(filter(tsHygieneFilter)).pipe(formatting);
+	const streams = [
+		result.pipe(filter(tsFormattingFilter)).pipe(formatting)
+	];
 
-	const javascript = result
-		.pipe(filter(jsHygieneFilter.concat(tsHygieneFilter)))
-		.pipe(
-			gulpeslint({
-				configFile: '.eslintrc.json',
-				rulePaths: ['./build/lib/eslint'],
-			})
-		)
-		.pipe(gulpeslint.formatEach('compact'))
-		.pipe(
-			gulpeslint.results((results) => {
-				errorCount += results.warningCount;
-				errorCount += results.errorCount;
-			})
+	if (linting) {
+		streams.push(
+			result
+				.pipe(filter(eslintFilter))
+				.pipe(
+					gulpeslint({
+						configFile: '.eslintrc.json'
+					})
+				)
+				.pipe(gulpeslint.formatEach('compact'))
+				.pipe(
+					gulpeslint.results((results) => {
+						errorCount += results.warningCount;
+						errorCount += results.errorCount;
+					})
+				)
 		);
+		streams.push(
+			result.pipe(filter(stylelintFilter)).pipe(gulpstylelint(((message, isError) => {
+				if (isError) {
+					console.error(message);
+				errorCount++;
+				} else {
+					console.warn(message);
+				}
+			})))
+		);
+	}
 
 	let count = 0;
-	return es.merge(typescript, javascript).pipe(
+	return es.merge(...streams).pipe(
 		es.through(
 			function (data) {
 				count++;
@@ -195,7 +243,7 @@ function createGitIndexVinyls(paths) {
 				}
 
 				cp.exec(
-					`git show :${relativePath}`,
+					process.platform === 'win32' ? `git show :${relativePath}` : `git show ':${relativePath}'`,
 					{ maxBuffer: 2000 * 1024, encoding: 'buffer' },
 					(err, out) => {
 						if (err) {
@@ -254,7 +302,7 @@ if (require.main === module) {
 						.then(
 							(vinyls) =>
 								new Promise((c, e) =>
-									hygiene(es.readArray(vinyls))
+									hygiene(es.readArray(vinyls).pipe(filter(all)))
 										.on('end', () => c())
 										.on('error', e)
 								)

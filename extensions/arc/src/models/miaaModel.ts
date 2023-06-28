@@ -29,6 +29,7 @@ export type PITRModel = {
 	latestPitr: string,
 	destDbName: string
 };
+export type UpgradeModel = {};
 
 export const systemDbs = ['master', 'msdb', 'tempdb', 'model'];
 export class MiaaModel extends ResourceModel {
@@ -97,7 +98,15 @@ export class MiaaModel extends ResourceModel {
 		this._refreshPromise = new Deferred();
 		try {
 			try {
-				const result = await this._azApi.az.sql.miarc.show(this.info.name, this.controllerModel.info.namespace, this.controllerModel.azAdditionalEnvVars);
+				let result;
+				result = await this._azApi.az.sql.miarc.show(
+					this.info.name,
+					{
+						resourceGroup: undefined,
+						namespace: this.controllerModel.info.namespace
+					},
+					this.controllerModel.azAdditionalEnvVars
+				);
 				this._config = result.stdout;
 				this.configLastUpdated = new Date();
 				this.rpSettings.retentionDays = this._config?.spec?.backup?.retentionPeriodInDays?.toString() ?? '';
@@ -114,7 +123,7 @@ export class MiaaModel extends ResourceModel {
 			}
 
 			// If we have an external endpoint configured then fetch the databases now
-			if (this._config.status.primaryEndpoint) {
+			if (this._config.status.endpoints.primary) {
 				this.getDatabases(false).catch(_err => {
 					// If an error occurs still fire the event so callers can know to
 					// update (e.g. so dashboards don't show the loading icon forever)
@@ -166,7 +175,7 @@ export class MiaaModel extends ResourceModel {
 			if (!result.connected) {
 				throw new Error(result.errorMessage);
 			}
-			this._activeConnectionId = result.connectionId;
+			this._activeConnectionId = result.connectionId!;
 		}
 
 		const provider = azdata.dataprotocol.getProvider<azdata.MetadataProvider>(this._connectionProfile!.providerName, azdata.DataProviderType.MetadataProvider);
@@ -196,11 +205,11 @@ export class MiaaModel extends ResourceModel {
 	}
 
 	protected createConnectionProfile(): azdata.IConnectionProfile {
-		const ipAndPort = parseIpAndPort(this.config?.status.primaryEndpoint || '');
+		const ipAndPort = parseIpAndPort(this.config?.status.endpoints.primary || '');
 		return {
 			serverName: `${ipAndPort.ip},${ipAndPort.port}`,
 			databaseName: '',
-			authenticationType: 'SqlLogin',
+			authenticationType: azdata.connection.AuthenticationType.SqlLogin,
 			providerName: loc.miaaProviderName,
 			connectionName: '',
 			userName: this._miaaInfo.userName || '',
@@ -210,7 +219,10 @@ export class MiaaModel extends ResourceModel {
 			saveProfile: true,
 			id: '',
 			groupId: undefined,
-			options: {}
+			options: {
+				encrypt: this._miaaInfo.encrypt || true,
+				trustServerCertificate: this._miaaInfo.trustServerCertificate || false
+			}
 		};
 	}
 
@@ -231,6 +243,8 @@ export class MiaaModel extends ResourceModel {
 		this._activeConnectionId = connectionProfile.id;
 		this.info.connectionId = connectionProfile.id;
 		this._miaaInfo.userName = connectionProfile.userName;
+		this._miaaInfo.encrypt = connectionProfile.options.encrypt;
+		this._miaaInfo.trustServerCertificate = connectionProfile.options.trustServerCertificate;
 		await this._treeDataProvider.saveControllers();
 	}
 
@@ -261,6 +275,5 @@ export class MiaaModel extends ResourceModel {
 				this._databaseTimeWindow.set(dbName, ['', '']);
 			}
 		}
-
 	}
 }

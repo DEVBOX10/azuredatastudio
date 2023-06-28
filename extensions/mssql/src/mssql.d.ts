@@ -3,12 +3,15 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// This is the place for extensions to expose APIs.
 declare module 'mssql' {
 	import * as azdata from 'azdata';
 
 	/**
-	 * Covers defining what the mssql extension exports to other extensions
+	 * Covers defining what the mssql extension exports to other extensions.
+	 *
+	 * This file should only contain definitions which rely on STABLE azdata typings
+	 * (from azdata.d.ts). Anything which relies on PROPOSED typings (from azdata.proposed.d.ts)
+	 * should go in mssql.proposed.d.ts.
 	 *
 	 * IMPORTANT: THIS IS NOT A HARD DEFINITION unlike vscode; therefore no enums or classes should be defined here
 	 * (const enums get evaluated when typescript -> javascript so those are fine)
@@ -27,11 +30,6 @@ declare module 'mssql' {
 		 * Path to the root of the SQL Tools Service folder
 		 */
 		readonly sqlToolsServicePath: string;
-		/**
-		 * Gets the object explorer API that supports querying over the connections supported by this extension
-		 *
-		 */
-		getMssqlObjectExplorerBrowser(): MssqlObjectExplorerBrowser;
 
 		/**
 		 * Get the Cms Service APIs to communicate with CMS connections supported by this extension
@@ -45,20 +43,9 @@ declare module 'mssql' {
 
 		readonly dacFx: IDacFxService;
 
-		readonly sqlAssessment: ISqlAssessmentService;
+		readonly sqlProjects: ISqlProjectsService;
 
-		readonly sqlMigration: ISqlMigrationService;
-	}
-
-	/**
-	 * A browser supporting actions over the object explorer connections provided by this extension.
-	 * Currently this is the
-	 */
-	export interface MssqlObjectExplorerBrowser {
-		/**
-		 * Gets the matching node given a context object, e.g. one from a right-click on a node in Object Explorer
-		 */
-		getNode<T extends ITreeNode>(objectExplorerContext: azdata.ObjectExplorerContext): Thenable<T>;
+		readonly azureBlob: IAzureBlobService;
 	}
 
 	/**
@@ -67,14 +54,6 @@ declare module 'mssql' {
 	export interface ITreeNode {
 		getNodeInfo(): azdata.NodeInfo;
 		getChildren(refreshChildren: boolean): ITreeNode[] | Thenable<ITreeNode[]>;
-	}
-
-	/**
-	 * A HDFS file node. This is a leaf node in the object explorer tree, and its contents
-	 * can be queried
-	 */
-	export interface IFileNode extends ITreeNode {
-		getFileContentsAsString(maxBytes?: number): Thenable<string>;
 	}
 
 	//#region --- schema compare
@@ -138,7 +117,7 @@ declare module 'mssql' {
 		connectionName?: string;
 		projectFilePath: string;
 		targetScripts: string[];
-		folderStructure: string;
+		extractTarget: ExtractTarget;
 		dataSchemaProvider: string;
 	}
 
@@ -151,160 +130,42 @@ declare module 'mssql' {
 		defaultDeploymentOptions: DeploymentOptions;
 	}
 
-	export interface DeploymentOptions {
-		ignoreTableOptions: boolean;
-		ignoreSemicolonBetweenStatements: boolean;
-		ignoreRouteLifetime: boolean;
-		ignoreRoleMembership: boolean;
-		ignoreQuotedIdentifiers: boolean;
-		ignorePermissions: boolean;
-		ignorePartitionSchemes: boolean;
-		ignoreObjectPlacementOnPartitionScheme: boolean;
-		ignoreNotForReplication: boolean;
-		ignoreLoginSids: boolean;
-		ignoreLockHintsOnIndexes: boolean;
-		ignoreKeywordCasing: boolean;
-		ignoreIndexPadding: boolean;
-		ignoreIndexOptions: boolean;
-		ignoreIncrement: boolean;
-		ignoreIdentitySeed: boolean;
-		ignoreUserSettingsObjects: boolean;
-		ignoreFullTextCatalogFilePath: boolean;
-		ignoreWhitespace: boolean;
-		ignoreWithNocheckOnForeignKeys: boolean;
-		verifyCollationCompatibility: boolean;
-		unmodifiableObjectWarnings: boolean;
-		treatVerificationErrorsAsWarnings: boolean;
-		scriptRefreshModule: boolean;
-		scriptNewConstraintValidation: boolean;
-		scriptFileSize: boolean;
-		scriptDeployStateChecks: boolean;
-		scriptDatabaseOptions: boolean;
-		scriptDatabaseCompatibility: boolean;
-		scriptDatabaseCollation: boolean;
-		runDeploymentPlanExecutors: boolean;
-		registerDataTierApplication: boolean;
-		populateFilesOnFileGroups: boolean;
-		noAlterStatementsToChangeClrTypes: boolean;
-		includeTransactionalScripts: boolean;
-		includeCompositeObjects: boolean;
-		allowUnsafeRowLevelSecurityDataMovement: boolean;
-		ignoreWithNocheckOnCheckConstraints: boolean;
-		ignoreFillFactor: boolean;
-		ignoreFileSize: boolean;
-		ignoreFilegroupPlacement: boolean;
-		doNotAlterReplicatedObjects: boolean;
-		doNotAlterChangeDataCaptureObjects: boolean;
-		disableAndReenableDdlTriggers: boolean;
-		deployDatabaseInSingleUserMode: boolean;
-		createNewDatabase: boolean;
-		compareUsingTargetCollation: boolean;
-		commentOutSetVarDeclarations: boolean;
-		blockWhenDriftDetected: boolean;
-		blockOnPossibleDataLoss: boolean;
-		backupDatabaseBeforeChanges: boolean;
-		allowIncompatiblePlatform: boolean;
-		allowDropBlockingAssemblies: boolean;
-		dropConstraintsNotInSource: boolean;
-		dropDmlTriggersNotInSource: boolean;
-		dropExtendedPropertiesNotInSource: boolean;
-		dropIndexesNotInSource: boolean;
-		ignoreFileAndLogFilePath: boolean;
-		ignoreExtendedProperties: boolean;
-		ignoreDmlTriggerState: boolean;
-		ignoreDmlTriggerOrder: boolean;
-		ignoreDefaultSchema: boolean;
-		ignoreDdlTriggerState: boolean;
-		ignoreDdlTriggerOrder: boolean;
-		ignoreCryptographicProviderFilePath: boolean;
-		verifyDeployment: boolean;
-		ignoreComments: boolean;
-		ignoreColumnCollation: boolean;
-		ignoreAuthorizer: boolean;
-		ignoreAnsiNulls: boolean;
-		generateSmartDefaults: boolean;
-		dropStatisticsNotInSource: boolean;
-		dropRoleMembersNotInSource: boolean;
-		dropPermissionsNotInSource: boolean;
-		dropObjectsNotInSource: boolean;
-		ignoreColumnOrder: boolean;
-		doNotDropObjectTypes: SchemaObjectType[];
-		excludeObjectTypes: SchemaObjectType[];
+	/**
+	* Interface containing deployment options of boolean type
+	*/
+	export interface DacDeployOptionPropertyBoolean {
+		value: boolean;
+		description: string;
+		displayName: string;
 	}
 
 	/**
-	 * Values from <DacFx>\Product\Source\DeploymentApi\ObjectTypes.cs
-	 */
-	export const enum SchemaObjectType {
-		Aggregates = 0,
-		ApplicationRoles = 1,
-		Assemblies = 2,
-		AssemblyFiles = 3,
-		AsymmetricKeys = 4,
-		BrokerPriorities = 5,
-		Certificates = 6,
-		ColumnEncryptionKeys = 7,
-		ColumnMasterKeys = 8,
-		Contracts = 9,
-		DatabaseOptions = 10,
-		DatabaseRoles = 11,
-		DatabaseTriggers = 12,
-		Defaults = 13,
-		ExtendedProperties = 14,
-		ExternalDataSources = 15,
-		ExternalFileFormats = 16,
-		ExternalTables = 17,
-		Filegroups = 18,
-		Files = 19,
-		FileTables = 20,
-		FullTextCatalogs = 21,
-		FullTextStoplists = 22,
-		MessageTypes = 23,
-		PartitionFunctions = 24,
-		PartitionSchemes = 25,
-		Permissions = 26,
-		Queues = 27,
-		RemoteServiceBindings = 28,
-		RoleMembership = 29,
-		Rules = 30,
-		ScalarValuedFunctions = 31,
-		SearchPropertyLists = 32,
-		SecurityPolicies = 33,
-		Sequences = 34,
-		Services = 35,
-		Signatures = 36,
-		StoredProcedures = 37,
-		SymmetricKeys = 38,
-		Synonyms = 39,
-		Tables = 40,
-		TableValuedFunctions = 41,
-		UserDefinedDataTypes = 42,
-		UserDefinedTableTypes = 43,
-		ClrUserDefinedTypes = 44,
-		Users = 45,
-		Views = 46,
-		XmlSchemaCollections = 47,
-		Audits = 48,
-		Credentials = 49,
-		CryptographicProviders = 50,
-		DatabaseAuditSpecifications = 51,
-		DatabaseEncryptionKeys = 52,
-		DatabaseScopedCredentials = 53,
-		Endpoints = 54,
-		ErrorMessages = 55,
-		EventNotifications = 56,
-		EventSessions = 57,
-		LinkedServerLogins = 58,
-		LinkedServers = 59,
-		Logins = 60,
-		MasterKeys = 61,
-		Routes = 62,
-		ServerAuditSpecifications = 63,
-		ServerRoleMembership = 64,
-		ServerRoles = 65,
-		ServerTriggers = 66,
-		ExternalStreams = 67,
-		ExternalStreamingJobs = 68
+	* Interface containing deployment options of string[] type, value property holds enum names (nothing but option name) from <DacFx>\Product\Source\DeploymentApi\ObjectTypes.cs enum
+	*/
+	export interface DacDeployOptionPropertyObject {
+		value: string[];
+		description: string;
+		displayName: string;
+	}
+
+	/*
+	* Interface containing Deployment options from <DacFx>\Source\DeploymentApi\DacDeployOptions.cs
+	* These property names should match with the properties defined in <sqltoolsservice>\src\Microsoft.SqlTools.ServiceLayer\DacFx\Contracts\DeploymentOptions.cs
+	*/
+	export interface DeploymentOptions {
+		excludeObjectTypes: DacDeployOptionPropertyObject;
+		// key will be the boolean option name
+		booleanOptionsDictionary: { [key: string]: DacDeployOptionPropertyBoolean };
+		// key will be the object type enum name (nothing but option name)
+		objectTypesDictionary: { [key: string]: string };
+	}
+
+	/*
+	* Interface containing option value and option name
+	*/
+	export interface IOptionWithValue {
+		optionName: string;
+		checked: boolean;
 	}
 
 	export interface SchemaCompareObjectId {
@@ -315,7 +176,6 @@ declare module 'mssql' {
 	export interface ISchemaCompareService {
 		schemaCompare(operationId: string, sourceEndpointInfo: SchemaCompareEndpointInfo, targetEndpointInfo: SchemaCompareEndpointInfo, taskExecutionMode: azdata.TaskExecutionMode, deploymentOptions: DeploymentOptions): Thenable<SchemaCompareResult>;
 		schemaCompareGenerateScript(operationId: string, targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<azdata.ResultStatus>;
-		schemaComparePublishChanges(operationId: string, targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<azdata.ResultStatus>;
 		schemaComparePublishDatabaseChanges(operationId: string, targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<azdata.ResultStatus>;
 		schemaComparePublishProjectChanges(operationId: string, targetProjectPath: string, targetFolderStructure: ExtractTarget, taskExecutionMode: azdata.TaskExecutionMode): Thenable<SchemaComparePublishProjectResult>;
 		schemaCompareGetDefaultOptions(): Thenable<SchemaCompareOptionsResult>;
@@ -357,12 +217,14 @@ declare module 'mssql' {
 		exportBacpac(databaseName: string, packageFilePath: string, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<DacFxResult>;
 		importBacpac(packageFilePath: string, databaseName: string, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<DacFxResult>;
 		extractDacpac(databaseName: string, packageFilePath: string, applicationName: string, applicationVersion: string, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<DacFxResult>;
-		createProjectFromDatabase(databaseName: string, targetFilePath: string, applicationName: string, applicationVersion: string, ownerUri: string, extractTarget: ExtractTarget, taskExecutionMode: azdata.TaskExecutionMode): Thenable<DacFxResult>;
-		deployDacpac(packageFilePath: string, databaseName: string, upgradeExisting: boolean, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode, sqlCommandVariableValues?: Record<string, string>, deploymentOptions?: DeploymentOptions): Thenable<DacFxResult>;
-		generateDeployScript(packageFilePath: string, databaseName: string, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode, sqlCommandVariableValues?: Record<string, string>, deploymentOptions?: DeploymentOptions): Thenable<DacFxResult>;
+		createProjectFromDatabase(databaseName: string, targetFilePath: string, applicationName: string, applicationVersion: string, ownerUri: string, extractTarget: ExtractTarget, taskExecutionMode: azdata.TaskExecutionMode, includePermissions?: boolean): Thenable<DacFxResult>;
+		deployDacpac(packageFilePath: string, databaseName: string, upgradeExisting: boolean, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode, sqlCommandVariableValues?: Map<string, string>, deploymentOptions?: DeploymentOptions): Thenable<DacFxResult>;
+		generateDeployScript(packageFilePath: string, databaseName: string, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode, sqlCommandVariableValues?: Map<string, string>, deploymentOptions?: DeploymentOptions): Thenable<DacFxResult>;
 		generateDeployPlan(packageFilePath: string, databaseName: string, ownerUri: string, taskExecutionMode: azdata.TaskExecutionMode): Thenable<GenerateDeployPlanResult>;
 		getOptionsFromProfile(profilePath: string): Thenable<DacFxOptionsResult>;
 		validateStreamingJob(packageFilePath: string, createStreamingJobTsql: string): Thenable<ValidateStreamingJobResult>;
+		parseTSqlScript(filePath: string, databaseSchemaProvider: string): Thenable<ParseTSqlScriptResult>;
+		savePublishProfile(profilePath: string, databaseName: string, connectionString: string, sqlCommandVariableValues?: Map<string, string>, deploymentOptions?: DeploymentOptions): Thenable<azdata.ResultStatus>;
 	}
 
 	export interface DacFxResult extends azdata.ResultStatus {
@@ -378,6 +240,10 @@ declare module 'mssql' {
 	}
 
 	export interface ValidateStreamingJobResult extends azdata.ResultStatus {
+	}
+
+	export interface ParseTSqlScriptResult {
+		containsCreateTableStatement: boolean;
 	}
 
 	export interface ExportParams {
@@ -425,6 +291,476 @@ declare module 'mssql' {
 		ownerUri: string;
 		taskExecutionMode: azdata.TaskExecutionMode;
 	}
+
+	//#endregion
+
+	//#region --- Sql Projects
+
+	/**
+	 * Interface for working with .sqlproj files
+	 */
+	export interface ISqlProjectsService {
+		/**
+		 * Add a dacpac reference to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param dacpacPath Path to the .dacpac file
+		 * @param suppressMissingDependencies Whether to suppress missing dependencies
+		 * @param databaseVariable SQLCMD variable name for specifying the other database this reference is to, if different from that of the current project
+		 * @param serverVariable SQLCMD variable name for specifying the other server this reference is to, if different from that of the current project.
+			 If this is set, DatabaseVariable must also be set.
+		 * @param databaseLiteral Literal name used to reference another database in the same server, if not using SQLCMD variables
+		 */
+		addDacpacReference(projectUri: string, dacpacPath: string, suppressMissingDependencies: boolean, databaseVariable?: string, serverVariable?: string, databaseLiteral?: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a SQL Project reference to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param projectPath Path to the referenced .sqlproj file
+		 * @param projectGuid GUID for the referenced SQL project
+		 * @param suppressMissingDependencies Whether to suppress missing dependencies
+		 * @param databaseVariable SQLCMD variable name for specifying the other database this reference is to, if different from that of the current project
+		 * @param serverVariable SQLCMD variable name for specifying the other server this reference is to, if different from that of the current project.
+			 If this is set, DatabaseVariable must also be set.
+		 * @param databaseLiteral Literal name used to reference another database in the same server, if not using SQLCMD variables
+		 */
+		addSqlProjectReference(projectUri: string, projectPath: string, projectGuid: string, suppressMissingDependencies: boolean, databaseVariable?: string, serverVariable?: string, databaseLiteral?: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a system database reference to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param systemDatabase Type of system database
+		 * @param suppressMissingDependencies Whether to suppress missing dependencies
+		 * @param referenceType Type of reference - ArtifactReference or PackageReference
+		 * @param databaseLiteral Literal name used to reference another database in the same server, if not using SQLCMD variables
+		 */
+		addSystemDatabaseReference(projectUri: string, systemDatabase: SystemDatabase, suppressMissingDependencies: boolean, referenceType: SystemDbReferenceType, databaseLiteral?: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a nuget package database reference to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param packageName Name of the referenced nuget package
+		 * @param packageVersion Version of the referenced nuget package
+		 * @param suppressMissingDependencies Whether to suppress missing dependencies
+		 * @param databaseVariable SQLCMD variable name for specifying the other database this reference is to, if different from that of the current project
+		 * @param serverVariable SQLCMD variable name for specifying the other server this reference is to, if different from that of the current project.
+			 If this is set, DatabaseVariable must also be set.
+		 * @param databaseLiteral Literal name used to reference another database in the same server, if not using SQLCMD variables
+		 */
+		addNugetPackageReference(projectUri: string, packageName: string, packageVersion: string, suppressMissingDependencies: boolean, databaseVariable?: string, serverVariable?: string, databaseLiteral?: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a database reference from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param name Name of the reference to be deleted. Name of the System DB, path of the sqlproj, or path of the dacpac
+		 */
+		deleteDatabaseReference(projectUri: string, name: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a folder to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the folder, typically relative to the .sqlproj file
+		 */
+		addFolder(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a folder from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the folder, typically relative to the .sqlproj file
+		 */
+		deleteFolder(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Exclude a folder and its contents from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the folder, typically relative to the .sqlproj file
+		 */
+		excludeFolder(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Move a folder and its contents within a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param sourcePath Source path of the folder, typically relative to the .sqlproj file
+		 * @param destinationPath Destination path of the folder, typically relative to the .sqlproj file
+		 */
+		moveFolder(projectUri: string, sourcePath: string, destinationPath: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a post-deployment script to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		addPostDeploymentScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a pre-deployment script to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		addPreDeploymentScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a post-deployment script from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		deletePostDeploymentScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a pre-deployment script from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		deletePreDeploymentScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Exclude a post-deployment script from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		excludePostDeploymentScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Exclude a pre-deployment script from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		excludePreDeploymentScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Move a post-deployment script in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 * @param destinationPath Destination path of the file or folder, relative to the .sqlproj
+		 */
+		movePostDeploymentScript(projectUri: string, path: string, destinationPath: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Move a pre-deployment script in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 * @param destinationPath Destination path of the file or folder, relative to the .sqlproj
+		 */
+		movePreDeploymentScript(projectUri: string, path: string, destinationPath: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Close a SQL project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		closeProject(projectUri: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Create a new SQL project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param sqlProjectType Type of SQL Project: SDK-style or Legacy
+		 * @param databaseSchemaProvider Database schema provider for the project, in the format
+			 "Microsoft.Data.Tools.Schema.Sql.SqlXYZDatabaseSchemaProvider".
+			 Case sensitive.
+		 * @param buildSdkVersion Version of the Microsoft.Build.Sql SDK for the project, if overriding the default
+		 */
+		createProject(projectUri: string, sqlProjectType: ProjectType, databaseSchemaProvider?: string, buildSdkVersion?: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Get the cross-platform compatibility status for a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getCrossPlatformCompatibility(projectUri: string): Promise<GetCrossPlatformCompatibilityResult>;
+
+		/**
+		 * Open an existing SQL project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		openProject(projectUri: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Update a SQL project to be cross-platform compatible
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		updateProjectForCrossPlatform(projectUri: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Set the DatabaseSource property of a .sqlproj file
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param databaseSource Source of the database schema, used in telemetry
+		 */
+		setDatabaseSource(projectUri: string, databaseSource: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Set the DatabaseSchemaProvider property of a SQL project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param databaseSchemaProvider New DatabaseSchemaProvider value, in the form "Microsoft.Data.Tools.Schema.Sql.SqlXYZDatabaseSchemaProvider"
+		 */
+		setDatabaseSchemaProvider(projectUri: string, databaseSchemaProvider: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Get the cross-platform compatibility status for a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getProjectProperties(projectUri: string): Promise<GetProjectPropertiesResult>;
+
+		/**
+		 * Add a SQLCMD variable to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param name Name of the SQLCMD variable
+		 * @param defaultValue Default value of the SQLCMD variable
+		 */
+		addSqlCmdVariable(projectUri: string, name: string, defaultValue: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a SQLCMD variable from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param name Name of the SQLCMD variable to be deleted
+		 */
+		deleteSqlCmdVariable(projectUri: string, name?: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Update an existing SQLCMD variable in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param name Name of the SQLCMD variable
+		 * @param defaultValue Default value of the SQLCMD variable
+		 */
+		updateSqlCmdVariable(projectUri: string, name: string, defaultValue: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Add a SQL object script to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		addSqlObjectScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a SQL object script from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		deleteSqlObjectScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Exclude a SQL object script from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 */
+		excludeSqlObjectScript(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Move a SQL object script in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the script, including .sql, relative to the .sqlproj
+		 * @param destinationPath Destination path of the file or folder, relative to the .sqlproj
+		 */
+		moveSqlObjectScript(projectUri: string, path: string, destinationPath: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Get all the database references in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getDatabaseReferences(projectUri: string): Promise<GetDatabaseReferencesResult>;
+
+		/**
+		 * Get all the folders in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getFolders(projectUri: string): Promise<GetFoldersResult>;
+
+		/**
+		 * Get all the post-deployment scripts in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getPostDeploymentScripts(projectUri: string): Promise<GetScriptsResult>;
+
+		/**
+		 * Get all the pre-deployment scripts in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getPreDeploymentScripts(projectUri: string): Promise<GetScriptsResult>;
+
+		/**
+		 * Get all the SQLCMD variables in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getSqlCmdVariables(projectUri: string): Promise<GetSqlCmdVariablesResult>;
+
+		/**
+		 * Get all the SQL object scripts in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getSqlObjectScripts(projectUri: string): Promise<GetScriptsResult>;
+
+		/**
+		 * Add a None item to a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the item, including extension, relative to the .sqlproj
+		 */
+		addNoneItem(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Delete a None item from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the item, including extension, relative to the .sqlproj
+		 */
+		deleteNoneItem(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Exclude a None item from a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the item, including extension, relative to the .sqlproj
+		 */
+		excludeNoneItem(projectUri: string, path: string): Promise<azdata.ResultStatus>;
+
+		/**
+		 * Get all the None items in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 */
+		getNoneItems(projectUri: string): Promise<GetScriptsResult>;
+
+		/**
+		 * Move a None item in a project
+		 * @param projectUri Absolute path of the project, including .sqlproj
+		 * @param path Path of the item, including extension, relative to the .sqlproj
+		 * @param destinationPath Destination path of the file or folder, relative to the .sqlproj
+		 */
+		moveNoneItem(projectUri: string, path: string, destinationPath: string): Promise<azdata.ResultStatus>;
+	}
+
+
+	//#region Results
+
+	export interface GetDatabaseReferencesResult extends azdata.ResultStatus {
+		/**
+		 * Array of system database references contained in the project
+		 */
+		systemDatabaseReferences: SystemDatabaseReference[];
+		/**
+		 * Array of dacpac references contained in the project
+		 */
+		dacpacReferences: DacpacReference[];
+		/**
+		 * Array of SQL project references contained in the project
+		 */
+		sqlProjectReferences: SqlProjectReference[];
+		/**
+		 * Array of NuGet package references contained in the project
+		 */
+		nugetPackageReferences: NugetPackageReference[];
+	}
+
+	export interface GetFoldersResult extends azdata.ResultStatus {
+		/**
+		 * Array of folders contained in the project
+		 */
+		folders: string[];
+	}
+
+	export interface GetCrossPlatformCompatibilityResult extends azdata.ResultStatus {
+		/**
+		 * Whether the project is cross-platform compatible
+		 */
+		isCrossPlatformCompatible: boolean;
+	}
+
+	export interface GetSqlCmdVariablesResult extends azdata.ResultStatus {
+		/**
+		 * Array of SQLCMD variables contained in the project
+		 */
+		sqlCmdVariables: SqlCmdVariable[];
+	}
+
+	export interface GetScriptsResult extends azdata.ResultStatus {
+		/**
+		 * Array of scripts contained in the project
+		 */
+		scripts: string[];
+	}
+
+	export interface GetProjectPropertiesResult extends azdata.ResultStatus {
+		/**
+		 * GUID for the SQL project
+		 */
+		projectGuid: string;
+		/**
+		 * Build configuration, defaulted to Debug if not specified
+		 */
+		configuration: string;
+		/**
+		 * Build platform, defaulted to AnyCPU if not specified
+		 */
+		platform: string;
+		/**
+		 * Output path for build, defaulted to "bin/Debug" if not specified.
+			 May be absolute or relative.
+		 */
+		outputPath: string;
+		/**
+		 * Default collation for the project, defaulted to SQL_Latin1_General_CP1_CI_AS if not specified
+		 */
+		defaultCollation: string;
+		/**
+		 * Source of the database schema, used in telemetry
+		 */
+		databaseSource?: string;
+		/**
+		 * Style of the .sqlproj file - SdkStyle or LegacyStyle
+		 */
+		projectStyle: ProjectType;
+		/**
+		 * Database Schema Provider, in the format "Microsoft.Data.Tools.Schema.Sql.SqlXYZDatabaseSchemaProvider"
+		 */
+		databaseSchemaProvider: string
+	}
+
+	//#endregion
+
+	//#region Types
+
+	export const enum ProjectType {
+		SdkStyle = 0,
+		LegacyStyle = 1
+	}
+
+	export interface DatabaseReference {
+		suppressMissingDependencies: boolean;
+		databaseVariableLiteralName?: string;
+	}
+
+	interface UserDatabaseReference extends DatabaseReference {
+		databaseVariable?: SqlCmdVariable;
+		serverVariable?: SqlCmdVariable;
+	}
+
+	export interface SystemDatabaseReference extends DatabaseReference {
+		systemDb: SystemDatabase;
+	}
+
+	export interface SqlProjectReference extends UserDatabaseReference {
+		projectPath: string;
+		projectGuid?: string;
+	}
+
+	export interface DacpacReference extends UserDatabaseReference {
+		dacpacPath: string;
+	}
+
+	export interface NugetPackageReference extends UserDatabaseReference {
+		packageName: string;
+		packageVersion: string;
+	}
+
+	export const enum SystemDatabase {
+		Master = 0,
+		MSDB = 1
+	}
+
+	export const enum SystemDbReferenceType {
+		ArtifactReference = 0,
+		PackageReference = 1
+	}
+
+	export interface SqlCmdVariable {
+		varName: string;
+		value: string;
+		defaultValue: string
+	}
+
+	//#endregion
 
 	//#endregion
 
@@ -511,395 +847,143 @@ declare module 'mssql' {
 	}
 	//#endregion
 
-	/**
-	 * Sql Assessment
-	 */
-
-	// SqlAssessment interfaces  -----------------------------------------------------------------------
-
-
-
-	export interface ISqlAssessmentService {
-		assessmentInvoke(ownerUri: string, targetType: azdata.sqlAssessment.SqlAssessmentTargetType): Promise<azdata.SqlAssessmentResult>;
-		getAssessmentItems(ownerUri: string, targetType: azdata.sqlAssessment.SqlAssessmentTargetType): Promise<azdata.SqlAssessmentResult>;
-		generateAssessmentScript(items: azdata.SqlAssessmentResultItem[], targetServerName: string, targetDatabaseName: string, taskExecutionMode: azdata.TaskExecutionMode): Promise<azdata.ResultStatus>;
+	export interface CreateSasResponse {
+		sharedAccessSignature: string;
 	}
 
-
-	/**
-	 * Sql Migration
-	 */
-
-	// SKU recommendation interfaces, mirrored from Microsoft.SqlServer.Migration.SkuRecommendation
-	export interface AzureSqlSkuCategory {
-		sqlTargetPlatform: AzureSqlTargetPlatform;
-		computeTier: ComputeTier;
+	export interface IAzureBlobService {
+		/**
+		 * Create a shared access signature for the specified blob container URI and saves it to the server specified with the connectionUri
+		 * @param connectionUri The connection URI of the server to save the SAS to
+		 * @param blobContainerUri The blob container URI to create the SAS for
+		 * @param blobStorageKey The key used to access the storage account
+		 * @param storageAccountName The name of the storage account the SAS will be created for
+		 * @param expirationDate The expiration date of the SAS
+		 * @returns A created shared access signature token
+		 */
+		createSas(connectionUri: string, blobContainerUri: string, blobStorageKey: string, storageAccountName: string, expirationDate: string): Promise<CreateSasResponse>;
 	}
 
-	export interface AzureSqlSkuPaaSCategory extends AzureSqlSkuCategory {
-		sqlPurchasingModel: AzureSqlPurchasingModel;
-		sqlServiceTier: AzureSqlPaaSServiceTier;
-		hardwareType: AzureSqlPaaSHardwareType;
+	// Object Management - Begin.
+	export namespace ObjectManagement {
+
+		/**
+		 * Object types.
+		 */
+		export const enum NodeType {
+			ApplicationRole = "ApplicationRole",
+			Column = "Column",
+			Database = "Database",
+			DatabaseRole = "DatabaseRole",
+			ServerLevelLogin = "ServerLevelLogin",
+			ServerLevelServerRole = "ServerLevelServerRole",
+			Server = "Server",
+			Table = "Table",
+			User = "User",
+			View = "View"
+		}
+
+		/**
+		 * Base interface for all the objects.
+		 */
+		export interface SqlObject {
+			/**
+			 * Name of the object.
+			 */
+			name: string;
+		}
+
+		/**
+		 * Base interface for the object view information.
+		 */
+		export interface ObjectViewInfo<T extends SqlObject> {
+			/**
+			 * The object information
+			 */
+			objectInfo: T;
+		}
+
+		/**
+		 * Interface representing an item in the search result.
+		 */
+		export interface SearchResultItem {
+			/**
+			 * name of the object.
+			 */
+			name: string;
+			/**
+			 * type of the object.
+			 */
+			type: string;
+			/**
+			 * schema of the object.
+			 */
+			schema: string | undefined;
+		}
 	}
 
-	export interface AzureSqlSkuIaaSCategory extends AzureSqlSkuCategory {
-		virtualMachineFamilyType: VirtualMachineFamilyType;
+	export interface IObjectManagementService {
+		/**
+		 * Initialize the object view and return the information to render the view.
+		 * @param contextId The context id of the view, generated by the extension and will be used in subsequent save/script/dispose operations.
+		 * @param objectType The object type.
+		 * @param connectionUri The original connection's URI.
+		 * @param database The target database.
+		 * @param isNewObject Whether the view is for creating a new object.
+		 * @param parentUrn The parent object's URN.
+		 * @param objectUrn The object's URN.
+		 */
+		initializeView(contextId: string, objectType: ObjectManagement.NodeType, connectionUri: string, database: string, isNewObject: boolean, parentUrn: string, objectUrn: string): Thenable<ObjectManagement.ObjectViewInfo<ObjectManagement.SqlObject>>;
+		/**
+		 * Save an object.
+		 * @param contextId The object view's context id.
+		 * @param object The object to be saved.
+		 */
+		save(contextId: string, object: ObjectManagement.SqlObject): Thenable<void>;
+		/**
+		 * Script an object.
+		 * @param contextId The object view's context id.
+		 * @param object The object to be scripted.
+		 */
+		script(contextId: string, object: ObjectManagement.SqlObject): Thenable<string>;
+		/**
+		 * Dispose a view.
+		 * @param contextId The id of the view.
+		 */
+		disposeView(contextId: string): Thenable<void>;
+		/**
+		 * Rename an object.
+		 * @param connectionUri The URI of the server connection.
+		 * @param objectType The object type.
+		 * @param objectUrn SMO Urn of the object to be renamed. More information: https://learn.microsoft.com/sql/relational-databases/server-management-objects-smo/overview-smo
+		 * @param newName The new name of the object.
+		 */
+		rename(connectionUri: string, objectType: ObjectManagement.NodeType, objectUrn: string, newName: string): Thenable<void>;
+		/**
+		 * Drop an object.
+		 * @param connectionUri The URI of the server connection.
+		 * @param objectType The object type.
+		 * @param objectUrn SMO Urn of the object to be dropped. More information: https://learn.microsoft.com/sql/relational-databases/server-management-objects-smo/overview-smo
+		 */
+		drop(connectionUri: string, objectType: ObjectManagement.NodeType, objectUrn: string): Thenable<void>;
+		/**
+		 * Search for objects.
+		 * @param contextId The object view's context id.
+		 * @param objectTypes The object types to search for.
+		 * @param searchText Search text.
+		 * @param schema Schema to search in.
+		 */
+		search(contextId: string, objectTypes: string[], searchText?: string, schema?: string): Thenable<ObjectManagement.SearchResultItem[]>;
+		/**
+		 * Detach a database.
+		 * @param connectionUri The URI of the server connection.
+		 * @param objectUrn SMO Urn of the database to be detached. More information: https://learn.microsoft.com/sql/relational-databases/server-management-objects-smo/overview-smo
+		 * @param dropConnections Whether to drop active connections to this database.
+		 * @param updateStatistics Whether to update the optimization statistics related to this database.
+		 * @param generateScript Whether to generate a TSQL script for the operation instead of detaching the database.
+		 * @returns A string value representing the generated TSQL query if generateScript was set to true, and an empty string otherwise.
+		 */
+		detachDatabase(connectionUri: string, objectUrn: string, dropConnections: boolean, updateStatistics: boolean, generateScript: boolean): Thenable<string>;
 	}
-
-	export interface AzureManagedDiskSku {
-		tier: AzureManagedDiskTier;
-		size: string;
-		caching: AzureManagedDiskCaching;
-	}
-
-	export interface AzureVirtualMachineSku {
-		virtualMachineFamily: VirtualMachineFamily;
-		sizeName: string;
-		computeSize: number;
-		azureSkuName: string;
-		vCPUsAvailable: number;
-	}
-
-	export interface AzureSqlSkuMonthlyCost {
-		computeCost: number;
-		storageCost: number;
-		totalCost: number;
-	}
-
-	export interface AzureSqlSku {
-		category: AzureSqlSkuPaaSCategory | AzureSqlSkuIaaSCategory;
-		computeSize: number;
-		predictedDataSizeInMb: number;
-		predictedLogSizeInMb: number;
-	}
-
-	export interface AzureSqlPaaSSku extends AzureSqlSku {
-		category: AzureSqlSkuPaaSCategory;
-		storageMaxSizeInMb: number;
-	}
-
-	export interface AzureSqlIaaSSku extends AzureSqlSku {
-		category: AzureSqlSkuIaaSCategory;
-		virtualMachineSize: AzureVirtualMachineSku;
-		dataDiskSizes: AzureManagedDiskSku[];
-		logDiskSizes: AzureManagedDiskSku[];
-		tempDbDiskSizes: AzureManagedDiskSku[];
-	}
-
-	export interface SkuRecommendationResultItem {
-		sqlInstanceName: string;
-		databaseName: string;
-		targetSku: AzureSqlIaaSSku | AzureSqlPaaSSku;
-		monthlyCost: AzureSqlSkuMonthlyCost;
-		ranking: number;
-		positiveJustifications: string[];
-		negativeJustifications: string[];
-	}
-
-	export interface SqlInstanceRequirements {
-		cpuRequirementInCores: number;
-		dataStorageRequirementInMB: number;
-		logStorageRequirementInMB: number;
-		memoryRequirementInMB: number;
-		dataIOPSRequirement: number;
-		logIOPSRequirement: number;
-		ioLatencyRequirementInMs: number;
-		ioThroughputRequirementInMBps: number;
-		tempDBSizeInMB: number;
-		dataPointsStartTime: string;
-		dataPointsEndTime: string;
-		aggregationTargetPercentile: number;
-		perfDataCollectionIntervalInSeconds: number;
-		databaseLevelRequirements: SqlDatabaseRequirements[];
-		numberOfDataPointsAnalyzed: number;
-	}
-
-	export interface SqlDatabaseRequirements {
-		cpuRequirementInCores: number;
-		dataIOPSRequirement: number;
-		logIOPSRequirement: number;
-		ioLatencyRequirementInMs: number;
-		ioThroughputRequirementInMBps: number;
-		dataStorageRequirementInMB: number;
-		logStorageRequirementInMB: number;
-		databaseName: string;
-		memoryRequirementInMB: number;
-		cpuRequirementInPercentageOfTotalInstance: number;
-		numberOfDataPointsAnalyzed: number;
-		fileLevelRequirements: SqlFileRequirements[];
-	}
-
-	export interface SqlFileRequirements {
-		fileName: string;
-		fileType: DatabaseFileType;
-		sizeInMB: number;
-		readLatencyInMs: number;
-		writeLatencyInMs: number;
-		iopsRequirement: number;
-		ioThroughputRequirementInMBps: number;
-		numberOfDataPointsAnalyzed: number;
-	}
-
-	export interface PaaSSkuRecommendationResultItem extends SkuRecommendationResultItem {
-		targetSku: AzureSqlPaaSSku;
-	}
-
-	export interface IaaSSkuRecommendationResultItem extends SkuRecommendationResultItem {
-		targetSku: AzureSqlIaaSSku;
-	}
-
-	export interface SkuRecommendationResult {
-		sqlDbRecommendationResults: PaaSSkuRecommendationResultItem[];
-		sqlMiRecommendationResults: PaaSSkuRecommendationResultItem[];
-		sqlVmRecommendationResults: IaaSSkuRecommendationResultItem[];
-		instanceRequirements: SqlInstanceRequirements;
-	}
-
-	// SKU recommendation enums, mirrored from Microsoft.SqlServer.Migration.SkuRecommendation
-	export const enum DatabaseFileType {
-		Rows = 0,
-		Log = 1,
-		Filestream = 2,
-		NotSupported = 3,
-		Fulltext = 4
-	}
-
-	export const enum AzureSqlTargetPlatform {
-		AzureSqlDatabase = 0,
-		AzureSqlManagedInstance = 1,
-		AzureSqlVirtualMachine = 2
-	}
-
-	export const enum ComputeTier {
-		Provisioned = 0,
-		ServerLess = 1
-	}
-
-	export const enum AzureManagedDiskTier {
-		Standard = 0,
-		Premium = 1,
-		Ultra = 2
-	}
-
-	export const enum AzureManagedDiskCaching {
-		NotApplicable = 0,
-		None = 1,
-		ReadOnly = 2,
-		ReadWrite = 3
-	}
-
-	export const enum AzureSqlPurchasingModel {
-		vCore = 0,
-	}
-
-	export const enum AzureSqlPaaSServiceTier {
-		GeneralPurpose = 0,
-		BusinessCritical,
-		HyperScale,
-	}
-
-	export const enum AzureSqlPaaSHardwareType {
-		Gen5 = 0,
-		PremiumSeries,
-		PremiumSeriesMemoryOptimized
-	}
-
-	export const enum VirtualMachineFamilyType {
-		GeneralPurpose,
-		ComputeOptimized,
-		MemoryOptimized,
-		StorageOptimized,
-		GPU,
-		HighPerformanceCompute
-	}
-
-	export const enum VirtualMachineFamily {
-		basicAFamily,
-		standardA0_A7Family,
-		standardAv2Family,
-		standardBSFamily,
-		standardDFamily,
-		standardDv2Family,
-		standardDv2PromoFamily,
-		standardDADSv5Family,
-		standardDASv4Family,
-		standardDASv5Family,
-		standardDAv4Family,
-		standardDDSv4Family,
-		standardDDSv5Family,
-		standardDDv4Family,
-		standardDDv5Family,
-		standardDSv3Family,
-		standardDSv4Family,
-		standardDSv5Family,
-		standardDv3Family,
-		standardDv4Family,
-		standardDv5Family,
-		standardDCADSv5Family,
-		standardDCASv5Family,
-		standardDCSv2Family,
-		standardDSFamily,
-		standardDSv2Family,
-		standardDSv2PromoFamily,
-		standardEIDSv5Family,
-		standardEIDv5Family,
-		standardEISv5Family,
-		standardEIv5Family,
-		standardEADSv5Family,
-		standardEASv4Family,
-		standardEASv5Family,
-		standardEDSv4Family,
-		standardEDSv5Family,
-		standardEBDSv5Family,
-		standardESv3Family,
-		standardESv4Family,
-		standardESv5Family,
-		standardEBSv5Family,
-		standardEAv4Family,
-		standardEDv4Family,
-		standardEDv5Family,
-		standardEv3Family,
-		standardEv4Family,
-		standardEv5Family,
-		standardEISv3Family,
-		standardEIv3Family,
-		standardXEIDSv4Family,
-		standardXEISv4Family,
-		standardECADSv5Family,
-		standardECASv5Family,
-		standardECIADSv5Family,
-		standardECIASv5Family,
-		standardFFamily,
-		standardFSFamily,
-		standardFSv2Family,
-		standardGFamily,
-		standardGSFamily,
-		standardHFamily,
-		standardHPromoFamily,
-		standardLSFamily,
-		standardLSv2Family,
-		standardMSFamily,
-		standardMDSMediumMemoryv2Family,
-		standardMSMediumMemoryv2Family,
-		standardMIDSMediumMemoryv2Family,
-		standardMISMediumMemoryv2Family,
-		standardMSv2Family,
-		standardNCSv3Family,
-		StandardNCASv3_T4Family,
-		standardNVSv2Family,
-		standardNVSv3Family,
-		standardNVSv4Family
-	}
-
-	export interface StartPerfDataCollectionResult {
-		dateTimeStarted: Date;
-	}
-
-	export interface StopPerfDataCollectionResult {
-		dateTimeStopped: Date;
-	}
-
-	export interface RefreshPerfDataCollectionResult {
-		isCollecting: boolean;
-		messages: string[];
-		errors: string[];
-		refreshTime: Date;
-	}
-
-	export interface ISqlMigrationService {
-		getAssessments(ownerUri: string, databases: string[]): Promise<AssessmentResult | undefined>;
-		getSkuRecommendations(dataFolder: string, perfQueryIntervalInSec: number, targetPlatforms: string[], targetSqlInstance: string, targetPercentile: number, scalingFactor: number, startTime: string, endTime: string, includePreviewSkus: boolean, databaseAllowList: string[]): Promise<SkuRecommendationResult | undefined>;
-		startPerfDataCollection(ownerUri: string, dataFolder: string, perfQueryIntervalInSec: number, staticQueryIntervalInSec: number, numberOfIterations: number): Promise<StartPerfDataCollectionResult | undefined>;
-		stopPerfDataCollection(): Promise<StopPerfDataCollectionResult | undefined>;
-		refreshPerfDataCollection(lastRefreshedTime: Date): Promise<RefreshPerfDataCollectionResult | undefined>;
-	}
-
-	// SqlMigration interfaces  -----------------------------------------------------------------------
-
-	export interface SqlMigrationImpactedObjectInfo {
-		name: string;
-		impactDetail: string;
-		objectType: string;
-	}
-
-	export interface SqlMigrationAssessmentResultItem {
-		rulesetVersion: string;
-		rulesetName: string;
-		ruleId: string;
-		targetType: string;
-		checkId: string;
-		tags: string[];
-		displayName: string;
-		description: string;
-		helpLink: string;
-		level: string;
-		timestamp: string;
-		kind: azdata.sqlAssessment.SqlAssessmentResultItemKind;
-		message: string;
-		appliesToMigrationTargetPlatform: string;
-		issueCategory: string;
-		databaseName: string;
-		impactedObjects: SqlMigrationImpactedObjectInfo[];
-		databaseRestoreFails: boolean;
-	}
-
-	export interface ServerTargetReadiness {
-		numberOfDatabasesReadyForMigration: number;
-		numberOfNonOnlineDatabases: number;
-		totalNumberOfDatabases: number;
-	}
-
-	export interface ErrorModel {
-		errorId: number;
-		message: string;
-		errorSummary: string;
-		possibleCauses: string;
-		guidance: string;
-	}
-
-	export interface DatabaseTargetReadiness {
-		noSelectionForMigration: boolean;
-		numOfBlockerIssues: number;
-	}
-
-	export interface DatabaseAssessmentProperties {
-		compatibilityLevel: string;
-		databaseSize: number;
-		isReplicationEnabled: boolean;
-		assessmentTimeInMilliseconds: number;
-		items: SqlMigrationAssessmentResultItem[];
-		errors: ErrorModel[];
-		sqlManagedInstanceTargetReadiness: DatabaseTargetReadiness;
-		name: string;
-	}
-
-	export interface ServerAssessmentProperties {
-		cpuCoreCount: number;
-		physicalServerMemory: number;
-		serverHostPlatform: string;
-		serverVersion: string;
-		serverEngineEdition: string;
-		serverEdition: string;
-		isClustered: boolean;
-		numberOfUserDatabases: number;
-		sqlAssessmentStatus: number;
-		assessedDatabaseCount: number;
-		sqlManagedInstanceTargetReadiness: ServerTargetReadiness;
-		items: SqlMigrationAssessmentResultItem[];
-		errors: ErrorModel[];
-		databases: DatabaseAssessmentProperties[];
-		name: string;
-	}
-
-	export interface AssessmentResult {
-		startTime: string;
-		endedTime: string;
-		assessmentResult: ServerAssessmentProperties;
-		rawAssessmentResult: any;
-		errors: ErrorModel[];
-	}
-
-	export interface ISqlMigrationService {
-		getAssessments(ownerUri: string, databases: string[]): Promise<AssessmentResult | undefined>;
-	}
+	// Object Management - End.
 }

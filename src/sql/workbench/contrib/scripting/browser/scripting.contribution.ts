@@ -16,6 +16,8 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { ItemContextKey } from 'sql/workbench/contrib/dashboard/browser/widgets/explorer/explorerContext';
 import { EditDataAction } from 'sql/workbench/browser/scriptingActions';
 import { DatabaseEngineEdition } from 'sql/workbench/api/common/sqlExtHostTypes';
+import { ServerInfoContextKey } from 'sql/workbench/services/connection/common/serverInfoContextKey';
+import { Codicon } from 'vs/base/common/codicons';
 
 //#region -- Data Explorer
 // Script as Create
@@ -131,10 +133,12 @@ MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
 	when:
 		ContextKeyExpr.and(
 			TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
+			TreeNodeContextKey.SubType.notEqualsTo('LedgerAppendOnly'),
+			TreeNodeContextKey.SubType.notEqualsTo('LedgerDropped'),
 			ConnectionContextKey.Provider.notEqualsTo('KUSTO'),
 			ConnectionContextKey.Provider.notEqualsTo('LOGANALYTICS'),
-			MssqlNodeContext.EngineEdition.notEqualsTo(DatabaseEngineEdition.SqlOnDemand.toString()),
-			MssqlNodeContext.EngineEdition.notEqualsTo(DatabaseEngineEdition.SqlDataWarehouse.toString())
+			ServerInfoContextKey.EngineEdition.notEqualsTo(DatabaseEngineEdition.SqlOnDemand.toString()),
+			ServerInfoContextKey.EngineEdition.notEqualsTo(DatabaseEngineEdition.SqlDataWarehouse.toString())
 		)
 });
 
@@ -150,10 +154,16 @@ MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
 			ConnectionContextKey.Provider.notEqualsTo('KUSTO'),
 			ConnectionContextKey.Provider.notEqualsTo('LOGANALYTICS'),
 			ContextKeyExpr.or(
-				TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
-				TreeNodeContextKey.NodeType.isEqualTo(NodeType.View),
+				ContextKeyExpr.and(
+					TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
+					TreeNodeContextKey.SubType.notEqualsTo('LedgerDropped')
+				),
+				ContextKeyExpr.and(
+					TreeNodeContextKey.NodeType.isEqualTo(NodeType.View),
+					TreeNodeContextKey.SubType.notEqualsTo('Ledger'),
+				),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.Schema),
-				ContextKeyExpr.and(TreeNodeContextKey.NodeType.isEqualTo(NodeType.User), MssqlNodeContext.EngineEdition.notEqualsTo(DatabaseEngineEdition.SqlOnDemand.toString())),
+				ContextKeyExpr.and(TreeNodeContextKey.NodeType.isEqualTo(NodeType.User), ServerInfoContextKey.EngineEdition.notEqualsTo(DatabaseEngineEdition.SqlOnDemand.toString())),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.User),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.UserDefinedTableType),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.StoredProcedure),
@@ -198,7 +208,8 @@ MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.StoredProcedure)),
 			ContextKeyExpr.and(
 				ConnectionContextKey.Provider.isEqualTo('MSSQL'),
-				TreeNodeContextKey.NodeType.isEqualTo(NodeType.View)),
+				TreeNodeContextKey.NodeType.isEqualTo(NodeType.View),
+				TreeNodeContextKey.SubType.notEqualsTo('Ledger')),
 			ContextKeyExpr.and(
 				ConnectionContextKey.Provider.isEqualTo('MSSQL'),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.AggregateFunction)),
@@ -230,8 +241,14 @@ MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
 			ConnectionContextKey.Provider.notEqualsTo('KUSTO'),
 			ConnectionContextKey.Provider.notEqualsTo('LOGANALYTICS'),
 			ContextKeyExpr.or(
-				TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
-				TreeNodeContextKey.NodeType.isEqualTo(NodeType.View),
+				ContextKeyExpr.and(
+					TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
+					TreeNodeContextKey.SubType.notEqualsTo('LedgerDropped')
+				),
+				ContextKeyExpr.and(
+					TreeNodeContextKey.NodeType.isEqualTo(NodeType.View),
+					TreeNodeContextKey.SubType.notEqualsTo('Ledger'),
+				),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.Schema),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.User),
 				TreeNodeContextKey.NodeType.isEqualTo(NodeType.UserDefinedTableType),
@@ -257,6 +274,27 @@ MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
 	command: {
 		id: commands.OE_REFRESH_COMMAND_ID,
 		title: localize('refreshNode', "Refresh")
+	},
+	when: ContextKeyExpr.or(
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.View),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.Schema),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.User),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.UserDefinedTableType),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.StoredProcedure),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.AggregateFunction),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.PartitionFunction),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.ScalarValuedFunction),
+		TreeNodeContextKey.NodeType.isEqualTo(NodeType.TableValuedFunction))
+});
+
+MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
+	group: 'inline',
+	order: 7,
+	command: {
+		id: commands.OE_REFRESH_COMMAND_ID,
+		title: localize('refreshNode', "Refresh"),
+		icon: Codicon.refresh
 	},
 	when: ContextKeyExpr.or(
 		TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),

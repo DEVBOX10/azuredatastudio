@@ -7,15 +7,14 @@ import type * as azdataType from 'azdata';
 import * as vscode from 'vscode';
 import * as constants from '../common/constants';
 import * as newProjectTool from '../tools/newProjectTool';
-import * as mssql from 'mssql';
 import * as path from 'path';
 
 import { IconPathHelper } from '../common/iconHelper';
 import { cssStyles } from '../common/uiConstants';
 import { ImportDataModel } from '../models/api/import';
 import { Deferred } from '../common/promise';
-import { getConnectionName } from './utils';
-import { exists, getAzdataApi, getDataWorkspaceExtensionApi } from '../common/utils';
+import { getConnectionName, mapExtractTargetEnum } from './utils';
+import { exists, getAzdataApi, getDataWorkspaceExtensionApi, isValidBasename, isValidBasenameErrorMessage, sanitizeStringForFilename } from '../common/utils';
 
 export class CreateProjectFromDatabaseDialog {
 	public dialog: azdataType.window.Dialog;
@@ -26,13 +25,14 @@ export class CreateProjectFromDatabaseDialog {
 	public projectNameTextBox: azdataType.InputBoxComponent | undefined;
 	public projectLocationTextBox: azdataType.InputBoxComponent | undefined;
 	public folderStructureDropDown: azdataType.DropDownComponent | undefined;
+	public includePermissionsCheckbox: azdataType.CheckBoxComponent | undefined;
 	public sdkStyleCheckbox: azdataType.CheckBoxComponent | undefined;
 	private formBuilder: azdataType.FormBuilder | undefined;
 	private connectionId: string | undefined;
 	private toDispose: vscode.Disposable[] = [];
 	private initDialogComplete: Deferred = new Deferred();
 
-	public createProjectFromDatabaseCallback: ((model: ImportDataModel) => any) | undefined;
+	public createProjectFromDatabaseCallback: ((model: ImportDataModel, connectionId?: string) => any) | undefined;
 
 	constructor(private profile: azdataType.IConnectionProfile | undefined) {
 		this.dialog = getAzdataApi()!.window.createModelViewDialog(constants.createProjectFromDatabaseDialogName, 'createProjectFromDatabaseDialog');
@@ -50,11 +50,37 @@ export class CreateProjectFromDatabaseDialog {
 
 		this.dialog.cancelButton.label = constants.cancelButtonText;
 
+		let connected = false;
+		if (this.profile) {
+			const connections = await getAzdataApi()!.connection.getConnections(true);
+			connected = !!connections.find(c => c.connectionId === this.profile!.id);
+
+			if (!connected) {
+				// if the connection clicked on isn't currently connected, try to connect
+				const result = await getAzdataApi()!.connection.connect(this.profile, true, false);
+				connected = result.connected;
+
+				if (!result.connected) {
+					// if can't connect automatically, open connection dialog with the info from the profile
+					const connection = await getAzdataApi()!.connection.openConnectionDialog(undefined, this.profile);
+					connected = !!connection;
+
+					// update these fields if connection was successful, to ensure they match the connection made
+					if (connected) {
+						this.profile.id = connection.connectionId;
+						this.profile.databaseName = connection.options['databaseName'];
+						this.profile.serverName = connection.options['server'];
+						this.profile.userName = connection.options['user'];
+					}
+				}
+			}
+		}
+
 		getAzdataApi()!.window.openDialog(this.dialog);
 		await this.initDialogComplete.promise;
 
-		if (this.profile) {
-			await this.updateConnectionComponents(getConnectionName(this.profile), this.profile.id, this.profile.databaseName!);
+		if (connected) {
+			await this.updateConnectionComponents(getConnectionName(this.profile), this.profile!.id, this.profile!.databaseName);
 		}
 
 		this.tryEnableCreateButton();
@@ -83,8 +109,10 @@ export class CreateProjectFromDatabaseDialog {
 			targetProjectFormSection.addItems([projectNameRow, projectLocationRow]);
 
 			const folderStructureRow = this.createFolderStructureRow(view);
-			const createProjectSettingsFormSection = view.modelBuilder.flexContainer().withLayout({ flexFlow: 'column' }).component();
-			createProjectSettingsFormSection.addItems([folderStructureRow]);
+
+			this.includePermissionsCheckbox = view.modelBuilder.checkBox().withProps({
+				label: constants.includePermissionsLabel,
+			}).component();
 
 			// could also potentially be radio buttons once there's a term to refer to "legacy" style sqlprojs
 			this.sdkStyleCheckbox = view.modelBuilder.checkBox().withProps({
@@ -124,7 +152,10 @@ export class CreateProjectFromDatabaseDialog {
 						title: constants.createProjectSettings,
 						components: [
 							{
-								component: createProjectSettingsFormSection,
+								component: folderStructureRow,
+							},
+							{
+								component: this.includePermissionsCheckbox
 							},
 							{
 								component: sdkFormComponentGroup
@@ -187,7 +218,7 @@ export class CreateProjectFromDatabaseDialog {
 	}
 
 	public setProjectName() {
-		this.projectNameTextBox!.value = newProjectTool.defaultProjectNameFromDb(<string>this.sourceDatabaseDropDown!.value);
+		this.projectNameTextBox!.value = newProjectTool.defaultProjectNameFromDb(sanitizeStringForFilename(<string>this.sourceDatabaseDropDown!.value));
 	}
 
 	private createSourceConnectionComponent(view: azdataType.ModelView): azdataType.InputBoxComponent {
@@ -208,6 +239,7 @@ export class CreateProjectFromDatabaseDialog {
 	private createSelectConnectionButton(view: azdataType.ModelView): azdataType.Component {
 		this.selectConnectionButton = view.modelBuilder.button().withProps({
 			ariaLabel: constants.selectConnection,
+			title: constants.selectConnection,
 			iconPath: IconPathHelper.selectConnection,
 			height: '16px',
 			width: '16px'
@@ -259,17 +291,26 @@ export class CreateProjectFromDatabaseDialog {
 	}
 
 	private createProjectNameRow(view: azdataType.ModelView): azdataType.FlexContainer {
-		this.projectNameTextBox = view.modelBuilder.inputBox().withProps({
-			ariaLabel: constants.projectNamePlaceholderText,
-			placeHolder: constants.projectNamePlaceholderText,
-			required: true,
-			width: cssStyles.createProjectFromDatabaseTextboxWidth
-		}).component();
+		this.projectNameTextBox = view.modelBuilder.inputBox().withValidation(
+			component => isValidBasename(component.value)
+		)
+			.withProps({
+				ariaLabel: constants.projectNameLabel,
+				placeHolder: constants.projectNamePlaceholderText,
+				required: true,
+				width: cssStyles.createProjectFromDatabaseTextboxWidth
+			}).component();
 
-		this.projectNameTextBox.onTextChanged(() => {
-			this.projectNameTextBox!.value = this.projectNameTextBox!.value?.trim();
-			void this.projectNameTextBox!.updateProperty('title', this.projectNameTextBox!.value);
-			this.tryEnableCreateButton();
+		this.projectNameTextBox.onTextChanged(text => {
+			const errorMessage = isValidBasenameErrorMessage(text);
+			if (errorMessage !== undefined) {
+				// Set validation error message if project name is invalid
+				void this.projectNameTextBox!.updateProperty('validationErrorMessage', errorMessage);
+			} else {
+				this.projectNameTextBox!.value = this.projectNameTextBox!.value?.trim();
+				void this.projectNameTextBox!.updateProperty('title', this.projectNameTextBox!.value);
+				this.tryEnableCreateButton();
+			}
 		});
 
 		const projectNameLabel = view.modelBuilder.text().withProps({
@@ -290,7 +331,8 @@ export class CreateProjectFromDatabaseDialog {
 			value: '',
 			ariaLabel: constants.location,
 			placeHolder: constants.projectLocationPlaceholderText,
-			width: cssStyles.createProjectFromDatabaseTextboxWidth
+			width: cssStyles.createProjectFromDatabaseTextboxWidth,
+			required: true
 		}).component();
 
 		this.projectLocationTextBox.onTextChanged(() => {
@@ -313,6 +355,7 @@ export class CreateProjectFromDatabaseDialog {
 	private createBrowseFolderButton(view: azdataType.ModelView): azdataType.ButtonComponent {
 		const browseFolderButton = view.modelBuilder.button().withProps({
 			ariaLabel: constants.browseButtonText,
+			title: constants.browseButtonText,
 			iconPath: IconPathHelper.folder_blue,
 			height: '18px',
 			width: '18px'
@@ -381,11 +424,12 @@ export class CreateProjectFromDatabaseDialog {
 			filePath: this.projectLocationTextBox!.value!,
 			version: '1.0.0.0',
 			extractTarget: mapExtractTargetEnum(<string>this.folderStructureDropDown!.value),
-			sdkStyle: this.sdkStyleCheckbox?.checked!
+			sdkStyle: this.sdkStyleCheckbox?.checked!,
+			includePermissions: this.includePermissionsCheckbox?.checked
 		};
 
 		azdataApi!.window.closeDialog(this.dialog);
-		await this.createProjectFromDatabaseCallback!(model);
+		await this.createProjectFromDatabaseCallback!(model, this.connectionId!);
 
 		this.dispose();
 	}
@@ -422,20 +466,5 @@ export class CreateProjectFromDatabaseDialog {
 			text: message,
 			level: getAzdataApi()!.window.MessageLevel.Error
 		};
-	}
-}
-
-export function mapExtractTargetEnum(inputTarget: string): mssql.ExtractTarget {
-	if (inputTarget) {
-		switch (inputTarget) {
-			case constants.file: return mssql.ExtractTarget.file;
-			case constants.flat: return mssql.ExtractTarget.flat;
-			case constants.objectType: return mssql.ExtractTarget.objectType;
-			case constants.schema: return mssql.ExtractTarget.schema;
-			case constants.schemaObjectType: return mssql.ExtractTarget.schemaObjectType;
-			default: throw new Error(constants.invalidInput(inputTarget));
-		}
-	} else {
-		throw new Error(constants.extractTargetRequired);
 	}
 }

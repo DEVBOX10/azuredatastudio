@@ -11,6 +11,7 @@
 		"dist/configurationEditingMain": {
 			"cwd": "启动时任务运行程序的当前工作目录",
 			"defaultBuildTask": "默认生成任务的名称。如果没有单个默认生成任务，则将显示快速选取以选择生成任务。",
+			"extensionInstallFolder": "安装扩展的路径。",
 			"file": "当前打开的文件",
 			"fileBasename": "当前打开的文件的文件名",
 			"fileBasenameNoExtension": "当前打开的文件的文件名 (不包含文件扩展名)",
@@ -42,8 +43,7 @@
 			"assocLabelPath": "带路径的文件",
 			"derivedDescription": "与具有名称相同但扩展名不同的同级文件的文件匹配。",
 			"derivedLabel": "具有同级文件的文件(按名称)",
-			"dirty": "一个更新的指示器，指示活动编辑器是否更新",
-			"falseDescription": "禁用该模式。",
+			"dirty": "表明活动编辑器具有未保存更改的时间的指示器",
 			"fileDescription": "与具有特定文件扩展名的所有文件匹配。",
 			"fileLabel": "按扩展名的文件",
 			"filesDescription": "与具有任意文件扩展名的所有文件匹配。",
@@ -52,8 +52,6 @@
 			"folderLabel": "按名称的文件夹(任意位置)",
 			"folderName": "文件所在工作区文件夹的名称 (例如 myFolder)",
 			"folderPath": "文件所在工作区文件夹的路径 (例如 /Users/Development/myFolder)",
-			"languageSpecificEditorSettings": "特定语言编辑器设置",
-			"languageSpecificEditorSettingsDescription": "替代语言编辑器设置",
 			"remoteName": "例如 SSH",
 			"rootName": "工作区名称 (例如 myFolder 或 myWorkspace)",
 			"rootPath": "工作区路径 (例如 /Users/Development/myWorkspace)",
@@ -62,8 +60,7 @@
 			"topFolderDescription": "与具有特定名称的顶级文件夹匹配。",
 			"topFolderLabel": "按名称的文件夹(顶级)",
 			"topFoldersDescription": "与多个顶级文件夹匹配。",
-			"topFoldersLabel": "使用多个名称的文件夹(顶级)",
-			"trueDescription": "启用该模式。"
+			"topFoldersLabel": "使用多个名称的文件夹(顶级)"
 		},
 		"package": {
 			"description": "在配置文件 (如设置、启动和扩展推荐文件) 中提供高级 IntelliSense、自动修复等功能",

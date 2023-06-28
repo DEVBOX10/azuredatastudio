@@ -9,7 +9,7 @@ import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { BareFontInfo } from 'vs/editor/common/config/fontInfo';
-import { getPixelRatio, getZoomLevel } from 'vs/base/browser/browser';
+import { getZoomLevel, PixelRatio } from 'vs/base/browser/browser';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import * as DOM from 'vs/base/browser/dom';
 import * as types from 'vs/base/common/types';
@@ -21,21 +21,15 @@ import { CancellationToken } from 'vs/base/common/cancellation';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { RESULTS_GRID_DEFAULTS } from 'sql/workbench/common/constants';
 import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { IResultGridConfiguration } from 'sql/platform/query/common/query';
 
 export const TextCompareEditorVisible = new RawContextKey<boolean>('textCompareEditorVisible', false);
 
 export class BareResultsGridInfo extends BareFontInfo {
 
-	public static override createFromRawSettings(opts: {
-		fontFamily?: string;
-		fontWeight?: string;
-		fontSize?: number;
-		lineHeight?: number;
-		letterSpacing?: number;
-		cellPadding?: number | number[];
-	}, zoomLevel: number): BareResultsGridInfo {
+	public static override createFromRawSettings(opts: IResultGridConfiguration, zoomLevel: number): BareResultsGridInfo {
 		let cellPadding = !types.isUndefinedOrNull(opts.cellPadding) ? opts.cellPadding : RESULTS_GRID_DEFAULTS.cellPadding;
-		return new BareResultsGridInfo(BareFontInfo.createFromRawSettings(opts, zoomLevel, getPixelRatio()), { cellPadding });
+		return new BareResultsGridInfo(BareFontInfo.createFromRawSettings(opts, PixelRatio.value, false), { cellPadding });
 	}
 
 	readonly cellPadding: number | number[];
@@ -113,7 +107,7 @@ export class QueryResultsEditor extends EditorPane {
 		this.styleSheet.innerHTML = content;
 	}
 
-	createEditor(parent: HTMLElement): void {
+	protected createEditor(parent: HTMLElement): void {
 		this.styleSheet.remove();
 		parent.appendChild(this.styleSheet);
 		if (!this.resultsView) {

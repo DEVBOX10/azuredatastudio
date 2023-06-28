@@ -3,6 +3,7 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import 'vs/css!./media/actionBar';
 import { IAction, IActionRunner, ActionRunner } from 'vs/base/common/actions';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
@@ -226,7 +227,7 @@ export class ActionBar extends ActionRunner implements IActionRunner {
 			let item: IActionViewItem | undefined = undefined;
 
 			if (this._options.actionViewItemProvider) {
-				item = this._options.actionViewItemProvider(action);
+				item = this._options.actionViewItemProvider(action, {});
 			}
 
 			if (!item) {

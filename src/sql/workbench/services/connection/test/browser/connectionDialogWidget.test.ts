@@ -18,7 +18,7 @@ import { IStorageService } from 'vs/platform/storage/common/storage';
 import { TestThemeService } from 'vs/platform/theme/test/common/testThemeService';
 import { entries } from 'sql/base/common/collections';
 import { TestLayoutService, workbenchInstantiationService } from 'vs/workbench/test/browser/workbenchTestServices';
-import { INewConnectionParams, ConnectionType, RunQueryOnConnectionMode } from 'sql/platform/connection/common/connectionManagement';
+import { INewConnectionParams, ConnectionType, RunQueryOnConnectionMode, IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { NullAdsTelemetryService } from 'sql/platform/telemetry/common/adsTelemetryService';
 import { createConnectionProfile } from 'sql/workbench/services/connection/test/browser/connectionManagementService.test';
 import { TestConfigurationService } from 'sql/platform/connection/test/common/testConfigurationService';
@@ -29,6 +29,9 @@ import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { TestTreeView } from 'sql/workbench/services/connection/test/browser/testTreeView';
 import { ConnectionTreeService, IConnectionTreeService } from 'sql/workbench/services/connection/common/connectionTreeService';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { Emitter } from 'vs/base/common/event';
+import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
+
 suite('ConnectionDialogWidget tests', () => {
 	const testTreeViewId = 'testTreeView';
 	const ViewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
@@ -63,6 +66,11 @@ suite('ConnectionDialogWidget tests', () => {
 			undefined, // telemetry service
 			undefined, // configuration service
 			new TestCapabilitiesService());
+		mockConnectionManagementService.setup(x => x.isConnected(undefined, TypeMoq.It.isAny())).returns(() => true);
+		mockConnectionManagementService.setup(x => x.getConnectionIconId(TypeMoq.It.isAnyString())).returns(() => '');
+		mockConnectionManagementService.setup(x => x.getProviderProperties(TypeMoq.It.isAnyString())).returns(() => undefined);
+		mockConnectionManagementService.setup(x => x.onRecentConnectionProfileDeleted).returns(() => new Emitter<ConnectionProfile>().event);
+		cmInstantiationService.stub(IConnectionManagementService, mockConnectionManagementService.object);
 		let providerDisplayNames = ['Mock SQL Server'];
 		let providerNameToDisplayMap = { 'MSSQL': 'Mock SQL Server' };
 		connectionDialogWidget = new TestConnectionDialogWidget(providerDisplayNames, providerNameToDisplayMap['MSSQL'], providerNameToDisplayMap, cmInstantiationService, mockConnectionManagementService.object, undefined, undefined, viewDescriptorService, new TestThemeService(), new TestLayoutService(), new NullAdsTelemetryService(), new MockContextKeyService(), undefined, new NullLogService(), new TestTextResourcePropertiesService(new TestConfigurationService()), new TestConfigurationService(), new TestCapabilitiesService());

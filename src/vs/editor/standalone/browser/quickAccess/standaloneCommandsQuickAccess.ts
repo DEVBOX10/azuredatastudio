@@ -8,7 +8,7 @@ import { IQuickAccessRegistry, Extensions } from 'vs/platform/quickinput/common/
 import { QuickCommandNLS } from 'vs/editor/common/standaloneStrings';
 import { ICommandQuickPick } from 'vs/platform/quickinput/browser/commandsQuickAccess';
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-import { AbstractEditorCommandsQuickAccessProvider } from 'vs/editor/contrib/quickAccess/commandsQuickAccess';
+import { AbstractEditorCommandsQuickAccessProvider } from 'vs/editor/contrib/quickAccess/browser/commandsQuickAccess';
 import { IEditor } from 'vs/editor/common/editorCommon';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
@@ -40,19 +40,23 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 	protected async getCommandPicks(): Promise<Array<ICommandQuickPick>> {
 		return this.getCodeEditorCommandPicks();
 	}
-}
 
-Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess).registerQuickAccessProvider({
-	ctor: StandaloneCommandsQuickAccessProvider,
-	prefix: StandaloneCommandsQuickAccessProvider.PREFIX,
-	helpEntries: [{ description: QuickCommandNLS.quickCommandHelp, needsEditor: true }]
-});
+	protected hasAdditionalCommandPicks(): boolean {
+		return false;
+	}
+
+	protected async getAdditionalCommandPicks(): Promise<ICommandQuickPick[]> {
+		return [];
+	}
+}
 
 export class GotoLineAction extends EditorAction {
 
+	static readonly ID = 'editor.action.quickCommand';
+
 	constructor() {
 		super({
-			id: 'editor.action.quickCommand',
+			id: GotoLineAction.ID,
 			label: QuickCommandNLS.quickCommandActionLabel,
 			alias: 'Command Palette',
 			precondition: undefined,
@@ -74,3 +78,9 @@ export class GotoLineAction extends EditorAction {
 }
 
 registerEditorAction(GotoLineAction);
+
+Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess).registerQuickAccessProvider({
+	ctor: StandaloneCommandsQuickAccessProvider,
+	prefix: StandaloneCommandsQuickAccessProvider.PREFIX,
+	helpEntries: [{ description: QuickCommandNLS.quickCommandHelp, commandId: GotoLineAction.ID }]
+});

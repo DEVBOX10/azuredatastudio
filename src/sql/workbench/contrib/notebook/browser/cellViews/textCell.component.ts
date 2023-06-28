@@ -18,7 +18,6 @@ import { URI } from 'vs/base/common/uri';
 import { IColorTheme } from 'vs/platform/theme/common/themeService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { toDisposable } from 'vs/base/common/lifecycle';
-import { IMarkdownRenderResult } from 'vs/editor/browser/core/markdownRenderer';
 
 import { NotebookMarkdownRenderer } from 'sql/workbench/contrib/notebook/browser/outputs/notebookMarkdown';
 import { CellView } from 'sql/workbench/contrib/notebook/browser/cellViews/interfaces';
@@ -31,6 +30,8 @@ import { HTMLMarkdownConverter } from 'sql/workbench/contrib/notebook/browser/ht
 import { highlightSelectedText } from 'sql/workbench/contrib/notebook/browser/utils';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
+import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
+import { IMarkdownRenderResult } from 'vs/editor/contrib/markdownRenderer/browser/markdownRenderer';
 
 export const TEXT_SELECTOR: string = 'text-cell-component';
 const USER_SELECT_CLASS = 'actionselect';
@@ -40,7 +41,7 @@ const USER_SELECT_CLASS = 'actionselect';
 	templateUrl: decodeURI(require.toUrl('./textCell.component.html'))
 })
 export class TextCellComponent extends CellView implements OnInit, OnChanges {
-	@ViewChild('preview', { read: ElementRef }) override output: ElementRef;
+	@ViewChild('preview', { read: ElementRef }) protected override output: ElementRef;
 	@ViewChildren(CodeComponent) private markdowncodeCell: QueryList<CodeComponent>;
 
 	@Input() cellModel: ICellModel;
@@ -63,12 +64,12 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 		if (DOM.getActiveElement() === this.output?.nativeElement && this.isActive() && this.cellModel?.currentMode === CellEditModes.WYSIWYG) {
 			const keyEvent = new StandardKeyboardEvent(e);
 			// Select all text
-			if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_A) {
+			if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KeyA) {
 				preventDefaultAndExecCommand(e, 'selectAll');
-			} else if ((keyEvent.metaKey && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KEY_Z) || (keyEvent.ctrlKey && keyEvent.keyCode === KeyCode.KEY_Y) && !this.markdownMode) {
+			} else if ((keyEvent.metaKey && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KeyZ) || (keyEvent.ctrlKey && keyEvent.keyCode === KeyCode.KeyY) && !this.markdownMode) {
 				// Redo text
 				this.redoRichTextChange();
-			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_Z) {
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KeyZ) {
 				// Undo text
 				this.undoRichTextChange();
 			} else if (keyEvent.shiftKey && keyEvent.keyCode === KeyCode.Tab) {
@@ -77,22 +78,27 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 			} else if (keyEvent.keyCode === KeyCode.Tab) {
 				// Indent text
 				preventDefaultAndExecCommand(e, 'indent');
-			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_B) {
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KeyB) {
 				// Bold text
 				preventDefaultAndExecCommand(e, 'bold');
-			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_I) {
+				this.cellModel.notebookModel.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.WYSIWYGKeyboardAction, { transformAction: 'BOLD' });
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KeyI) {
 				// Italicize text
 				preventDefaultAndExecCommand(e, 'italic');
-			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KEY_U) {
+				this.cellModel.notebookModel.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.WYSIWYGKeyboardAction, { transformAction: 'ITALIC' });
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.keyCode === KeyCode.KeyU) {
 				// Underline text
 				preventDefaultAndExecCommand(e, 'underline');
-			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KEY_K) {
+				this.cellModel.notebookModel.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.WYSIWYGKeyboardAction, { transformAction: 'UNDERLINE' });
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KeyK) {
 				// Code Block
 				preventDefaultAndExecCommand(e, 'formatBlock', false, 'pre');
-			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KEY_H) {
+				this.cellModel.notebookModel.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.WYSIWYGKeyboardAction, { transformAction: 'CODE' });
+			} else if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.shiftKey && keyEvent.keyCode === KeyCode.KeyH) {
 				// Highlight Text
 				DOM.EventHelper.stop(e, true);
 				highlightSelectedText();
+				this.cellModel.notebookModel.sendNotebookTelemetryActionEvent(TelemetryKeys.NbTelemetryAction.WYSIWYGKeyboardAction, { transformAction: 'HIGHLIGHT' });
 			}
 		}
 	}
@@ -110,7 +116,6 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 	private _htmlMarkdownConverter: HTMLMarkdownConverter;
 	private markdownPreviewLineHeight: number;
 	public readonly onDidClickLink = this._onDidClickLink.event;
-	public previewFeaturesEnabled: boolean = false;
 	public doubleClickEditEnabled: boolean;
 	private _editorHeight: number;
 	private readonly _markdownMaxHeight = 4000;
@@ -139,7 +144,6 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 			}
 		}));
 		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			this.previewFeaturesEnabled = this._configurationService.getValue('workbench.enablePreviewFeatures');
 			this.doubleClickEditEnabled = this._configurationService.getValue('notebook.enableDoubleClickEdit');
 			if (e.affectsConfiguration('notebook.markdownPreviewLineHeight')) {
 				this.markdownPreviewLineHeight = this._configurationService.getValue('notebook.markdownPreviewLineHeight');
@@ -151,6 +155,16 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 				this._redoStack.maxStackSize = newStackSize;
 			}
 		}));
+	}
+
+	public reloadTables(): void {
+		this._htmlMarkdownConverter = this._instantiationService.createInstance(HTMLMarkdownConverter, this.notebookUri);
+		if (this.previewMode) {
+			this.updateCellSource();
+		} else {
+			this.updateMarkdownCellSource();
+		}
+		this.markdowncodeCell.forEach(code => code.refreshCell());
 	}
 
 	public get cellEditors(): ICellEditorProvider[] {
@@ -188,20 +202,17 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 
 	ngOnInit() {
 		this._editorHeight = document.querySelector('.editor-container').clientHeight;
-		this.previewFeaturesEnabled = this._configurationService.getValue('workbench.enablePreviewFeatures');
 		this._register(this.themeService.onDidColorThemeChange(this.updateTheme, this));
 		this.updateTheme(this.themeService.getColorTheme());
 		this.setFocusAndScroll();
-		this.cellModel.isEditMode = false;
 		this._htmlMarkdownConverter = this._instantiationService.createInstance(HTMLMarkdownConverter, this.notebookUri);
 		this._register(this.cellModel.onOutputsChanged(e => {
 			this.updatePreview();
 		}));
-		this._register(this.cellModel.onCellModeChanged(mode => {
+		this._register(this.cellModel.onCellEditModeChanged(mode => {
 			if (mode !== this.isEditMode) {
 				this.toggleEditMode(mode);
 			}
-			this._changeRef.detectChanges();
 		}));
 		this._register(this.cellModel.onCurrentEditModeChanged(editMode => {
 			let markdown: boolean = editMode !== CellEditModes.WYSIWYG;
@@ -212,33 +223,34 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 					this.cellModel.markdownCursorPosition = selection?.getPosition();
 				}
 			}
+			const selection = window.getSelection();
+			const range = selection?.rangeCount > 0 ? selection.getRangeAt(0) : undefined;
 			// On preview mode change, get the cursor position (get the position only when the selection node is a text node)
-			if (window.getSelection() && window.getSelection().focusNode?.nodeName === '#text' && window.getSelection().getRangeAt(0)) {
-				let selection = window.getSelection().getRangeAt(0);
+			if (selection.focusNode?.nodeName === '#text' && range) {
 				// Check to see if the last cursor position is still the same and skip
-				if (selection.startOffset !== this.cellModel.richTextCursorPosition?.startOffset) {
+				if (range.startOffset !== this.cellModel.richTextCursorPosition?.startOffset) {
 					// window.getSelection gives the exact html element and offsets of cursor location
 					// Since we only have the output element reference which is the parent of all html nodes
 					// we iterate through it's child nodes until we get the selection element and store the node indexes
 					// in the startElementNodes and endElementNodes and their offsets respectively.
 					let startElementNodes = [];
-					let startNode = selection.startContainer;
-					let endNode = selection.endContainer;
-					while (startNode !== this.output.nativeElement) {
+					let startNode = range.startContainer;
+					let endNode = range.endContainer;
+					while (startNode && startNode !== this.output.nativeElement) {
 						startElementNodes.push(this.getNodeIndex(startNode));
 						startNode = startNode.parentNode;
 					}
 					let endElementNodes = [];
-					while (endNode !== this.output.nativeElement) {
+					while (endNode && endNode !== this.output.nativeElement) {
 						endElementNodes.push(this.getNodeIndex(endNode));
 						endNode = endNode.parentNode;
 					}
 					// Create cursor position
 					let cursorPosition: ICaretPosition = {
 						startElementNodes: startElementNodes,
-						startOffset: selection.startOffset,
+						startOffset: range.startOffset,
 						endElementNodes: endElementNodes,
-						endOffset: selection.endOffset
+						endOffset: range.endOffset
 					};
 					this.cellModel.richTextCursorPosition = cursorPosition;
 				}
@@ -255,11 +267,6 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 				let changedProp = changes[propName];
 				this._activeCellId = changedProp.currentValue;
 				this.toggleUserSelect(this.isActive());
-				// If the activeCellId is undefined (i.e. in an active cell update), don't unnecessarily set editMode to false;
-				// it will be set to true in a subsequent call to toggleEditMode()
-				if (changedProp.previousValue !== undefined) {
-					this.toggleEditMode(false);
-				}
 				break;
 			}
 		}
@@ -267,8 +274,8 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 
 	getNodeIndex(n: Node): number {
 		let i = 0;
-		// walk up the node to the top and get it's index
-		n = n.previousSibling;
+		// walk up the node to the top and get its index
+		n = n?.previousSibling;
 		while (n) {
 			i++;
 			n = n.previousSibling;
@@ -330,6 +337,7 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 				if (this.isFindActive) {
 					this.addDecoration();
 				}
+				this.cellModel.cellPreviewUpdated.fire();
 			}
 		}
 	}
@@ -353,7 +361,13 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 
 	private updateCellSource(): void {
 		let textOutputElement = <HTMLElement>this.output.nativeElement;
-		let newCellSource: string = this._htmlMarkdownConverter.convert(textOutputElement.innerHTML);
+		let newCellSource = this._htmlMarkdownConverter.convert(textOutputElement.innerHTML);
+		this.cellModel.source = newCellSource;
+		this._changeRef.detectChanges();
+	}
+
+	private updateMarkdownCellSource(): void {
+		let newCellSource = this._htmlMarkdownConverter.convert(this.markdownResult.element.innerHTML);
 		this.cellModel.source = newCellSource;
 		this._changeRef.detectChanges();
 	}
@@ -433,6 +447,7 @@ export class TextCellComponent extends CellView implements OnInit, OnChanges {
 			this.cellModel.showMarkdown = false;
 		} else {
 			this.markdownMode = this.cellModel.showMarkdown;
+			this.previewMode = this.cellModel.showPreview;
 		}
 		this.updatePreview();
 		this._changeRef.detectChanges();

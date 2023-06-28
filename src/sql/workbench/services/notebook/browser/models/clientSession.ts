@@ -7,7 +7,6 @@
 
 import { nb } from 'azdata';
 import { URI } from 'vs/base/common/uri';
-import { Event, Emitter } from 'vs/base/common/event';
 import { localize } from 'vs/nls';
 import { getErrorMessage } from 'vs/base/common/errors';
 
@@ -23,19 +22,10 @@ type KernelChangeHandler = (kernel: nb.IKernelChangedArgs) => Promise<void>;
  */
 export class ClientSession implements IClientSession {
 	//#region private fields with public accessors
-	private _terminatedEmitter = new Emitter<void>();
-	private _kernelChangedEmitter = new Emitter<nb.IKernelChangedArgs>();
-	private _statusChangedEmitter = new Emitter<nb.ISession>();
-	private _iopubMessageEmitter = new Emitter<nb.IMessage>();
-	private _unhandledMessageEmitter = new Emitter<nb.IMessage>();
-	private _propertyChangedEmitter = new Emitter<'path' | 'name' | 'type'>();
 	private _notebookUri: URI;
-	private _type: string = '';
-	private _name: string = '';
 	private _isReady: boolean;
 	private _ready: Deferred<void>;
 	private _kernelChangeCompleted: Deferred<void>;
-	private _kernelDisplayName: string = '';
 	private _errorMessage: string = '';
 	private _cachedKernelSpec: nb.IKernelSpec | undefined;
 	private _kernelChangeHandlers: KernelChangeHandler[] = [];
@@ -130,7 +120,6 @@ export class ClientSession implements IClientSession {
 		}
 		this._session = session;
 		await this.runKernelConfigActions(kernelSpec.name);
-		this._statusChangedEmitter.fire(session);
 	}
 
 	private async runKernelConfigActions(kernelName: string): Promise<void> {
@@ -153,41 +142,16 @@ export class ClientSession implements IClientSession {
 
 
 	//#region IClientSession Properties
-	public get terminated(): Event<void> {
-		return this._terminatedEmitter.event;
-	}
-	public get kernelChanged(): Event<nb.IKernelChangedArgs> {
-		return this._kernelChangedEmitter.event;
-	}
-
 	public onKernelChanging(changeHandler: (kernel: nb.IKernelChangedArgs) => Promise<void>): void {
 		if (changeHandler) {
 			this._kernelChangeHandlers.push(changeHandler);
 		}
-	}
-	public get statusChanged(): Event<nb.ISession> {
-		return this._statusChangedEmitter.event;
-	}
-	public get iopubMessage(): Event<nb.IMessage> {
-		return this._iopubMessageEmitter.event;
-	}
-	public get unhandledMessage(): Event<nb.IMessage> {
-		return this._unhandledMessageEmitter.event;
-	}
-	public get propertyChanged(): Event<'path' | 'name' | 'type'> {
-		return this._propertyChangedEmitter.event;
 	}
 	public get kernel(): nb.IKernel | undefined {
 		return this._session ? this._session.kernel : undefined;
 	}
 	public get notebookUri(): URI {
 		return this._notebookUri;
-	}
-	public get name(): string {
-		return this._name;
-	}
-	public get type(): string {
-		return this._type;
 	}
 	public get status(): nb.KernelStatus {
 		if (!this.isReady) {
@@ -203,9 +167,6 @@ export class ClientSession implements IClientSession {
 	}
 	public get kernelChangeCompleted(): Promise<void> {
 		return this._kernelChangeCompleted.promise;
-	}
-	public get kernelDisplayName(): string {
-		return this._kernelDisplayName;
 	}
 	public get errorMessage(): string {
 		return this._errorMessage;
@@ -256,7 +217,6 @@ export class ClientSession implements IClientSession {
 		await Promise.all(changePromises);
 		// Wait on connection configuration to complete before resolving full kernel change
 		this._kernelChangeCompleted.resolve();
-		this._kernelChangedEmitter.fire(changeArgs);
 	}
 
 	private async updateCachedKernelSpec(): Promise<void> {
@@ -314,54 +274,29 @@ export class ClientSession implements IClientSession {
 	}
 
 	/**
-	 * Select a kernel for the session.
-	 */
-	selectKernel(): Promise<void> {
-		throw new Error('Not implemented');
-	}
-
-	/**
 	 * Restart the session.
 	 *
-	 * @returns A promise that resolves with whether the kernel has restarted.
+	 * @returns A promise that resolves when the kernel has restarted.
 	 *
 	 * #### Notes
-	 * If there is a running kernel, present a dialog.
-	 * If there is no kernel, we start a kernel with the last run
-	 * kernel name and resolves with `true`. If no kernel has been started,
-	 * this is a no-op, and resolves with `false`.
+	 * If there is an existing kernel, restart it and resolve.
+	 * If no kernel has been started, this is a no-op, and resolves.
+	 * Reject on error.
 	 */
-	restart(): Promise<boolean> {
-		throw new Error('Not implemented');
-	}
-
-	/**
-	 * Change the session path.
-	 *
-	 * @param path - The new session path.
-	 *
-	 * @returns A promise that resolves when the session has renamed.
-	 *
-	 * #### Notes
-	 * This uses the Jupyter REST API, and the response is validated.
-	 * The promise is fulfilled on a valid response and rejected otherwise.
-	 */
-	setPath(path: string): Promise<void> {
-		throw new Error('Not implemented');
-	}
-
-	/**
-	 * Change the session name.
-	 */
-	setName(name: string): Promise<void> {
-		throw new Error('Not implemented');
-	}
-
-	/**
-	 * Change the session type.
-	 */
-	setType(type: string): Promise<void> {
-		throw new Error('Not implemented');
+	restart(): Promise<void> {
+		if (!this._session?.kernel) {
+			// no-op if no kernel is present
+			return Promise.resolve();
+		}
+		let restartCompleted = new Deferred<void>();
+		this._session?.kernel?.restart().then(() => {
+			this.options.notificationService.info(localize('kernelRestartedSuccessfully', 'Kernel restarted successfully'));
+			restartCompleted.resolve();
+		}, err => {
+			this.options.notificationService.error(localize('kernelRestartFailed', 'Kernel restart failed: {0}', err));
+			restartCompleted.reject(err);
+		});
+		return restartCompleted.promise;
 	}
 	//#endregion
 }

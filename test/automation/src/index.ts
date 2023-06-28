@@ -25,9 +25,11 @@ export * from './terminal';
 export * from './viewlet';
 export * from './localization';
 export * from './workbench';
-export * from './driver';
+export * from './task';
+export { getDevElectronPath, getBuildElectronPath, getBuildVersion } from './electron';
 
 // {{SQL CARBON EDIT}}
 export * from './sql/connectionDialog';
 export * from './sql/profiler';
 export * from './sql/queryEditors';
+export * from './sql/constants';

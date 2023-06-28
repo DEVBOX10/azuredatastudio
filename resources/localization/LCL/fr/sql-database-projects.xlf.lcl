@@ -14,12 +14,12 @@
         <Disp Icon="Dir" LocTbl="false" />
         <Item ItemId=";(...) firmation" ItemType="0" PsrId="308" Leaf="true">
           <Str Cat="Text">
-            <Val><![CDATA[Currently installed .NET Core SDK version is {0}, which is not supported. Project build will not work. Please install .NET Core SDK version 3.1 or higher or update the .NET SDK supported version location in settings if already installed.]]></Val>
+            <Val><![CDATA[Currently installed .NET SDK version is {0}, which is not supported. Project build will not work. Please install .NET 6 SDK or higher or update the .NET SDK supported version location in settings if already installed.]]></Val>
             <Tgt Cat="Text" Stat="Loc" Orig="New">
-              <Val><![CDATA[La version du SDK .NET Core actuellement installée est {0}, ce qui n'est pas pris en charge. La construction du projet ne fonctionnera pas. Veuillez installer .NET Core SDK version 3.1 ou supérieure ou mettre à jour l'emplacement de la version supportée de .NET SDK dans les paramètres s'il est déjà installé.]]></Val>
+              <Val><![CDATA[La version du SDK .NET actuellement installée est {0}, ce qui n'est pas pris en charge. La construction du projet ne fonctionnera pas. Veuillez installer le Kit de développement logiciel (SDK) .NET 6 ou supérieure ou mettre à jour l'emplacement de la version supportée de .NET SDK dans les paramètres s'il est déjà installé.]]></Val>
             </Tgt>
             <Prev Cat="Text">
-              <Val><![CDATA[Currently installed .NET Core SDK version is {0}, which is not supported. Project build will not work. Please install .NET Core SDK version 3.1 or update the .NET Core SDK supported version location in settings if already installed.]]></Val>
+              <Val><![CDATA[Currently installed .NET Core SDK version is {0}, which is not supported. Project build will not work. Please install .NET Core SDK version 3.1 or higher or update the .NET SDK supported version location in settings if already installed.]]></Val>
             </Prev>
           </Str>
           <Disp Icon="Str" />
@@ -78,6 +78,15 @@
           <Val><![CDATA[In progress]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[En cours]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.Move" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Move]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Déplacer]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -181,6 +190,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.addSqlCmdVariableWithoutDefaultValue" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SQLCMD variable '{0}' to project without default value?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter une variable SQLCMD '{0}' au projet sans valeur par défaut ?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.advancedOptionsButton" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Advanced...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Avancé...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.advancedPublishOptions" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Advanced Publish Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Options de publication avancées]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.appSettingPrompt" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Would you like to update Azure Function local.settings.json with the new connection string?]]></Val>
@@ -217,6 +253,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.artifactReference" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Artifact Reference]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Référence d’artefact]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.at" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[at]]></Val>
@@ -235,12 +280,60 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.azureAccounts" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure accounts]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Comptes Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.azureAddAccount" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add an Account...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter un compte...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.azureServerName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure SQL server name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nom du serveur Azure SQL]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.azureSqlServerCreated" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure SQL Server '{0}' created]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Serveur Azure SQL « {0} » créé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.azureSubscription" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure subscription]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abonnement Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.baseDockerImage" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Base SQL Server Docker image]]></Val>
+          <Val><![CDATA[Base {0} Docker image]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Image Docker du SQL Server de base]]></Val>
+            <Val><![CDATA[Image Docker {0} de base]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Base SQL Server Docker image]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -393,27 +486,33 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.confirmPassword" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Confirm SQL server admin password]]></Val>
+          <Val><![CDATA[Confirm {0} admin password]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Confirmer le mot de passe administrateur du serveur SQL]]></Val>
+            <Val><![CDATA[Confirmer le mot de passe administrateur de {0}]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Confirm SQL server admin password]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.confirmServerPassword" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Confirm SQL Server admin password]]></Val>
+          <Val><![CDATA[Confirm {0} admin password]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Confirmer le mot de passe administrateur du SQL Server]]></Val>
+            <Val><![CDATA[Confirmer le mot de passe administrateur de {0}]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Confirm SQL Server admin password]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.connectingToSqlServerOnDockerMessage" ItemType="0" PsrId="308" Leaf="true">
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.connectingToSqlServerMessage" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Connecting to SQL Server on Docker]]></Val>
+          <Val><![CDATA[Connecting to SQL Server]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Connexion à SQL Server sur Docker]]></Val>
+            <Val><![CDATA[Connexion à SQL Server]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -445,6 +544,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Other servers on container already exist for the project. Do you want to delete them?]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.convertToSdkStyleConfirmation" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The project '{0}' will not be fully compatible with SSDT after conversion. A backup copy of the project file will be created in the project folder prior to conversion. More information is available at https://aka.ms/sqlprojsdk. Continue with converting to SDK-style project?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le projet '{0}' ne sera pas entièrement compatible avec SSDT après la conversion. Une copie de sauvegarde du fichier projet sera créée dans le dossier du projet avant la conversion. Plus d’informations sont disponibles sur https://aka.ms/sqlprojsdk. Voulez-vous continuer la conversion en projet de style SDK ?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -487,6 +595,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.creatingAzureSqlServer" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating Azure SQL Server '{0}' ...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Création du serveur Azure SQL « {0} »...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.creatingDeploymentSettingsMessage" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating deployment settings ...]]></Val>
@@ -525,10 +642,13 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.dacpacNotOnSameDrive" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Dacpac references need to be located on the same drive as the project file. The project file is located at {0}]]></Val>
+          <Val><![CDATA[Dacpac references need to be located on the same drive as the project file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Les références dacpac doivent se trouver sur le même lecteur que le fichier projet. Le fichier projet se trouve à {0}]]></Val>
+            <Val><![CDATA[Les références DACPAC doivent se trouver sur le même lecteur que le fichier projet.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Dacpac references need to be located on the same drive as the project file. The project file is located at {0}]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -571,15 +691,6 @@
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.dataSourceRadioButtonLabel" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Data sources]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sources de données]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.dataSourcesNodeName" ItemType="0" PsrId="308" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Data Sources]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Sources de données]]></Val>
           </Tgt>
@@ -730,6 +841,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.defaultQuickPickItem" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Default - image defined as default in the container registry]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Par défaut : image définie par défaut dans le registre de conteneurs]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.deleteAction" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Delete]]></Val>
@@ -762,6 +882,15 @@
           <Val><![CDATA[Are you sure you want to delete the reference to {0}?]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Voulez-vous vraiment supprimer la référence à {0} ?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.deleteSqlCmdVariableConfirmation" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Are you sure you want to delete the SQLCMD Variable '{0}'?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Voulez-vous vraiment supprimer la variable SQLCMD '{0}' ?]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -874,6 +1003,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.dockerImagesPlaceHolder" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use {0} on local arm64/Apple Silicon]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utilisation de {0} sur arm64 local/Apple Silicon]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.dockerLogMessage" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Docker logs: '{0}']]></Val>
@@ -910,6 +1048,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.downloadError" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Download error]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur de téléchargement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.downloadProgress" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Download progress]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Progression du téléchargement en cours]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.downloading" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Téléchargement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.downloadingFromTo" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading from {0} to {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Téléchargement à partir de {0} vers {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.downloadingNuget" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Downloading {0} nuget to get build DLLs ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Téléchargement {0} nuget pour obtenir des DLL de build ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.edgeEulaAgreementTitle" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft Azure SQL Edge License Agreement]]></Val>
@@ -921,37 +1104,67 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.edgeProjectTypeDescription" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Start with the core pieces to develop and publish schemas for SQL Edge]]></Val>
+          <Val><![CDATA[Start with the core pieces to develop and publish schemas for Azure SQL Edge Database]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Commencez par les éléments de base pour développer et publier des schémas pour SQL Edge]]></Val>
+            <Val><![CDATA[Commencez par les éléments de base pour développer et publier des schémas pour base de données Azure SQL Edge]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Start with the core pieces to develop and publish schemas for SQL Edge]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.edgeProjectTypeDisplayName" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SQL Edge]]></Val>
+          <Val><![CDATA[Azure SQL Edge Database]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Base de données Azure SQL Edge]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
             <Val><![CDATA[SQL Edge]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.emptyAzureDbProjectTypeDescription" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Develop and publish schemas for Azure SQL Database starting from an empty project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Développer et publier des schémas pour Azure SQL Database à partir d'un projet vide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.emptyAzureDbProjectTypeDisplayName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure SQL Database]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Database]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.emptyProjectTypeDescription" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Develop and publish schemas for SQL databases starting from an empty project]]></Val>
+          <Val><![CDATA[Develop and publish schemas for SQL Server databases starting from an empty project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Développer et publier des schémas pour les bases de données SQL à partir d'un projet vide]]></Val>
+            <Val><![CDATA[Développer et publier des schémas pour les bases de données SQL Server à partir d'un projet vide]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Develop and publish schemas for SQL databases starting from an empty project]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.emptyProjectTypeDisplayName" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SQL Database]]></Val>
+          <Val><![CDATA[SQL Server Database]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Base de données SQL]]></Val>
+            <Val><![CDATA[Base de données SQL Server]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[SQL Database]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1018,35 +1231,65 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterNewName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter new name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez le nouveau nom]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterNewSqlCmdVariableDefaultValue" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter default value for SQLCMD variable '{0}']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez la valeur par défaut de la variable SQLCMD '{0}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterNewSqlCmdVariableName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter new SQLCMD Variable name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrer le nom de la nouvelle variable SQLCMD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterNewValueForVar" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Enter new value for variable '{0}']]></Val>
+          <Val><![CDATA[Enter new default value for variable '{0}']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Entrer une nouvelle valeur pour la variable « {0} »]]></Val>
+            <Val><![CDATA[Entrez une nouvelle valeur par défaut pour la variable « {0} »]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Enter new value for variable '{0}']]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterPassword" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Enter SQL Server admin password]]></Val>
+          <Val><![CDATA[Enter {0} admin password]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Entrez le mot de passe de l'administrateur de SQL Server]]></Val>
+            <Val><![CDATA[Entrer le mot de passe d'administrateur {0}]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Enter password]]></Val>
+            <Val><![CDATA[Enter SQL Server admin password]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterPortNumber" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Enter SQL server port number or press enter to use the default value]]></Val>
+          <Val><![CDATA[Enter {0} port number or press enter to use the default value]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Entrez le serveur SQL numéro de port ou appuyez sur Entrée pour utiliser la valeur par défaut]]></Val>
+            <Val><![CDATA[Entrez le numéro de port {0} ou appuyez sur Entrée pour utiliser la valeur par défaut]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Enter port number or press enter to use the default value]]></Val>
+            <Val><![CDATA[Enter SQL server port number or press enter to use the default value]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1060,11 +1303,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.enterUser" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter {0} admin user name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez {0} nom d’utilisateur administrateur]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.equalComparison" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The project is already up to date with the database.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le projet est déjà à jour avec la base de données.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorAddingDatabaseReference" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error adding database reference to {0}. Error: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur lors de l’ajout d’une référence de base de données à {0}. Erreur : {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorDownloading" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error downloading {0}. Error: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur de téléchargement{0}. Erreur : {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorExtracting" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error extracting files from {0}. Error: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur lors de l’extraction des fichiers de {0}. Erreur : {1}]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1078,11 +1357,59 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorMovingFile" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error when moving file from {0} to {1}. Error: {2}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur lors du déplacement du fichier de {0} vers {1}. Erreur : {2}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorNotSupportedInVsCode" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error: {0} is not currently supported in SQL Database Projects for VS Code.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur : {0} n’est actuellement pas pris en charge dans SQL Database Projets pour VS Code.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorPrefix" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur : {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorReadingProjectGuid" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Error trying to read {0} of project '{1}']]></Val>
+          <Val><![CDATA[Error trying to read {0} of project '{1}'. {2}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erreur lors de la tentative de lecture {0} du projet '{1}']]></Val>
+            <Val><![CDATA[Erreur lors de la tentative de lecture {0} du projet '{1}'. {2}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error trying to read {0} of project '{1}']]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorRenamingFile" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error when renaming file from {0} to {1}. Error: {2}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur lors du changement de nom du fichier de {0} à {1}. Erreur : {2}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.errorRetrievingBuildFiles" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not build project. Error retrieving files needed to build.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de générer le projet. Erreur lors de la récupération des fichiers nécessaires à la génération.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1132,6 +1459,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.excludeFolderNotSupported" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Excluding folders is not yet supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’exclusion de dossiers n’est pas encore prise en charge]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.excludeObjectTypes" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Exclude Object Types]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Exclure les types d'objet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.externalStream" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[External Stream]]></Val>
@@ -1165,6 +1510,18 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Les informations cibles pour l’extraction sont nécessaires pour créer un projet de base de données.]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.extractingDacFxDlls" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Extracting DacFx build DLLs to {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Extraction des DLL de build DacFx pour {0}]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Extracting DacFx build DLLs]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1315,11 +1672,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.imageTag" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Image tag]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Balise d'image]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.importElements" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import Elements]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Importer des éléments]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.include" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inclure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.includePermissionsInProject" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include permissions in project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inclure les autorisations dans le projet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.includePermissionsLabel" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include permissions]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inclure des autorisations]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1378,7 +1771,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.invalidPropertyValue" ItemType="0" PsrId="308" Leaf="true">
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.invalidPropertyValueInSqlProj" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid value specified for the property '{0}' in .sqlproj file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1387,12 +1780,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.invalidPropertyValueProvided" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project property value '{0} is invalid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Project valeur de propriété « {0} » n’est pas valide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.invalidSQLPassword" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SQL Server password doesn't meet the password complexity requirement. For more information see https://docs.microsoft.com/sql/relational-databases/security/password-policy]]></Val>
+          <Val><![CDATA[{0} password doesn't meet the password complexity requirement. For more information see https://docs.microsoft.com/sql/relational-databases/security/password-policy]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SQL Server  n'est pas conforme aux exigences de complexité de mot de passe. Pour plus d'informations : https://docs.microsoft.com/sql/relational-databases/security/password-policy]]></Val>
+            <Val><![CDATA[Le mot de passe {0} ne répond pas aux exigences de complexité du mot de passe. Pour plus d’informations, consultez https://docs.microsoft.com/sql/relational-databases/security/password-policy]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[SQL Server password doesn't meet the password complexity requirement. For more information see https://docs.microsoft.com/sql/relational-databases/security/password-policy]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1455,6 +1860,24 @@
           <Val><![CDATA[Missing 'version' entry in {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Entrée 'version' manquante dans {0}.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.moveConfirmationPrompt" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Are you sure you want to move {0} to {1}?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Voulez-vous vraiment déplacer {0} dans {1} ?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.movingFilesBetweenProjectsNotSupported" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Moving files between projects is not supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le déplacement de fichiers entre les projets n’est pas pris en charge]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1636,11 +2059,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.notValidVariableName" ItemType="0" PsrId="308" Leaf="true">
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.nupkgNamePlaceholder" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The variable name '{0}' is not valid.]]></Val>
+          <Val><![CDATA[NuGet package name]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Le nom de variable '{0}' n'est pas valide.]]></Val>
+            <Val><![CDATA[Nom du package NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.nupkgText" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Published data-tier application (.nupkg)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Application de niveau données publiée (.nupkg)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1663,6 +2095,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.onlyMoveFilesFoldersSupported" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Only moving files and folders are supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Seul le déplacement des fichiers et des dossiers est pris en charge]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.openEulaString" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open License Agreement]]></Val>
@@ -1672,11 +2113,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.optionDescription" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Option Description]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Description de l'option]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.optionName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Option Name]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nom de l’option]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.optionNotFoundWarningMessage" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[label: {0} does not exist in the options value name lookup]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[étiquette : {0} n’existe pas dans la recherche de nom de valeur d’options.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.outsideFolderPath" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Items with absolute path outside project folder are not supported. Please make sure the paths in the project file are relative to project folder.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Les éléments avec un chemin d’accès absolu extérieur au dossier du projet ne sont pas pris en charge. Assurez-vous que les chemins d’accès du fichier projet sont relatifs au dossier du projet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.packageReference" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Package Reference]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Référence du package]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1692,10 +2169,13 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.passwordNotMatch" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SQL Server password doesn't match the confirmation password]]></Val>
+          <Val><![CDATA[{0} password doesn't match the confirmation password]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SQL Server mot de passe ne correspond pas au mot de passe de confirmation]]></Val>
+            <Val><![CDATA[Le mot de passe {0} ne correspond pas au mot de passe de confirmation]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[SQL Server password doesn't match the confirmation password]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1843,6 +2323,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.projectNeedsUpdatingForCrossPlat" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The targets, references, and system database references need to be updated to build the project '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les cibles, les références et les références de la base de données système doivent être mises à jour pour générer le projet '{0}'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.projectReferenceElement" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Project reference]]></Val>
@@ -1866,6 +2355,15 @@
           <Val><![CDATA[Select project file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Sélectionnez le fichier de projet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.projectUpdatedToSdkStyle" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The project {0} has been updated to be an SDK-style project. Click 'Learn More' for details on the Microsoft.Build.Sql SDK and ways to simplify the project file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le projet {0} a été mis à jour pour être un projet de style SDK. Cliquez sur « En savoir plus » pour plus d’informations sur le Kit de développement logiciel (SDK) Microsoft.Build.Sql et sur les moyens de simplifier le fichier projet.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1897,6 +2395,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishOptions" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish Options]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Options de publication]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishProfileElements" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish profile elements]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publier les éléments de profil]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishProfileFriendlyName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish Profile]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Profil de publication]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishProjectSucceed" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Database project published successfully]]></Val>
@@ -1924,6 +2449,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToAzureEmulator" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish to new Azure SQL Database emulator]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publier sur le nouvel émulateur Azure SQL Database]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToContainerFailed" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to publish to container. {0}]]></Val>
@@ -1938,21 +2472,54 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToDockerContainer" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Publish to new server in a container]]></Val>
+          <Val><![CDATA[Publish to new {0} local development container]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Publier sur un nouveau serveur dans un conteneur]]></Val>
+            <Val><![CDATA[Publier dans un nouveau conteneur de développement local {0}]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Publish to docker container]]></Val>
+            <Val><![CDATA[Publish to new server in a container]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToDockerContainerPreview" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish to new {0} local development container (Preview)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publier dans un nouveau conteneur de développement local {0} (préversion)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToExistingServer" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Publish to existing server]]></Val>
+          <Val><![CDATA[Publish to an existing {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Publier sur un serveur existant]]></Val>
+            <Val><![CDATA[Publier sur un {0} existant]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Publish to existing server]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToNewAzureServer" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish to new Azure SQL logical server (Preview)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publier sur le nouveau serveur logique Azure SQL (Préversion)]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Publish to new Azure SQL logical server]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.publishToNewAzureServerFailed" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to publish to new Azure SQL server. {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la publication sur le nouveau serveur Azure SQL. {0}]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1968,18 +2535,30 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.referenceRadioButtonsGroupTitle" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Type]]></Val>
+          <Val><![CDATA[Referenced Database Type]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Type de base de données référencé]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
             <Val><![CDATA[Type]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.referenceTypeRadioButtonsGroupTitle" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Reference Type]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Reference Type]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.referenceType" ItemType="0" PsrId="308" Leaf="true">
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.referencedDatabaseType" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Reference type]]></Val>
+          <Val><![CDATA[Referenced Database type]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Type référence]]></Val>
+            <Val><![CDATA[Type de base de données référencé]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1993,11 +2572,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.reloadValuesFromProjectButtonTitle" ItemType="0" PsrId="308" Leaf="true">
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.reset" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Reload values from project]]></Val>
+          <Val><![CDATA[Reset]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Recharger les valeurs à partir du projet]]></Val>
+            <Val><![CDATA[Réinitialiser]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2007,6 +2586,15 @@
           <Val><![CDATA[Reset all variables]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Réinitialiser toutes les variables]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.resourceGroup" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Resource group]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Groupe de ressources]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2022,10 +2610,13 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.retryMessage" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Operation '{0}' failed. Re-trying... Error: '{1}']]></Val>
+          <Val><![CDATA[Operation '{0}' failed. Re-trying... Error: '{1}' ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’opération «{0}». Nouvelle tentative... Erreur : «{1}»]]></Val>
+            <Val><![CDATA[Échec de l’opération « {0} ». Nouvelle tentative... Erreur : « {1} » ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Operation '{0}' failed. Re-trying... Error: '{1}']]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2052,6 +2643,15 @@
           <Val><![CDATA[Waiting for {0} seconds before another attempt for operation '{1}']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[En attente de {0} secondes avant une autre tentative d’opération «{1}»]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.revertSqlCmdVarsButtonTitle" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Revert values to project defaults]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Rétablir les valeurs par défaut du projet]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2083,6 +2683,36 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Même base de données]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.save" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Save]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Enregistrer]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.saveProfile" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Would you like to save the settings in a profile (.publish.xml)?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Voulez-vous enregistrer les paramètres dans un profil (.publish.xml) ?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.saveProfileAsButtonText" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Save As...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Enregistrer sous...]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Save Profile as...]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2140,6 +2770,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sdkLearnMorePlaceholder" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Click "Learn More" button for more information about SDK-style projects]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cliquez sur le bouton « En savoir plus » pour plus d’informations sur les projets de style SDK]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sdkStyleProject" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[SDK-style project (Preview)]]></Val>
@@ -2163,10 +2802,13 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.selectBaseImage" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select the base SQL Server docker image]]></Val>
+          <Val><![CDATA[Select the base {0} docker image]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sélectionner l’image de l’ancrer SQL Server de base]]></Val>
+            <Val><![CDATA[Sélectionner l’image de l’ancrer {0} de base]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select the base SQL Server docker image]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2211,6 +2853,15 @@
           <Val><![CDATA[Select folder structure]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Sélectionner une structure de dossiers]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.selectImageTag" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the image tag or press enter to use the default value]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionnez la balise d’image ou appuyez sur Entrée pour utiliser la valeur par défaut]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2287,6 +2938,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.serverCreated" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Server created]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Serveur créé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.serverName" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Server name]]></Val>
@@ -2298,19 +2958,25 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.serverPassword" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SQL Server admin password]]></Val>
+          <Val><![CDATA[{0} admin password]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mot de passe de l'administrateur du SQL Server]]></Val>
+            <Val><![CDATA[Mot de passe d'administrateur {0}]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[SQL Server admin password]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.serverPortNumber" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[SQL server port number]]></Val>
+          <Val><![CDATA[{0} port number]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Numéro de port du serveur SQL]]></Val>
+            <Val><![CDATA[Numéro de port {0}]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[SQL server port number]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2379,10 +3045,13 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sqlDatabaseProjects.DotnetInstallationConfirmation" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The .NET SDK cannot be located. Project build will not work. Please install .NET Core SDK version 3.1 or higher or update the .NET SDK location in settings if already installed.]]></Val>
+          <Val><![CDATA[The .NET SDK cannot be located. Project build will not work. Please install .NET 6 SDK or higher or update the .NET SDK location in settings if already installed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de localiser le kit SDK .NET La génération du projet ne fonctionnera pas. Installez kit SDK .NET version 3.1 ou supérieur ou mettez à jour l’emplacement du kit de développement logiciel (SDK) .Net Core dans les paramètres, s’il est déjà installé.]]></Val>
+            <Val><![CDATA[Impossible de localiser le kit SDK .NET La génération du projet ne fonctionnera pas. Installez le Kit de développement logiciel (SDK) .NET 6 ou supérieur ou mettez à jour l’emplacement du kit de développement logiciel (SDK) .Net Core dans les paramètres, s’il est déjà installé.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The .NET SDK cannot be located. Project build will not work. Please install .NET Core SDK version 3.1 or higher or update the .NET SDK location in settings if already installed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2418,6 +3087,42 @@
           <Val><![CDATA[Database Projects]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Projets de base de données]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sqlcmdVariableAlreadyExists" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A SQLCMD Variable with the same name already exists in this project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Une variable SQLCMD portant le même nom existe déjà dans ce projet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sqlcmdVariableNameCannotBeWhitespace" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SQLCMD variable name '{0}' cannot contain whitespace]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom de la variable SQLCMD '{0}' ne peut pas contenir d’espaces blancs]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sqlcmdVariableNameCannotContainIllegalChars" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SQLCMD variable name '{0}' cannot contain any of the following characters: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom de la variable SQLCMD '{0}' ne peut contenir aucun des caractères suivants : {1}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.sqlcmdVariablesNodeName" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SQLCMD Variables]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Variables SQLCMD]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2532,10 +3237,13 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.unableToPerformAction" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to locate '{0}' target: '{1}']]></Val>
+          <Val><![CDATA[Unable to locate '{0}' target: '{1}'. {2}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de localiser la cible « {0} » : « {1} »]]></Val>
+            <Val><![CDATA[Impossible de localiser « {0} » la cible : « {1} ». {2}]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable to locate '{0}' target: '{1}']]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2544,6 +3252,24 @@
           <Val><![CDATA[Unable to establish project context.  Command invoked from unexpected location: {0}]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Impossible d’établir le contexte du projet.  Commande appelée à partir d’un emplacement inattendu : {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.unhandledDeleteType" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unhandled item type during delete: '{0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Type d’élément non géré durant la suppression : '{0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.unhandledMoveNode" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unhandled node type for move]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Type de nœud non géré pour le déplacement]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2596,15 +3322,21 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.updateProjectForRoundTrip" ItemType="0" PsrId="308" Leaf="true">
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.updateProjectForCrossPlatform" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The targets, references, and system database references need to be updated to build the project '{0}'. If the project was created in SSDT, it will continue to work in both tools. Do you want to update the project?]]></Val>
+          <Val><![CDATA[{0} If the project was created in SSDT, it will continue to work in both tools. Do you want to update the project?]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Les cibles, les références et les références de la base de données système doivent être mises à jour pour générer le projet « {0} ». Si le projet a été créé dans SSDT, il continuera à fonctionner dans les deux outils. Voulez-vous mettre à jour le projet ?]]></Val>
+            <Val><![CDATA[{0} Si le projet a été créé dans SSDT, il continuera à fonctionner dans les deux outils. Voulez-vous mettre à jour le projet ?]]></Val>
           </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[The targets, references, and system database references need to be updated to build this project. If the project is created in SSDT, it will continue to work in both tools. Do you want to update the project?]]></Val>
-          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.updateProjectForCrossPlatformShort" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update {0} for cross-platform support?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mise à jour {0} pour le support multiplate-forme ?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2622,6 +3354,15 @@
           <Val><![CDATA[Update]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Mettre à jour]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.updatedToSdkStyleError" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Converting the project {0} to SDK-style was unsuccessful. Changes to the .sqlproj have been rolled back.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La conversion du {0} de projet en style SDK a échoué. Les modifications apportées au fichier .sqlproj ont été restaurées.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2671,11 +3412,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.version" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Version]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.versionMustNotBeEmpty" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Version must not be empty]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La version ne doit pas être vide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.versionPlaceholder" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NuGet package version]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Version du package NuGet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/dist/common/constants.viewFriendlyName" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Voir]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/dist/common/constants.yesRecommended" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes (Recommended)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Oui (recommandé)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2743,6 +3520,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.addSqlCmdVariable" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SQLCMD Variable]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter une variable SQLCMD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.autorestSqlVersion" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Which version of Autorest.Sql to use from NPM.  Latest will be used if not set.]]></Val>
@@ -2775,6 +3561,24 @@
           <Val><![CDATA[Close Database Project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Fermer le projet de base de données]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.collapseProjectNodes" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Whether project nodes start collapsed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indique si le démarrage des nœuds de projet est réduit]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.convertToSdkStyleProject" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Convert to SDK-style project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Convertir en projet de style SDK]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2817,9 +3621,21 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.dotnetInstallLocation" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Full path to .NET SDK on the machine.]]></Val>
+          <Val><![CDATA[Full path to .NET SDK on the machine. For example, if dotnet.exe is located at C:\folder1\dotnet\dotnet.exe, set the path for this setting to C:\folder1\dotnet]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Chemin d’accès complet à kit SDK .NET sur l’ordinateur]]></Val>
+            <Val><![CDATA[Chemin d’accès complet au kit SDK .NET sur l’ordinateur. Par exemple, si dotnet.exe se trouve à C:\folder1\dotnet\dotnet.exe, définissez le chemin d’accès de ce paramètre sur C:\folder1\dotnet]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Full path to .NET SDK on the machine.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.edit" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Edit]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Modifier]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2829,6 +3645,15 @@
           <Val><![CDATA[Edit .sqlproj File]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Modifier le fichier .sqlproj]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.enablePreviewFeatures" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable preview SQL Database Projects features]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Activer les fonctionnalités d'aperçu des projets de base de données SQL]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2844,19 +3669,37 @@
       </Item>
       <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.generateProjectFromOpenApiSpec" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Generate SQL Project from OpenAPI/Swagger spec]]></Val>
+          <Val><![CDATA[Generate SQL Project from OpenAPI/Swagger spec (Preview)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Générer un projet SQL à partir de OpenAPI/Swagger spec]]></Val>
+            <Val><![CDATA[Générer un projet SQL à partir de OpenAPI/Swagger spec (préversion)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Generate SQL Project from OpenAPI/Swagger spec]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.microsoftBuildSqlVersion" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Which version of Microsoft.Build.Sql SDK to use for building legacy sql projects. Example: 0.1.7-preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Quelle version de Microsoft.Build.Sql SDK utiliser pour créer des projets SQL hérités. Exemple : 0.1.7-aperçu]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Which version of Microsoft.Build.Sql SDK to use for building legacy sql projects. Example: 0.1.3-preview]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.netCoreDoNotAsk" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Whether to prompt the user to install .NET Core when not detected.]]></Val>
+          <Val><![CDATA[Whether to prompt the user to install .NET SDK when not detected.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Indique si l’utilisateur doit être invité à installer .NET Core quand il n’est pas détecté.]]></Val>
+            <Val><![CDATA[Indique si l’utilisateur doit être invité à installer le Kit de développement logiciel (SDK) .NET quand il n’est pas détecté.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Whether to prompt the user to install .NET Core when not detected.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2910,6 +3753,15 @@
           <Val><![CDATA[Add Pre-Deployment Script]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ajouter un Script de pré-déploiement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.newPublishProfile" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add Publish Profile]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter un profil de publication]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2977,6 +3829,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.openInDesigner" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open in Designer]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouvrir dans le Concepteur]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.openReferencedSqlProject" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouvrir le projet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.properties" ItemType="0" PsrId="308" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Properties]]></Val>
@@ -2991,6 +3861,15 @@
           <Val><![CDATA[Publish]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Publier]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";extensions/sql-database-projects/package.sqlDatabaseProjects.rename" ItemType="0" PsrId="308" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Rename]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Renommer]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

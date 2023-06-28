@@ -12,9 +12,8 @@ import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 import { ILogService } from 'vs/platform/log/common/log';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
 import { attachModalDialogStyler } from 'sql/workbench/common/styler';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 
 export class ConfigureChartDialog extends Modal {
 	constructor(
@@ -39,9 +38,7 @@ export class ConfigureChartDialog extends Modal {
 	public override render() {
 		super.render();
 		attachModalDialogStyler(this, this._themeService);
-
-		let closeButton = this.addFooterButton(localize('configureChartDialog.close', "Close"), () => this.close());
-		attachButtonStyler(closeButton, this._themeService);
+		this.addFooterButton(localize('configureChartDialog.close', "Close"), () => this.close());
 	}
 
 	protected renderBody(container: HTMLElement) {

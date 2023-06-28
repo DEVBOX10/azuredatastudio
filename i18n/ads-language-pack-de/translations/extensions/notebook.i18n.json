@@ -75,7 +75,6 @@
 			"newMarkdown": "Neuer Markdown (Vorschau)",
 			"newNotebook": "Neues Notebook (Vorschau)",
 			"newSection": "Neuer Abschnitt (Vorschau)",
-			"noBDCConnectionError": "Für Spark-Kernel ist eine Verbindung mit einer Masterinstanz eines SQL Server-Big Data-Clusters erforderlich.",
 			"noBooksSelected": "Im Viewlet sind zurzeit keine Jupyter Books ausgewählt.",
 			"onGitHub": "GitHub",
 			"onsharedFile": "Freigegebene Datei",
@@ -87,7 +86,6 @@
 			"openNotebookCommand": "Notebook öffnen",
 			"openNotebookError": "Fehler beim Öffnen des Notebooks \"{0}\": {1}",
 			"openUntitledNotebookError": "Fehler beim Öffnen des Notebooks \"{0}\" ohne Titel: {1}",
-			"providerNotValidError": "Für Spark-Kernel werden nur MSSQL-Anbieter unterstützt.",
 			"readBookError": "Fehler beim Lesen von Jupyter Book \"{0}\": {1}",
 			"releases": "Releases",
 			"repoUrl": "Repository-URL",
@@ -101,7 +99,6 @@
 			"version": "Version"
 		},
 		"dist/common/notebookUtils": {
-			"msgSampleCodeDataFrame": "Dieser Beispielcode lädt die Datei in einen Datenrahmen und zeigt die ersten 10 Ergebnisse an.",
 			"noNotebookVisible": "Es ist kein Notebook-Editor aktiv.",
 			"notebookFiles": "Notebooks"
 		},
@@ -148,11 +145,13 @@
 			"managePackages.backgroundInstallFailed": "Fehler beim Installieren von {0} {1}. Fehler: {2}",
 			"managePackages.backgroundInstallStarted": "{0} {1} wird installiert.",
 			"managePackages.installButtonText": "Installieren",
+			"managePackages.installCompleteText": "Paket installiert",
+			"managePackages.installProgressText": "Paket installieren",
 			"managePackages.invalidTextPlaceholder": "N/V",
 			"managePackages.noVersionsFound": "Für das angegebene Paket wurden keine gültigen Versionen gefunden.",
 			"managePackages.packageNameTitle": "Paketname",
 			"managePackages.packageSummaryTitle": "Paketzusammenfassung",
-			"managePackages.packageVersionTitle": "Paketversion",
+			"managePackages.packageVersionTitle": "Unterstützte Paketversionen für Python {0}",
 			"managePackages.searchBarPlaceholder": "{0} Pakete durchsuchen",
 			"managePackages.searchButtonLabel": "Suchen"
 		},
@@ -168,7 +167,9 @@
 			"managePackages.packageCount": "{0} {1}-Pakete gefunden",
 			"managePackages.packageType": "Pakettyp",
 			"managePackages.pkgNameColumn": "Name",
-			"managePackages.uninstallButtonText": "Ausgewählte Pakete deinstallieren"
+			"managePackages.uninstallButtonText": "Ausgewählte Pakete deinstallieren",
+			"managePackages.uninstallCompleteText": "Paket deinstalliert",
+			"managePackages.uninstallProgressText": "Paket deinstallieren"
 		},
 		"dist/dialog/managePackages/managePackagesDialog": {
 			"managePackages.cancelButtonText": "Schließen",
@@ -215,12 +216,7 @@
 			"shutdownError": "Fehler beim Herunterfahren des Notebook-Servers: {0}"
 		},
 		"dist/jupyter/jupyterSessionManager": {
-			"bdcConnectError": "Fehler: {0}. ",
-			"clusterControllerConnectionRequired": "Zum Ausführen von Spark-Aufträgen ist eine Verbindung mit dem Clustercontroller erforderlich.",
-			"errorStartBeforeReady": "Eine Sitzung kann nicht gestartet werden, der Manager wurde noch nicht initialisiert.",
-			"notebook.couldNotFindKnoxGateway": "KNOX-Gatewayendpunkt wurde nicht gefunden.",
-			"promptBDCPassword": "Geben Sie das Kennwort zum Herstellen einer Verbindung mit dem BDC-Controller an.",
-			"promptBDCUsername": "{0}Geben Sie den Benutzernamen zum Herstellen einer Verbindung mit dem BDC-Controller an:"
+			"errorStartBeforeReady": "Eine Sitzung kann nicht gestartet werden, der Manager wurde noch nicht initialisiert."
 		},
 		"dist/jupyter/pypiClient": {
 			"managePackages.packageRequestError": "Fehler beim Anfordern von Paketinformationen: {0} {1}"

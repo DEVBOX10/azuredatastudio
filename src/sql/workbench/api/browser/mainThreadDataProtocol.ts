@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IDisposable, Disposable } from 'vs/base/common/lifecycle';
+import * as perf from 'vs/base/common/performance';
 import {
-	SqlExtHostContext, ExtHostDataProtocolShape,
-	MainThreadDataProtocolShape, SqlMainContext
+	ExtHostDataProtocolShape,
+	MainThreadDataProtocolShape
 } from 'sql/workbench/api/common/sqlExtHost.protocol';
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilitiesService';
@@ -23,8 +24,6 @@ import { ITaskService } from 'sql/workbench/services/tasks/common/tasksService';
 import { IProfilerService } from 'sql/workbench/services/profiler/browser/interfaces';
 import { ISerializationService } from 'sql/platform/serialization/common/serializationService';
 import { IFileBrowserService } from 'sql/workbench/services/fileBrowser/common/interfaces';
-import { IExtHostContext } from 'vs/workbench/api/common/extHost.protocol';
-import { extHostNamedCustomer } from 'vs/workbench/api/common/extHostCustomers';
 import { serializableToMap } from 'sql/base/common/map';
 import { IAssessmentService } from 'sql/workbench/services/assessment/common/interfaces';
 import { IDataGridProviderService } from 'sql/workbench/services/dataGridProvider/common/dataGridProviderService';
@@ -32,6 +31,8 @@ import { IAdsTelemetryService, ITelemetryEventProperties } from 'sql/platform/te
 import * as TelemetryKeys from 'sql/platform/telemetry/common/telemetryKeys';
 import { ITableDesignerService } from 'sql/workbench/services/tableDesigner/common/interface';
 import { IExecutionPlanService } from 'sql/workbench/services/executionPlan/common/interfaces';
+import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { SqlExtHostContext, SqlMainContext } from 'vs/workbench/api/common/extHost.protocol';
 
 /**
  * Main thread class for handling data protocol management registration.
@@ -83,6 +84,9 @@ export class MainThreadDataProtocol extends Disposable implements MainThreadData
 			disconnect(connectionUri: string): Thenable<boolean> {
 				return self._proxy.$disconnect(handle, connectionUri);
 			},
+			changePassword(connectionUri, connectionInfo, newPassword): Thenable<azdata.PasswordChangeResult> {
+				return self._proxy.$changePassword(handle, connectionUri, connectionInfo, newPassword);
+			},
 			changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean> {
 				return self._proxy.$changeDatabase(handle, connectionUri, newDatabase);
 			},
@@ -113,15 +117,19 @@ export class MainThreadDataProtocol extends Disposable implements MainThreadData
 				return Promise.resolve(self._proxy.$cancelQuery(handle, ownerUri));
 			},
 			runQuery(ownerUri: string, selection: azdata.ISelectionData, runOptions?: azdata.ExecutionPlanOptions): Promise<void> {
+				perf.mark(`sql/query/${ownerUri}/main_$runQuery`);
 				return Promise.resolve(self._proxy.$runQuery(handle, ownerUri, selection, runOptions));
 			},
 			runQueryStatement(ownerUri: string, line: number, column: number): Promise<void> {
+				perf.mark(`sql/query/${ownerUri}/main_$runQueryStatement`);
 				return Promise.resolve(self._proxy.$runQueryStatement(handle, ownerUri, line, column));
 			},
 			runQueryString(ownerUri: string, queryString: string): Promise<void> {
+				perf.mark(`sql/query/${ownerUri}/main_$runQueryString`);
 				return Promise.resolve(self._proxy.$runQueryString(handle, ownerUri, queryString));
 			},
 			runQueryAndReturn(ownerUri: string, queryString: string): Promise<azdata.SimpleExecuteResult> {
+				perf.mark(`sql/query/${ownerUri}/main_$runQueryAndReturn`);
 				return Promise.resolve(self._proxy.$runQueryAndReturn(handle, ownerUri, queryString));
 			},
 			parseSyntax(ownerUri: string, query: string): Promise<azdata.SyntaxParseResult> {
@@ -150,6 +158,9 @@ export class MainThreadDataProtocol extends Disposable implements MainThreadData
 				else {
 					return Promise.resolve(self._serializationService.saveAs(requestParams.resultFormat, requestParams.filePath, undefined, true));
 				}
+			},
+			copyResults(requestParams: azdata.CopyResultsRequestParams): Promise<void> {
+				return Promise.resolve(self._proxy.$copyResults(handle, requestParams));
 			},
 			initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number, queryString: string): Promise<void> {
 				return Promise.resolve(self._proxy.$initializeEdit(handle, ownerUri, schemaName, objectName, objectType, rowLimit, queryString));
@@ -554,7 +565,9 @@ export class MainThreadDataProtocol extends Disposable implements MainThreadData
 
 	public $registerExecutionPlanProvider(providerId: string, handle: number): void {
 		this._executionPlanService.registerProvider(providerId, <azdata.executionPlan.ExecutionPlanProvider>{
-			getExecutionPlan: (planFile: azdata.executionPlan.ExecutionPlanGraphInfo) => this._proxy.$getExecutionPlan(handle, planFile)
+			getExecutionPlan: (planFile: azdata.executionPlan.ExecutionPlanGraphInfo) => this._proxy.$getExecutionPlan(handle, planFile),
+			compareExecutionPlanGraph: (firstPlanFile: azdata.executionPlan.ExecutionPlanGraphInfo, secondPlanFile: azdata.executionPlan.ExecutionPlanGraphInfo) => this._proxy.$compareExecutionPlanGraph(handle, firstPlanFile, secondPlanFile),
+			isExecutionPlan: (value: string) => this._proxy.$isExecutionPlan(handle, value)
 		});
 	}
 
@@ -573,6 +586,7 @@ export class MainThreadDataProtocol extends Disposable implements MainThreadData
 
 	// Query Management handlers
 	public $onQueryComplete(handle: number, result: azdata.QueryExecuteCompleteNotificationResult): void {
+		perf.mark(`sql/query/${result.ownerUri}/main_$onQueryComplete`);
 		this._queryManagementService.onQueryComplete(result);
 	}
 	public $onBatchStart(handle: number, batchInfo: azdata.QueryExecuteBatchNotificationParams): void {
@@ -654,8 +668,8 @@ export class MainThreadDataProtocol extends Disposable implements MainThreadData
 	}
 
 	// Table Designer
-	public $openTableDesigner(providerId: string, tableInfo: azdata.designers.TableInfo, telemetryInfo?: ITelemetryEventProperties): void {
-		this._tableDesignerService.openTableDesigner(providerId, tableInfo, telemetryInfo);
+	public $openTableDesigner(providerId: string, tableInfo: azdata.designers.TableInfo, telemetryInfo?: ITelemetryEventProperties, objectExplorerContext?: azdata.ObjectExplorerContext): void {
+		this._tableDesignerService.openTableDesigner(providerId, tableInfo, telemetryInfo, objectExplorerContext);
 	}
 
 	public $unregisterProvider(handle: number): Promise<any> {

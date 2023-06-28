@@ -13,13 +13,12 @@ import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService
 import { localize } from 'vs/nls';
 import * as DOM from 'vs/base/browser/dom';
 import { ILogService } from 'vs/platform/log/common/log';
-import { IWebviewService, WebviewElement } from 'vs/workbench/contrib/webview/browser/webview';
+import { IWebviewService, IWebviewElement } from 'vs/workbench/contrib/webview/browser/webview';
 import { generateUuid } from 'vs/base/common/uuid';
-import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfigurationService';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
 import { attachModalDialogStyler } from 'sql/workbench/common/styler';
 import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
-import { attachButtonStyler } from 'vs/platform/theme/common/styler';
 
 export class WebViewDialog extends Modal {
 
@@ -27,7 +26,7 @@ export class WebViewDialog extends Modal {
 	private _okButton?: Button;
 	private _okLabel: string;
 	private _closeLabel: string;
-	private _webview?: WebviewElement;
+	private _webview?: IWebviewElement;
 	private _html?: string;
 	private _headerTitle?: string;
 
@@ -87,11 +86,15 @@ export class WebViewDialog extends Modal {
 	protected renderBody(container: HTMLElement) {
 		this._body = DOM.append(container, DOM.$('div.webview-dialog'));
 
-		this._webview = this.webviewService.createWebviewElement(this.id,
-			{},
-			{
-				allowScripts: true
-			}, undefined);
+		this._webview = this.webviewService.createWebviewElement({
+			providedViewType: this.id,
+			title: this.id,
+			contentOptions: {
+				allowScripts: true,
+			},
+			options: {},
+			extension: undefined
+		});
 
 		this._webview.mountTo(this._body);
 
@@ -109,7 +112,7 @@ export class WebViewDialog extends Modal {
 		this._register(attachModalDialogStyler(this, this._themeService));
 
 		this._okButton = this.addFooterButton(this._okLabel, () => this.ok());
-		this._register(attachButtonStyler(this._okButton, this._themeService));
+		this._register(this._okButton);
 	}
 
 	protected layout(height?: number): void {
@@ -118,7 +121,7 @@ export class WebViewDialog extends Modal {
 
 	private updateDialogBody(): void {
 		if (this.html) {
-			this._webview!.html = this.html;
+			this._webview!.setHtml(this.html);
 		}
 	}
 

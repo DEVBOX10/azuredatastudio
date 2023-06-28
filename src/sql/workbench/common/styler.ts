@@ -7,8 +7,7 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import * as cr from 'vs/platform/theme/common/colorRegistry';
 import * as sqlcr from 'sql/platform/theme/common/colorRegistry';
-import { IThemable } from 'vs/base/common/styler';
-import { attachStyler, IStyleOverrides } from 'vs/platform/theme/common/styler';
+import { IThemable, attachStyler, IStyleOverrides } from 'sql/platform/theme/common/vsstyler';
 import {
 	SIDE_BAR_SECTION_HEADER_FOREGROUND, SIDE_BAR_BACKGROUND, SIDE_BAR_SECTION_HEADER_BACKGROUND, SIDE_BAR_DRAG_AND_DROP_BACKGROUND,
 	PANEL_ACTIVE_TITLE_BORDER, PANEL_ACTIVE_TITLE_FOREGROUND, PANEL_INACTIVE_TITLE_FOREGROUND
@@ -45,14 +44,14 @@ export function attachPanelStyler(widget: IThemable, themeService: IThemeService
 
 export function attachTabbedPanelStyler(widget: IThemable, themeService: IThemeService) {
 	return attachStyler(themeService, {
-		titleActiveForeground: PANEL_ACTIVE_TITLE_FOREGROUND,
-		titleActiveBorder: PANEL_ACTIVE_TITLE_BORDER,
-		titleInactiveForeground: PANEL_INACTIVE_TITLE_FOREGROUND,
+		titleSelectedForeground: PANEL_ACTIVE_TITLE_FOREGROUND,
+		titleSelectedBorder: PANEL_ACTIVE_TITLE_BORDER,
+		titleUnSelectedForeground: PANEL_INACTIVE_TITLE_FOREGROUND,
 		focusBorder: cr.focusBorder,
 		outline: cr.activeContrastBorder,
-		activeBackgroundForVerticalLayout: VERTICAL_TAB_ACTIVE_BACKGROUND,
+		selectedBackgroundForVerticalLayout: VERTICAL_TAB_ACTIVE_BACKGROUND,
 		border: DASHBOARD_BORDER,
-		activeTabContrastBorder: cr.activeContrastBorder
+		selectedTabContrastBorder: cr.activeContrastBorder
 	}, widget);
 }
 

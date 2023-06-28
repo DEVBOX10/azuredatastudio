@@ -3,22 +3,34 @@
  *  Licensed under the Source EULA. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as azdata from 'azdata';
 import { ExecutionPlanWidgetBase } from 'sql/workbench/contrib/executionPlan/browser/executionPlanWidgetBase';
 import { ActionBar } from 'sql/base/browser/ui/taskbar/actionbar';
 import * as DOM from 'vs/base/browser/dom';
 import { localize } from 'vs/nls';
 import { Codicon } from 'vs/base/common/codicons';
-import { InternalExecutionPlanNode, ExecutionPlan } from 'sql/workbench/contrib/executionPlan/browser/executionPlan';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
-import { attachInputBoxStyler, attachSelectBoxStyler } from 'sql/platform/theme/common/styler';
+import { attachSelectBoxStyler } from 'sql/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { Action } from 'vs/base/common/actions';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { InputBox } from 'sql/base/browser/ui/inputBox/inputBox';
-import { isString } from 'vs/base/common/types';
+import { AzdataGraphView, SearchType } from 'sql/workbench/contrib/executionPlan/browser/azdataGraphView';
+import { ExecutionPlanWidgetController } from 'sql/workbench/contrib/executionPlan/browser/executionPlanWidgetController';
+import { defaultInputBoxStyles } from 'vs/platform/theme/browser/defaultStyles';
+import { ThemeIcon } from 'vs/base/common/themables';
+
+const SELECT_PROPERTY_TITLE = localize('executionPlanSelectPropertyTitle', 'Select property');
+const SELECT_SEARCH_TYPE_TITLE = localize('executionPlanSelectSearchTypeTitle', 'Select search type');
+const ENTER_SEARCH_VALUE_TITLE = localize('executionPlanEnterValueTitle', 'Enter search value');
 
 const CONTAINS_DISPLAY_STRING = localize("executionPlanSearchTypeContains", 'Contains');
 const EQUALS_DISPLAY_STRING = localize("executionPlanSearchTypeEquals", 'Equals');
+const GREATER_DISPLAY_STRING = '>';
+const LESSER_DISPLAY_STRING = '<';
+const GREATER_EQUAL_DISPLAY_STRING = '>=';
+const LESSER_EQUAL_DISPLAY_STRING = '<=';
+const LESSER_AND_GREATER_DISPLAY_STRING = '<>';
 
 export class NodeSearchWidget extends ExecutionPlanWidgetBase {
 
@@ -27,221 +39,205 @@ export class NodeSearchWidget extends ExecutionPlanWidgetBase {
 
 	private _searchTypeSelectBoxContainer: HTMLElement;
 	private _searchTypeSelectBox: SelectBox;
+	private _selectedSearchType: SearchType = SearchType.Equals;
 
 	private _searchTextInputBox: InputBox;
-	private _searchResults: string[] = [];
+	private _searchResults: azdata.executionPlan.ExecutionPlanNode[] = [];
 	private _currentSearchResultIndex = 0;
 	private _usePreviousSearchResult: boolean = false;
 
 	private _actionBar: ActionBar;
 
 	constructor(
-		public readonly executionPlanView: ExecutionPlan,
+		public readonly planActionView: ExecutionPlanWidgetController,
+		private readonly _executionPlanDiagram: AzdataGraphView,
 		@IContextViewService public readonly contextViewService: IContextViewService,
 		@IThemeService public readonly themeService: IThemeService
-
 	) {
 		super(DOM.$('.search-node-widget'), 'searchWidget');
+		const labelId = 'search-node-widget-label';
+		const dialogLabel = localize('executionPlanFindNodeLabel', 'Find nodes');
+		this.container.setAttribute('role', 'dialog');
+		this.container.setAttribute('aria-labelledby', labelId);
+
+		const label = DOM.$('label.property-name-label');
+		label.innerText = dialogLabel;
+		label.id = labelId;
+		this.container.appendChild(label);
 
 		// property name dropdown
 		this._propertyNameSelectBoxContainer = DOM.$('.search-widget-property-name-select-box .dropdown-container');
 		this.container.appendChild(this._propertyNameSelectBoxContainer);
-		const propDropdownOptions = [...executionPlanView.graphElementPropertiesSet].sort();
-		this._propertyNameSelectBox = new SelectBox(propDropdownOptions, propDropdownOptions[0], this.contextViewService, this._propertyNameSelectBoxContainer);
-		attachSelectBoxStyler(this._propertyNameSelectBox, this.themeService);
-		this._propertyNameSelectBoxContainer.style.width = '150px';
+		this._propertyNameSelectBoxContainer.style.width = '120px';
+
+		const propDropdownOptions = this._executionPlanDiagram.getUniqueElementProperties();
+		this._propertyNameSelectBox = this._register(new SelectBox(propDropdownOptions, propDropdownOptions[0], this.contextViewService, this._propertyNameSelectBoxContainer));
+		this._propertyNameSelectBox.setAriaLabel(SELECT_PROPERTY_TITLE);
+		this._register(attachSelectBoxStyler(this._propertyNameSelectBox, this.themeService));
 		this._propertyNameSelectBox.render(this._propertyNameSelectBoxContainer);
-		this._propertyNameSelectBox.onDidSelect(e => {
+
+		this._register(this._propertyNameSelectBox.onDidSelect(e => {
 			this._usePreviousSearchResult = false;
-		});
+		}));
 
 		// search type dropdown
 		this._searchTypeSelectBoxContainer = DOM.$('.search-widget-search-type-select-box .dropdown-container');
-		this.container.appendChild(this._searchTypeSelectBoxContainer);
-		this._searchTypeSelectBox = new SelectBox([
-			EQUALS_DISPLAY_STRING,
-			CONTAINS_DISPLAY_STRING
-		], EQUALS_DISPLAY_STRING, this.contextViewService, this._searchTypeSelectBoxContainer);
-		this._searchTypeSelectBox.render(this._searchTypeSelectBoxContainer);
-		attachSelectBoxStyler(this._searchTypeSelectBox, this.themeService);
 		this._searchTypeSelectBoxContainer.style.width = '100px';
-		this._searchTypeSelectBox.onDidSelect(e => {
+		this.container.appendChild(this._searchTypeSelectBoxContainer);
+
+		this._searchTypeSelectBox = this._register(new SelectBox([
+			EQUALS_DISPLAY_STRING,
+			CONTAINS_DISPLAY_STRING,
+			GREATER_DISPLAY_STRING,
+			LESSER_DISPLAY_STRING,
+			GREATER_EQUAL_DISPLAY_STRING,
+			LESSER_EQUAL_DISPLAY_STRING,
+			LESSER_AND_GREATER_DISPLAY_STRING
+		], EQUALS_DISPLAY_STRING, this.contextViewService, this._searchTypeSelectBoxContainer));
+		this._searchTypeSelectBox.setAriaLabel(SELECT_SEARCH_TYPE_TITLE);
+		this._searchTypeSelectBox.render(this._searchTypeSelectBoxContainer);
+		this._register(attachSelectBoxStyler(this._searchTypeSelectBox, this.themeService));
+
+		this._register(this._searchTypeSelectBox.onDidSelect(e => {
 			this._usePreviousSearchResult = false;
-		});
+			switch (e.selected) {
+				case EQUALS_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.Equals;
+					break;
+				case CONTAINS_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.Contains;
+					break;
+				case GREATER_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.GreaterThan;
+					break;
+				case LESSER_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.LesserThan;
+					break;
+				case GREATER_EQUAL_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.GreaterThanEqualTo;
+					break;
+				case LESSER_EQUAL_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.LesserThanEqualTo;
+					break;
+				case LESSER_AND_GREATER_DISPLAY_STRING:
+					this._selectedSearchType = SearchType.LesserAndGreaterThan;
+			}
+		}));
 
 		// search text input box
-		this._searchTextInputBox = new InputBox(this.container, this.contextViewService, {});
-		attachInputBoxStyler(this._searchTextInputBox, this.themeService);
+		this._searchTextInputBox = this._register(new InputBox(this.container, this.contextViewService,
+			{
+				inputBoxStyles: defaultInputBoxStyles
+			}));
+		this._searchTextInputBox.setAriaLabel(ENTER_SEARCH_VALUE_TITLE);
 		this._searchTextInputBox.element.style.marginLeft = '5px';
-		this._searchTextInputBox.onDidChange(e => {
+		this._register(this._searchTextInputBox.onDidChange(e => {
 			this._usePreviousSearchResult = false;
-		});
-
+		}));
 
 		// setting up key board shortcuts
+		const goToPreviousMatchAction = this._register(new GoToPreviousMatchAction());
+		const goToNextMatchAction = this._register(new GoToNextMatchAction());
+		const cancelSearchAction = this._register(new CancelSearch());
+
 		const self = this;
-		this._searchTextInputBox.element.onkeydown = async e => {
+		this._register(DOM.addDisposableListener(this._searchTextInputBox.element, DOM.EventType.KEY_DOWN, async (e: KeyboardEvent) => {
 			if (e.key === 'Enter' && e.shiftKey) {
-				await new GoToPreviousMatchAction().run(self);
+				await goToPreviousMatchAction.run(self);
 			} else if (e.key === 'Enter') {
-				await new GoToNextMatchAction().run(self);
+				await goToNextMatchAction.run(self);
 			} else if (e.key === 'Escape') {
-				await new CancelSearch().run(self);
+				await cancelSearchAction.run(self);
 			}
-		};
+		}));
 
 		// Adding action bar
-		this._actionBar = new ActionBar(this.container);
+		this._actionBar = this._register(new ActionBar(this.container));
 		this._actionBar.context = this;
-		this._actionBar.pushAction(new GoToPreviousMatchAction(), { label: false, icon: true });
-		this._actionBar.pushAction(new GoToNextMatchAction(), { label: false, icon: true });
-		this._actionBar.pushAction(new CancelSearch(), { label: false, icon: true });
+		this._actionBar.pushAction(goToPreviousMatchAction, { label: false, icon: true });
+		this._actionBar.pushAction(goToNextMatchAction, { label: false, icon: true });
+		this._actionBar.pushAction(cancelSearchAction, { label: false, icon: true });
 	}
 
 	// Initial focus is set to the search text input box
 	public focus() {
-		this._searchTextInputBox.focus();
+		this._propertyNameSelectBox.focus();
 	}
 
+	public searchNodes(): void {
+		this._currentSearchResultIndex = 0;
 
-	public searchNode(returnPreviousResult: boolean): void {
-
-		// Searching again as the input params have changed
-		if (!this._usePreviousSearchResult) {
-
-			this._searchResults = [];
-			this._currentSearchResultIndex = 0; //Resetting search Index to 0;
-			this._usePreviousSearchResult = true;
-
-			// Doing depth first search in the graphModel to find nodes with matching prop values.
-			const graphModel = this.executionPlanView.graphModel;
-			const stack: InternalExecutionPlanNode[] = [];
-			stack.push(graphModel.root);
-
-			while (stack.length !== 0) {
-				const currentNode = stack.pop();
-
-				const matchingProp = currentNode.properties.find(e => e.name === this._propertyNameSelectBox.value);
-
-				// Searching only properties with string value.
-				if (isString(matchingProp?.value)) {
-					// If the search type is '=' we look for exact match and for 'contains' we look search string occurance in prop value
-					if (
-						this._searchTypeSelectBox.value === EQUALS_DISPLAY_STRING && matchingProp.value === this._searchTextInputBox.value ||
-						this._searchTypeSelectBox.value === CONTAINS_DISPLAY_STRING && matchingProp.value.includes(this._searchTextInputBox.value)
-					) {
-						this._searchResults.push(currentNode.id);
-					}
-				}
-
-				stack.push(...currentNode.children);
-			}
-		}
-		// Returning if no results found.
-		if (this._searchResults.length === 0) {
-			return;
-		}
-
-		// Getting the node at search index
-		const resultCell = this.executionPlanView.azdataGraphDiagram.graph.model.getCell(this._searchResults[this._currentSearchResultIndex]);
-		// Selecting the node on graph diagram
-		this.executionPlanView.azdataGraphDiagram.graph.setSelectionCell(resultCell);
-		this.executionPlanView.propertiesView.graphElement = this.executionPlanView.searchNodes(resultCell.id);
-
-		/**
-		 * The selected graph node might be hidden/partially visible if the graph is overflowing the parent container.
-		 * Apart from the obvious problems in aesthetics, user do not get a proper feedback of the search result.
-		 * To solve this problem, we will have to scroll the node into view. (preferably into the center of the view)
-		 * Steps for that:
-		 *  1. Get the bounding rect of the node on graph.
-		 *  2. Get the midpoint of the node's bounding rect.
-		 *  3. Find the dimensions of the parent container.
-		 *  4. Since, we are trying to position the node into center, we set the left top corner position of parent to
-		 *     below x and y.
-		 *  x =	node's x midpoint - half the width of parent container
-		 *  y = node's y midpoint - half the height of parent container
-		 * 	5. If the x and y are negative, we set them 0 as that is the minimum possible scroll position.
-		 *  6. Smoothly scroll to the left top x and y calculated in step 4, 5.
-		 */
-
-		const cellRect = this.executionPlanView.azdataGraphDiagram.graph.getCellBounds(resultCell);
-		const cellMidPoint: Point = {
-			x: cellRect.x + cellRect.width / 2,
-			y: cellRect.y + cellRect.height / 2,
-		};
-
-		const graphContainer = <HTMLElement>this.executionPlanView.azdataGraphDiagram.container;
-		const containerBoundingRect = graphContainer.getBoundingClientRect();
-
-		const leftTopScrollPoint: Point = {
-			x: cellMidPoint.x - containerBoundingRect.width / 2,
-			y: cellMidPoint.y - containerBoundingRect.height / 2
-		};
-
-		leftTopScrollPoint.x = leftTopScrollPoint.x < 0 ? 0 : leftTopScrollPoint.x;
-		leftTopScrollPoint.y = leftTopScrollPoint.y < 0 ? 0 : leftTopScrollPoint.y;
-
-		graphContainer.scrollTo({
-			left: leftTopScrollPoint.x,
-			top: leftTopScrollPoint.y,
-			behavior: 'smooth'
+		this._searchResults = this._executionPlanDiagram.searchNodes({
+			propertyName: this._propertyNameSelectBox.value,
+			value: this._searchTextInputBox.value,
+			searchType: this._selectedSearchType
 		});
 
-		// Updating search result index based on prev flag
-		if (returnPreviousResult) {
-			// going to the end of list if the index is 0 on prev
-			this._currentSearchResultIndex = this._currentSearchResultIndex === 0 ?
-				this._currentSearchResultIndex = this._searchResults.length - 1 :
-				this._currentSearchResultIndex = --this._currentSearchResultIndex;
-		} else {
-			// going to the front of list if we are at the last element
-			this._currentSearchResultIndex = this._currentSearchResultIndex === this._searchResults.length - 1 ?
-				this._currentSearchResultIndex = 0 :
-				this._currentSearchResultIndex = ++this._currentSearchResultIndex;
-		}
+		this._usePreviousSearchResult = true;
 	}
-}
 
-interface Point {
-	x: number;
-	y: number;
+	public next(): void {
+		if (!this._usePreviousSearchResult) {
+			this.searchNodes();
+		}
+
+		this._executionPlanDiagram.centerElement(this._searchResults[this._currentSearchResultIndex]);
+		this._executionPlanDiagram.selectElement(this._searchResults[this._currentSearchResultIndex]);
+
+		this._currentSearchResultIndex = this._currentSearchResultIndex === this._searchResults.length - 1 ?
+			this._currentSearchResultIndex = 0 :
+			this._currentSearchResultIndex = ++this._currentSearchResultIndex;
+	}
+
+	public previous(): void {
+		if (!this._usePreviousSearchResult) {
+			this.searchNodes();
+		}
+
+		this._executionPlanDiagram.centerElement(this._searchResults[this._currentSearchResultIndex]);
+		this._executionPlanDiagram.selectElement(this._searchResults[this._currentSearchResultIndex]);
+
+		this._currentSearchResultIndex = this._currentSearchResultIndex === 0 ?
+			this._currentSearchResultIndex = this._searchResults.length - 1 :
+			this._currentSearchResultIndex = --this._currentSearchResultIndex;
+	}
 }
 
 export class GoToNextMatchAction extends Action {
 	public static ID = 'qp.NextSearchAction';
-	public static LABEL = localize('nextSearchItemAction', "Next Match (Enter)");
+	public static LABEL = localize('nextSearchItemAction', "Next Match");
 
 	constructor() {
-		super(GoToNextMatchAction.ID, GoToNextMatchAction.LABEL, Codicon.arrowDown.classNames);
+		super(GoToNextMatchAction.ID, GoToNextMatchAction.LABEL, ThemeIcon.asClassName(Codicon.arrowDown));
 	}
 
 	public override async run(context: NodeSearchWidget): Promise<void> {
-		context.searchNode(false);
+		context.next();
 	}
 }
 
 export class GoToPreviousMatchAction extends Action {
 	public static ID = 'qp.PreviousSearchAction';
-	public static LABEL = localize('previousSearchItemAction', "Previous Match (Shift+Enter)");
+	public static LABEL = localize('previousSearchItemAction', "Previous Match");
 
 	constructor() {
-		super(GoToPreviousMatchAction.ID, GoToPreviousMatchAction.LABEL, Codicon.arrowUp.classNames);
+		super(GoToPreviousMatchAction.ID, GoToPreviousMatchAction.LABEL, ThemeIcon.asClassName(Codicon.arrowUp));
 	}
 
 	public override async run(context: NodeSearchWidget): Promise<void> {
-		context.searchNode(true);
+		context.previous();
 	}
 }
 
 export class CancelSearch extends Action {
 	public static ID = 'qp.cancelSearchAction';
-	public static LABEL = localize('cancelSearchAction', "Close (Escape)");
+	public static LABEL = localize('cancelSearchAction', "Close");
 
 	constructor() {
-		super(CancelSearch.ID, CancelSearch.LABEL, Codicon.chromeClose.classNames);
+		super(CancelSearch.ID, CancelSearch.LABEL, ThemeIcon.asClassName(Codicon.chromeClose));
 	}
 
 	public override async run(context: NodeSearchWidget): Promise<void> {
-		context.executionPlanView.planActionView.removeWidget(context);
+		context.planActionView.removeWidget(context);
 	}
 }

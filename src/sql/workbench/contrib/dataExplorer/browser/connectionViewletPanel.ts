@@ -19,7 +19,7 @@ import { IOpenerService } from 'vs/platform/opener/common/opener';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { ILogService } from 'vs/platform/log/common/log';
 import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { ITree } from 'vs/base/parts/tree/browser/tree';
+import { ITree } from 'sql/base/parts/tree/browser/tree';
 import { AsyncServerTree } from 'sql/workbench/services/objectExplorer/browser/asyncServerTree';
 
 export class ConnectionViewletPanel extends ViewPane {
@@ -55,11 +55,11 @@ export class ConnectionViewletPanel extends ViewPane {
 		super.renderHeader(container);
 	}
 
-	override renderHeaderTitle(container: HTMLElement): void {
+	protected override renderHeaderTitle(container: HTMLElement): void {
 		super.renderHeaderTitle(container, this.options.title);
 	}
 
-	override renderBody(container: HTMLElement): void {
+	protected override renderBody(container: HTMLElement): void {
 		const viewletContainer = DOM.append(container, DOM.$('div.server-explorer-viewlet'));
 		const viewContainer = DOM.append(viewletContainer, DOM.$('div.object-explorer-view'));
 		this._serverTreeView.renderBody(viewContainer).then(undefined, error => {
@@ -72,7 +72,7 @@ export class ConnectionViewletPanel extends ViewPane {
 		return this._serverTreeView.tree;
 	}
 
-	override layoutBody(size: number): void {
+	protected override layoutBody(size: number): void {
 		this._serverTreeView.layout(size);
 		this._root!.classList.toggle('narrow', this._root!.clientWidth < 300);
 	}

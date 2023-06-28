@@ -8,9 +8,7 @@ import * as path from 'path';
 import * as glob from 'glob';
 import rename = require('gulp-rename');
 import ext = require('./extensions');
-//imports for langpack refresh.
-import { through, ThroughStream } from 'event-stream';
-import i18n = require('./i18n')
+import i18n = require('./i18n');
 import * as fs from 'fs';
 import * as File from 'vinyl';
 import * as rimraf from 'rimraf';
@@ -24,7 +22,7 @@ import * as vfs from 'vinyl-fs';
 //List of extensions that we changed from vscode, so we can exclude them from having "Microsoft." appended in front.
 const alteredVSCodeExtensions = [
 	'git'
-]
+];
 
 const root = path.dirname(path.dirname(__dirname));
 
@@ -35,7 +33,7 @@ export function packageLangpacksStream(): NodeJS.ReadWriteStream {
 			const langpackPath = path.dirname(path.join(root, manifestPath));
 			const langpackName = path.basename(langpackPath);
 			return { name: langpackName, path: langpackPath };
-		})
+		});
 
 	const builtLangpacks = langpackDescriptions.map(langpack => {
 		return ext.fromLocalNormal(langpack.path)
@@ -52,7 +50,7 @@ export function packageSingleExtensionStream(name: string): NodeJS.ReadWriteStre
 			const extensionPath = path.dirname(path.join(root, manifestPath));
 			const extensionName = path.basename(extensionPath);
 			return { name: extensionName, path: extensionPath };
-		})
+		});
 
 	const builtExtension = extenalExtensionDescriptions.map(extension => {
 		return ext.fromLocal(extension.path, false)
@@ -78,7 +76,7 @@ function updateMainI18nFile(existingTranslationFilePath: string, originalFilePat
 	// Delete any SQL strings that are no longer part of ADS in current langpack.
 	for (let contentKey of Object.keys(objectContents)) {
 		if (contentKey.startsWith('sql') && messages.contents[contentKey] === undefined) {
-			delete objectContents[`${contentKey}`]
+			delete objectContents[`${contentKey}`];
 		}
 	}
 
@@ -102,7 +100,7 @@ function updateMainI18nFile(existingTranslationFilePath: string, originalFilePat
 		path: path.join(originalFilePath + '.i18n.json'),
 
 		contents: Buffer.from(content, 'utf8'),
-	})
+	});
 }
 
 /**
@@ -113,13 +111,13 @@ function updateMainI18nFile(existingTranslationFilePath: string, originalFilePat
 export function modifyI18nPackFiles(existingTranslationFolder: string, resultingTranslationPaths: i18n.TranslationPath[], pseudo = false): NodeJS.ReadWriteStream {
 	let parsePromises: Promise<i18n.ParsedXLF[]>[] = [];
 	let mainPack: i18n.I18nPack = { version: i18n.i18nPackVersion, contents: {} };
-	let extensionsPacks: i18n.Map<i18n.I18nPack> = {};
+	let extensionsPacks: i18n.StringMap<i18n.I18nPack> = {};
 	let errors: any[] = [];
-	return through(function (this: ThroughStream, xlf: File) {
+	return es.through(function (this: es.ThroughStream, xlf: File) {
 		let rawResource = path.basename(xlf.relative, '.xlf');
 		let resource = rawResource.substring(0, rawResource.lastIndexOf('.'));
 		let contents = xlf.contents.toString();
-		let parsePromise = pseudo ? i18n.XLF.parsePseudo(contents) : i18n.XLF.parse(contents);
+		let parsePromise = pseudo ? i18n.XLF.parsePseudo(contents) : i18n.XLF.org_parse(contents);
 		parsePromises.push(parsePromise);
 		parsePromise.then(
 			resolvedFiles => {
@@ -159,10 +157,7 @@ export function modifyI18nPackFiles(existingTranslationFolder: string, resulting
 
 					// exclude altered vscode extensions from having a new path even if we provide a new I18n file.
 					if (alteredVSCodeExtensions.indexOf(extension) === -1) {
-						//handle edge case for 'Microsoft.sqlservernotebook' where extension name is the same as extension ID.
-						//(Other extensions need to have publisher appended in front as their ID.)
-						let adsExtensionId = (extension === 'Microsoft.sqlservernotebook') ? extension : 'Microsoft.' + extension;
-
+						let adsExtensionId = 'Microsoft.' + extension;
 						resultingTranslationPaths.push({ id: adsExtensionId, resourceName: `extensions/${extension}.i18n.json` });
 					}
 				}
@@ -183,41 +178,50 @@ const textFields = {
 	"vscodeVersion": '*',
 	"azdataPlaceholder": '^0.0.0',
 	"gitUrl": 'https://github.com/Microsoft/azuredatastudio'
-}
+};
 
 //list of extensions from vscode that are to be included with ADS.
 const VSCODEExtensions = [
 	"bat",
 	"configuration-editing",
+	"csharp",
+	"dart",
 	"docker",
-	"git-ui",
+	"fsharp",
 	"git",
-	"github-authentication",
+	"git-base",
 	"github",
+	"github-authentication",
+	"html",
 	"image-preview",
-	"json-language-features",
+	"ipynb",
+	"javascript",
 	"json",
+	"json-language-features",
+	"julia",
 	"markdown-basics",
 	"markdown-language-features",
+	"markdown-math",
 	"merge-conflict",
 	"microsoft-authentication",
+	"notebook-renderers",
 	"powershell",
 	"python",
 	"r",
 	"search-result",
+	"simple-browser",
 	"sql",
 	"theme-abyss",
 	"theme-defaults",
 	"theme-kimbie-dark",
-	"theme-monokai-dimmed",
 	"theme-monokai",
+	"theme-monokai-dimmed",
 	"theme-quietlight",
 	"theme-red",
 	"theme-seti",
 	"theme-solarized-dark",
 	"theme-solarized-light",
 	"theme-tomorrow-night-blue",
-	"typescript-basics",
 	"xml",
 	"yaml"
 ];
@@ -274,8 +278,8 @@ export function refreshLangpacks(): Promise<void> {
 		packageJSON['license'] = textFields.licenseText;
 		packageJSON['scripts']['update'] = textFields.updateText + langId;
 		packageJSON['engines']['vscode'] = textFields.vscodeVersion;
-		packageJSON['repository']['url'] = textFields.gitUrl
-		packageJSON['engines']['azdata'] = textFields.azdataPlaceholder // Remember to change this to the appropriate version at the end.
+		packageJSON['repository']['url'] = textFields.gitUrl;
+		packageJSON['engines']['azdata'] = textFields.azdataPlaceholder; // Remember to change this to the appropriate version at the end.
 
 		let contributes = packageJSON['contributes'];
 		if (!contributes) {
@@ -399,7 +403,7 @@ export function renameVscodeLangpacks(): Promise<void> {
 			let totalExtensions = fs.readdirSync(path.join(translationDataFolder, 'extensions'));
 			for (let extensionTag in totalExtensions) {
 				let extensionFileName = totalExtensions[extensionTag];
-				let xlfPath = path.join(xlfFolder, `${langId}`, extensionFileName.replace('.i18n.json', '.xlf'))
+				let xlfPath = path.join(xlfFolder, `${langId}`, extensionFileName.replace('.i18n.json', '.xlf'));
 				if (!(fs.existsSync(xlfPath) || VSCODEExtensions.indexOf(extensionFileName.replace('.i18n.json', '')) !== -1)) {
 					let filePath = path.join(translationDataFolder, 'extensions', extensionFileName);
 					rimraf.sync(filePath);
