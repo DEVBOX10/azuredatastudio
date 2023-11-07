@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { CommandsRegistry } from 'vs/platform/commands/common/commands';
@@ -9,7 +9,7 @@ import { IEditorService, ACTIVE_GROUP } from 'vs/workbench/services/editor/commo
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { ProfilerInput } from 'sql/workbench/browser/editor/profiler/profilerInput';
 import * as TaskUtilities from 'sql/workbench/browser/taskUtilities';
-import { IProfilerService } from 'sql/workbench/services/profiler/browser/interfaces';
+import { IProfilerService, ProfilingSessionType } from 'sql/workbench/services/profiler/browser/interfaces';
 import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import { ProfilerEditor } from 'sql/workbench/contrib/profiler/browser/profilerEditor';
 import { ConnectionProfile } from 'sql/platform/connection/common/connectionProfile';
@@ -18,6 +18,9 @@ import { mssqlProviderName } from 'sql/platform/connection/common/constants';
 import { IConnectionDialogService } from 'sql/workbench/services/connection/common/connectionDialogService';
 import { IObjectExplorerService } from 'sql/workbench/services/objectExplorer/browser/objectExplorerService';
 import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { IFileService } from 'vs/platform/files/common/files';
+import { ILogService } from 'vs/platform/log/common/log';
 
 CommandsRegistry.registerCommand({
 	id: 'profiler.newProfiler',
@@ -29,6 +32,7 @@ CommandsRegistry.registerCommand({
 		let objectExplorerService: IObjectExplorerService = accessor.get(IObjectExplorerService);
 		let connectionDialogService: IConnectionDialogService = accessor.get(IConnectionDialogService);
 		let capabilitiesService: ICapabilitiesService = accessor.get(ICapabilitiesService);
+		let logService: ILogService = accessor.get(ILogService);
 
 		// If a context is available if invoked from the context menu, we will use the connection profiler of the server node
 		if (args[0]?.connectionProfile) {
@@ -40,7 +44,7 @@ CommandsRegistry.registerCommand({
 		}
 		else {
 			// No context available, we will try to get the current global active connection
-			connectionProfile = TaskUtilities.getCurrentGlobalConnection(objectExplorerService, connectionService, editorService) as ConnectionProfile;
+			connectionProfile = TaskUtilities.getCurrentGlobalConnection(objectExplorerService, connectionService, editorService, logService) as ConnectionProfile;
 		}
 
 		let promise;
@@ -55,11 +59,11 @@ CommandsRegistry.registerCommand({
 
 		return promise.then(() => {
 			if (!connectionProfile) {
-				connectionProfile = TaskUtilities.getCurrentGlobalConnection(objectExplorerService, connectionService, editorService) as ConnectionProfile;
+				connectionProfile = TaskUtilities.getCurrentGlobalConnection(objectExplorerService, connectionService, editorService, logService) as ConnectionProfile;
 			}
 
 			if (connectionProfile && connectionProfile.providerName === mssqlProviderName) {
-				let profilerInput = instantiationService.createInstance(ProfilerInput, connectionProfile);
+				let profilerInput = instantiationService.createInstance(ProfilerInput, connectionProfile, undefined);
 				editorService.openEditor(profilerInput, { pinned: true }, ACTIVE_GROUP).then(() => Promise.resolve(true));
 			}
 		});
@@ -93,9 +97,24 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			} else {
 				// clear data when profiler is started
 				profilerInput.data.clear();
-				return profilerService.startSession(profilerInput.id, profilerInput.sessionName);
+				return profilerService.startSession(profilerInput.id, profilerInput.sessionName, ProfilingSessionType.RemoteSession);
 			}
 		}
 		return Promise.resolve(false);
+	}
+});
+
+CommandsRegistry.registerCommand({
+	id: 'profiler.openFile',
+	handler: async (accessor: ServicesAccessor, ...args: any[]) => {
+		const editorService: IEditorService = accessor.get(IEditorService);
+		const fileDialogService: IFileDialogService = accessor.get(IFileDialogService);
+		const profilerService: IProfilerService = accessor.get(IProfilerService);
+		const instantiationService: IInstantiationService = accessor.get(IInstantiationService);
+		const fileService: IFileService = accessor.get(IFileService);
+
+		const result = await profilerService.openFile(fileDialogService, editorService, instantiationService, fileService);
+
+		return result;
 	}
 });

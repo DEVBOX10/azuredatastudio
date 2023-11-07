@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as azdata from 'azdata';
 import * as vscode from 'vscode';
@@ -127,7 +127,8 @@ describe('Manage Package Dialog', () => {
 			onValidityChanged: undefined!,
 			valid: true,
 			validate: undefined!,
-			focus: undefined!
+			focus: undefined!,
+			dispose() { }
 		};
 		let button: azdata.ButtonComponent = Object.assign({}, componentBase, {
 			onDidClick: onClick.event
@@ -269,9 +270,11 @@ describe('Manage Package Dialog', () => {
 			onValidityChanged: undefined!,
 			validate: undefined!,
 			initializeModel: () => { return Promise.resolve(); },
+			dispose() { },
 			modelBuilder: {
 				listView: undefined!,
 				radioCardGroup: undefined!,
+				chart: undefined!,
 				navContainer: undefined!,
 				divContainer: undefined!,
 				flexContainer: () => flexBuilder,
@@ -303,7 +306,8 @@ describe('Manage Package Dialog', () => {
 				separator: undefined!,
 				propertiesContainer: undefined!,
 				infoBox: undefined!,
-				slider: undefined!
+				slider: undefined!,
+				executionPlan: undefined!,
 			}
 		};
 

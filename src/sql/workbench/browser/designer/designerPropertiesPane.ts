@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Table } from 'sql/base/browser/ui/table/table';
@@ -25,7 +25,6 @@ export class DesignerPropertiesPane {
 	private _contentElement: HTMLElement;
 	private _objectPath: DesignerPropertyPath;
 	private _componentMap = new Map<string, { defintion: DesignerDataPropertyInfo, component: DesignerUIComponent }>();
-	private _groupHeaders: HTMLElement[] = [];
 
 	// Description variables
 	private _descriptionContainer: HTMLElement;
@@ -43,10 +42,6 @@ export class DesignerPropertiesPane {
 		this.createDescriptionComponent(container);
 		this._markdownRenderer = instantiationService.createInstance(MarkdownRenderer, {});
 
-	}
-
-	public get groupHeaders(): HTMLElement[] {
-		return this._groupHeaders;
 	}
 
 	public get descriptionElement(): HTMLElement {
@@ -78,7 +73,6 @@ export class DesignerPropertiesPane {
 			value.component.dispose();
 		});
 		this._componentMap.clear();
-		this._groupHeaders = [];
 		DOM.clearNode(this._contentElement);
 		this._objectPath = undefined;
 	}

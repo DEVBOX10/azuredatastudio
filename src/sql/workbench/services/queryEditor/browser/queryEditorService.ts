@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { QueryResultsInput } from 'sql/workbench/common/editor/query/queryResultsInput';
 import { EditDataInput } from 'sql/workbench/browser/editData/editDataInput';
 import { ConnectionType, IConnectableInput, IConnectionCompletionOptions, IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
 import { IQueryEditorService, INewSqlEditorOptions } from 'sql/workbench/services/queryEditor/common/queryEditorService';
-import { UntitledQueryEditorInput } from 'sql/base/query/browser/untitledQueryEditorInput';
+import { UntitledQueryEditorInput } from 'sql/workbench/browser/editor/query/untitledQueryEditorInput';
 
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -24,6 +24,7 @@ import { getCurrentGlobalConnection } from 'sql/workbench/browser/taskUtilities'
 import { IObjectExplorerService } from 'sql/workbench/services/objectExplorer/browser/objectExplorerService';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
+import { ILogService } from 'vs/platform/log/common/log';
 
 const defaults: INewSqlEditorOptions = {
 	open: true
@@ -42,7 +43,8 @@ export class QueryEditorService implements IQueryEditorService {
 		@IEditorService private _editorService: IEditorService,
 		@IConfigurationService private _configurationService: IConfigurationService,
 		@IConnectionManagementService private _connectionManagementService: IConnectionManagementService,
-		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService
+		@IObjectExplorerService private _objectExplorerService: IObjectExplorerService,
+		@ILogService private _logService: ILogService
 	) {
 	}
 
@@ -51,7 +53,7 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new untitled document for SQL/Kusto query and opens in new editor tab
 	 */
-	public async newSqlEditor(options: INewSqlEditorOptions = {}, connectionProviderName?: string, initialConnectionUri?: string): Promise<UntitledQueryEditorInput> {
+	public async newSqlEditor(options: INewSqlEditorOptions = {}, connectionProviderName?: string): Promise<UntitledQueryEditorInput> {
 		options = mixin(options, defaults, false);
 		// Create file path and file URI
 		let docUri: URI = options.resource ?? URI.from({ scheme: Schemas.untitled, path: await this.createUntitledSqlFilePath(connectionProviderName) });
@@ -68,12 +70,13 @@ export class QueryEditorService implements IQueryEditorService {
 		}
 
 		const queryResultsInput: QueryResultsInput = this._instantiationService.createInstance(QueryResultsInput, docUri.toString());
-		let queryInput = this._instantiationService.createInstance(UntitledQueryEditorInput, options.description, fileInput, queryResultsInput, initialConnectionUri);
+		let queryInput = this._instantiationService.createInstance(UntitledQueryEditorInput, options.description, fileInput, queryResultsInput);
 		let profile: IConnectionProfile | undefined = undefined;
 		// If we're told to connect then get the connection before opening the editor since it will try to get the connection for the current
 		// active editor and so we need to get this before opening a new one.
 		if (options.connectWithGlobal) {
-			profile = getCurrentGlobalConnection(this._objectExplorerService, this._connectionManagementService, this._editorService);
+			this._logService.trace('queryEditorService.newSqlEditor: Fetching global connection profile for connection.');
+			profile = getCurrentGlobalConnection(this._objectExplorerService, this._connectionManagementService, this._editorService, this._logService);
 		}
 		if (options.open) {
 			await this._editorService.openEditor(queryInput, { pinned: true });
@@ -87,6 +90,8 @@ export class QueryEditorService implements IQueryEditorService {
 				showFirewallRuleOnError: true
 			};
 			this._connectionManagementService.connect(profile, queryInput.uri, options).catch(err => onUnexpectedError(err));
+		} else {
+			this._logService.trace('queryEditorService.newSqlEditor: No connection profile used to connect to SQL editor');
 		}
 		return queryInput;
 	}
@@ -94,7 +99,7 @@ export class QueryEditorService implements IQueryEditorService {
 	/**
 	 * Creates new edit data session
 	 */
-	public async newEditDataEditor(schemaName: string, tableName: string, sqlContent: string, initialConnectionUri?: string): Promise<IConnectableInput> {
+	public async newEditDataEditor(schemaName: string, tableName: string, sqlContent: string): Promise<IConnectableInput> {
 
 		// Create file path and file URI
 		let objectName = schemaName ? schemaName + '.' + tableName : tableName;
@@ -108,7 +113,7 @@ export class QueryEditorService implements IQueryEditorService {
 		(m as UntitledTextEditorModel).setDirty(false);
 		// Create an EditDataInput for editing
 		const resultsInput: EditDataResultsInput = this._instantiationService.createInstance(EditDataResultsInput, docUri.toString());
-		let editDataInput: EditDataInput = this._instantiationService.createInstance(EditDataInput, docUri, schemaName, tableName, fileInput, sqlContent, resultsInput, initialConnectionUri);
+		let editDataInput: EditDataInput = this._instantiationService.createInstance(EditDataInput, docUri, schemaName, tableName, fileInput, sqlContent, resultsInput);
 		// Determine whether to show edit data upon opening.
 		editDataInput.queryPaneEnabled = this._configurationService.getValue('editor.showEditDataSqlPaneOnStartup');
 		if (sqlContent) {

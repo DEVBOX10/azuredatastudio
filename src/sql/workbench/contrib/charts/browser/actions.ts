@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IInsight } from 'sql/workbench/contrib/charts/browser/interfaces';
@@ -12,7 +12,7 @@ import { Action } from 'vs/base/common/actions';
 import { INotificationService, Severity } from 'vs/platform/notification/common/notification';
 import { URI } from 'vs/base/common/uri';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IInsightOptions } from 'sql/workbench/contrib/charts/common/interfaces';
+import { IInsightOptions } from 'sql/workbench/contrib/charts/browser/interfaces';
 import { QueryEditorInput } from 'sql/workbench/common/editor/query/queryEditorInput';
 import { IFileService } from 'vs/platform/files/common/files';
 import { IFileDialogService, FileFilter } from 'vs/platform/dialogs/common/dialogs';

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
 import { Registry } from 'vs/platform/registry/common/platform';
 
 import { Extensions, IInsightRegistry } from 'sql/platform/dashboard/browser/insightRegistry';
-import { IInsightOptions, DataDirection, DataType, LegendPosition, ChartType, InsightType } from 'sql/workbench/contrib/charts/common/interfaces';
+import { IInsightOptions, DataDirection, DataType, LegendPosition, ChartType, InsightType } from 'sql/workbench/contrib/charts/browser/interfaces';
 import { values } from 'vs/base/common/collections';
 
 const insightRegistry = Registry.as<IInsightRegistry>(Extensions.InsightContribution);

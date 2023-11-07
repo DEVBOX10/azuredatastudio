@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from 'vs/nls';
@@ -43,10 +43,6 @@ import { asCssVariableName, getColorRegistry } from 'vs/platform/theme/common/co
 import { ILanguageService } from 'vs/editor/common/languages/language';
 
 // implementation
-
-// {{SQL CARBON TODO}} - default theme?
-// const DEFAULT_COLOR_THEME_ID = 'vs sql-theme-carbon-themes-light_carbon-json'; // {{SQL CARBON EDIT}}
-// const DEFAULT_LIGHT_COLOR_THEME_ID = 'vs vscode-theme-defaults-themes-light_plus-json';
 
 const PERSISTED_OS_COLOR_SCHEME = 'osColorScheme';
 const PERSISTED_OS_COLOR_SCHEME_SCOPE = StorageScope.APPLICATION; // the OS scheme depends on settings in the OS

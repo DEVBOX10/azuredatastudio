@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { RequestType, NotificationType } from 'vscode-languageclient';
@@ -115,6 +115,7 @@ export interface SqlMigrationSkuRecommendationsParams {
 	endTime: string;
 	includePreviewSkus: boolean;
 	databaseAllowList: string[];
+	isPremiumSSDV2Enabled: boolean;
 }
 
 export interface AzureSqlSkuCategory {
@@ -136,6 +137,10 @@ export interface AzureManagedDiskSku {
 	tier: AzureManagedDiskTier;
 	size: string;
 	caching: AzureManagedDiskCaching;
+	type: AzureManagedDiskType;
+	maxSizeInGib: number;
+	maxThroughputInMbps: number;
+	maxIOPS: number;
 }
 
 export interface AzureVirtualMachineSku {
@@ -278,6 +283,15 @@ export const enum AzureManagedDiskTier {
 	Ultra = 2
 }
 
+// values from SQL NuGet
+export const enum AzureManagedDiskType {
+	StandardHDD = 1,   // Standard HDD
+	StandardSSD = 2,   // Standard SSD
+	PremiumSSD = 4,    // Premium SSD
+	UltraSSD = 8,      // Ultra SSD
+	PremiumSSDV2 = 16,    // Premium SSD V2
+}
+
 export const enum AzureManagedDiskCaching {
 	NotApplicable = 0,
 	None = 1,
@@ -386,6 +400,11 @@ export const enum VirtualMachineFamily {
 	standardNVSv2Family,
 	standardNVSv3Family,
 	standardNVSv4Family
+}
+
+export const enum TdeValidationStatus {
+	Failed = -1,
+	Succeeded = 1
 }
 
 export namespace GetSqlMigrationSkuRecommendationsRequest {
@@ -548,4 +567,26 @@ export interface TdeMigrateProgressParams {
 	success: boolean;
 	message: string;
 	statusCode: string;
+}
+
+export interface TdeValidationResult {
+	validationTitle: string;
+	validationDescription: string;
+	validationTroubleshootingTips: string;
+	validationErrorMessage: string;
+	validationStatus: TdeValidationStatus;
+	validationStatusString: string;
+}
+
+export interface TdeValidationParams {
+	sourceSqlConnectionString: string;
+	networkSharePath: string;
+}
+
+export namespace TdeValidationRequest {
+	export const type = new RequestType<TdeValidationParams, TdeValidationResult[], void, void>('migration/tdevalidation');
+}
+
+export namespace TdeValidationTitlesRequest {
+	export const type = new RequestType<{}, string[], void, void>('migration/tdevalidationtitles');
 }

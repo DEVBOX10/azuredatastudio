@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Injectable, forwardRef, Inject } from '@angular/core';
@@ -57,9 +57,7 @@ export class BreadcrumbService implements IBreadcrumbService {
 	}
 
 	private getServerBreadcrumb(profile: ConnectionProfile): MenuItem {
-		let formattedProfileName = profile.connectionName ? profile.connectionName : profile.serverName;
-		formattedProfileName += this.commonService.connectionManagementService.getEditorConnectionProfileTitle(profile, true, true);
-		return { label: formattedProfileName, routerLink: ['server-dashboard'] };
+		return { label: profile.serverName, routerLink: ['server-dashboard'] };
 	}
 
 	private getDbBreadcrumb(profile: ConnectionProfile): MenuItem {

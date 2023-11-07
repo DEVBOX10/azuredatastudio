@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import BarChart, { IBarChartConfig } from './barChart.component';
 import { forwardRef, Inject, ChangeDetectorRef } from '@angular/core';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IAdsTelemetryService } from 'sql/platform/telemetry/common/telemetry';
-import { ChartType } from 'sql/workbench/contrib/charts/common/interfaces';
+import { ChartType } from 'sql/workbench/contrib/charts/browser/interfaces';
 import * as chartjs from 'chart.js';
 import { mixin } from 'sql/base/common/objects';
 import { customMixin } from 'sql/workbench/contrib/charts/browser/interfaces';

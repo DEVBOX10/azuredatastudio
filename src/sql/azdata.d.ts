@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'azdata' {
@@ -121,11 +121,11 @@ declare module 'azdata' {
 			 */
 			Integrated = 'Integrated',
 			/**
-			 * Azure Active Directory - Universal with MFA support
+			 * Microsoft Entra ID - Universal with MFA support
 			 */
 			AzureMFA = 'AzureMFA',
 			/**
-			 * Azure Active Directory - Password
+			 * Microsoft Entra ID - Password
 			 */
 			AzureMFAAndUser = 'AzureMFAAndUser',
 			/**
@@ -623,26 +623,26 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for ConnectionComplete events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any): void;
+		registerOnConnectionComplete(handler: (connSummary: ConnectionInfoSummary) => any): vscode.Disposable;
 
 		/**
 		 * Registers a handler for IntellisenseCacheComplete events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any): void;
+		registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any): vscode.Disposable;
 
 		/**
 		 * Registers a handler for ConnectionChanged events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any): void;
+		registerOnConnectionChanged(handler: (changedConnInfo: ChangedConnectionInfo) => any): vscode.Disposable;
 	}
 
 	export enum ServiceOptionType {
@@ -891,10 +891,10 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for ScriptingComplete events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnScriptingComplete(handler: (scriptingCompleteResult: ScriptingCompleteResult) => any): void;
+		registerOnScriptingComplete(handler: (scriptingCompleteResult: ScriptingCompleteResult) => any): vscode.Disposable;
 	}
 
 	export interface ScriptingCompleteResult {
@@ -962,45 +962,45 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for QueryComplete events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnQueryComplete(handler: (result: QueryExecuteCompleteNotificationResult) => any): void;
+		registerOnQueryComplete(handler: (result: QueryExecuteCompleteNotificationResult) => any): vscode.Disposable;
 		/**
 		 * Registers a handler for BatchStart events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnBatchStart(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): void;
+		registerOnBatchStart(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): vscode.Disposable;
 		/**
 		 * Registers a handler for BatchComplete events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): void;
+		registerOnBatchComplete(handler: (batchInfo: QueryExecuteBatchNotificationParams) => any): vscode.Disposable;
 		/**
 		 * Registers a handler for ResultSetAvailable events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnResultSetAvailable(handler: (resultSetInfo: QueryExecuteResultSetNotificationParams) => any): void;
+		registerOnResultSetAvailable(handler: (resultSetInfo: QueryExecuteResultSetNotificationParams) => any): vscode.Disposable;
 		/**
 		 * Registers a handler for ResultSetUpdated events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnResultSetUpdated(handler: (resultSetInfo: QueryExecuteResultSetNotificationParams) => any): void;
+		registerOnResultSetUpdated(handler: (resultSetInfo: QueryExecuteResultSetNotificationParams) => any): vscode.Disposable;
 		/**
 		 * Registers a handler for Message events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnMessage(handler: (message: QueryExecuteMessageParams) => any): void;
+		registerOnMessage(handler: (message: QueryExecuteMessageParams) => any): vscode.Disposable;
 
 		// Edit Data Requests
 		commitEdit(ownerUri: string): Thenable<void>;
@@ -1017,10 +1017,10 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for EditSessionReady events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void;
+		registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): vscode.Disposable;
 	}
 
 	export interface IDbColumn {
@@ -1465,10 +1465,10 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for ExpandCompleted events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any): void;
+		registerOnExpandCompleted(handler: (response: ObjectExplorerExpandInfo) => any): vscode.Disposable;
 	}
 
 	export interface ObjectExplorerProvider extends ObjectExplorerProviderBase {
@@ -1479,18 +1479,18 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for SessionCreated events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any): void;
+		registerOnSessionCreated(handler: (response: ObjectExplorerSession) => any): vscode.Disposable;
 
 		/**
 		 * Registers a handler for SessionDisconnected events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnSessionDisconnected?(handler: (response: ObjectExplorerSession) => any): void;
+		registerOnSessionDisconnected?(handler: (response: ObjectExplorerSession) => any): vscode.Disposable;
 	}
 
 	export interface ObjectExplorerNodeProvider extends ObjectExplorerProviderBase {
@@ -2084,18 +2084,18 @@ declare module 'azdata' {
 		/**
 		 * Registers a handler for TaskCreated events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnTaskCreated(handler: (response: TaskInfo) => any): void;
+		registerOnTaskCreated(handler: (response: TaskInfo) => any): vscode.Disposable;
 
 		/**
 		 * Registers a handler for TaskStatusChanged events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnTaskStatusChanged(handler: (response: TaskProgressInfo) => any): void;
+		registerOnTaskStatusChanged(handler: (response: TaskProgressInfo) => any): vscode.Disposable;
 	}
 
 	// Disaster Recovery interfaces  -----------------------------------------------------------------------
@@ -2273,30 +2273,37 @@ declare module 'azdata' {
 	// File browser interfaces  -----------------------------------------------------------------------
 
 	export interface FileBrowserProvider extends DataProvider {
+		/**
+		 * Opens a file browser for selecting file paths on a local or remote machine.
+		 * @param ownerUri The connection URI of the machine whose files are to be browsed.
+		 * @param expandPath The initial path to open in the file browser.
+		 * @param fileFilters The list of filters to apply to the file browser (e.g. '*.sql' for SQL files). Ignored if showFoldersOnly is set to true.
+		 * @param changeFilter Whether to update the list of file filters from the last time the dialog was opened for this connection URI.
+		 */
 		openFileBrowser(ownerUri: string, expandPath: string, fileFilters: string[], changeFilter: boolean): Thenable<boolean>;
 		/**
 		 * Registers a handler for FileBrowserOpened events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnFileBrowserOpened(handler: (response: FileBrowserOpenedParams) => any): void;
+		registerOnFileBrowserOpened(handler: (response: FileBrowserOpenedParams) => any): vscode.Disposable;
 		expandFolderNode(ownerUri: string, expandPath: string): Thenable<boolean>;
 		/**
 		 * Registers a handler for FolderNodeExpanded events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnFolderNodeExpanded(handler: (response: FileBrowserExpandedParams) => any): void;
+		registerOnFolderNodeExpanded(handler: (response: FileBrowserExpandedParams) => any): vscode.Disposable;
 		validateFilePaths(ownerUri: string, serviceType: string, selectedFiles: string[]): Thenable<boolean>;
 		/**
 		 * Registers a handler for FilePathsValidated events.
 		 *
-		 * **WARNING** This should only ever be called by the extension creating the provider. Any other extensions calling this
-		 * will overwrite the handler registered by the provider extension which will likely break this functionality.
+		 * @param handler The function that will be called when this event is triggered
+		 * @returns A disposable that will unregister the handler when disposed
 		 */
-		registerOnFilePathsValidated(handler: (response: FileBrowserValidatedParams) => any): void;
+		registerOnFilePathsValidated(handler: (response: FileBrowserValidatedParams) => any): vscode.Disposable;
 		closeFileBrowser(ownerUri: string): Thenable<FileBrowserCloseResponse>;
 	}
 
@@ -2517,10 +2524,7 @@ declare module 'azdata' {
 		 * Azure Key Vault
 		 */
 		AzureKeyVault = 3,
-		/**
-		 * Azure AD Graph
-		 */
-		Graph = 4,
+		// 4 (formerly Azure Graph) is no longer used.
 		/**
 		 * Microsoft Resource Management
 		 */
@@ -3387,8 +3391,9 @@ declare module 'azdata' {
 
 		/**
 		 * SplitView height
+		 * @deprecated use splitViewSize instead
 		 */
-		splitViewHeight: number | string;
+		splitViewHeight?: number | string;
 	}
 
 	export interface FlexItemLayout {
@@ -4894,6 +4899,9 @@ declare module 'azdata' {
 			/**
 			 * Register model view content for the dialog.
 			 * Doesn't do anything if model view is already registered
+			 *
+			 * IMPORTANT: Model View is a disposable, all components created in the model view
+			 * MUST be registered for disposal using the 'vscode.Disposable._register' API on ModelView.
 			 */
 			registerContent(handler: (view: ModelView) => Thenable<void>): void;
 

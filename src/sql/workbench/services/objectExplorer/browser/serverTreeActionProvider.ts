@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { ITree } from 'sql/base/parts/tree/browser/tree';
@@ -27,8 +27,6 @@ import { fillInActions } from 'vs/platform/actions/browser/menuEntryActionViewIt
 import { AsyncServerTree, ServerTreeElement } from 'sql/workbench/services/objectExplorer/browser/asyncServerTree';
 import { ICapabilitiesService } from 'sql/platform/capabilities/common/capabilitiesService';
 import { ILogService } from 'vs/platform/log/common/log';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { CONFIG_WORKBENCH_ENABLEPREVIEWFEATURES } from 'sql/workbench/common/constants';
 
 /**
  *  Provides actions for the server tree elements
@@ -45,16 +43,15 @@ export class ServerTreeActionProvider {
 		@IContextKeyService private _contextKeyService: IContextKeyService,
 		@ICapabilitiesService private _capabilitiesService: ICapabilitiesService,
 		@ILogService private _logService: ILogService,
-		@IConfigurationService private _configurationService: IConfigurationService
 	) {
 	}
 
 	/**
 	 * Return actions given an element in the tree
 	 */
-	public getActions(tree: AsyncServerTree | ITree, element: ServerTreeElement, inlineOnly: boolean = false): IAction[] {
+	public getActions(tree: AsyncServerTree | ITree | undefined, element: ServerTreeElement, inlineOnly: boolean = false): IAction[] {
 		if (element instanceof ConnectionProfile) {
-			return this.getConnectionActions(tree, element, inlineOnly);
+			return tree ? this.getConnectionActions(tree, element, inlineOnly) : [];
 		}
 		if (element instanceof ConnectionProfileGroup) {
 			return this.getConnectionProfileGroupActions(element);
@@ -62,11 +59,11 @@ export class ServerTreeActionProvider {
 		if (element instanceof TreeNode) {
 			const profile = element.getConnectionProfile();
 			if (profile) {
-				return this.getObjectExplorerNodeActions({
+				return tree ? this.getObjectExplorerNodeActions({
 					tree: tree,
 					profile,
 					treeNode: element
-				}, inlineOnly);
+				}, inlineOnly) : [];
 			}
 		}
 		return [];
@@ -75,26 +72,27 @@ export class ServerTreeActionProvider {
 	/**
 	 * Get the default action for the given element.
 	 */
-	public getDefaultAction(tree: AsyncServerTree | ITree, element: ServerTreeElement): IAction | undefined {
-		const actions = this.getActions(tree, element).filter(a => {
-			return a instanceof MenuItemAction && a.isDefault;
-		});
-		if (actions.length === 1) {
-			return actions[0];
-		} else if (actions.length > 1) {
-			let nodeName: string;
-			if (element instanceof ConnectionProfile) {
-				nodeName = element.serverName;
-			} else if (element instanceof ConnectionProfileGroup) {
-				nodeName = element.name;
-			} else {
-				nodeName = element.label;
+	public getDefaultAction(tree: AsyncServerTree | ITree | undefined, element: ServerTreeElement): IAction | undefined {
+		if (tree) {
+			const actions = this.getActions(tree, element).filter(a => {
+				return a instanceof MenuItemAction && a.isDefault;
+			});
+			if (actions.length === 1) {
+				return actions[0];
+			} else if (actions.length > 1) {
+				let nodeName: string;
+				if (element instanceof ConnectionProfile) {
+					nodeName = element.serverName;
+				} else if (element instanceof ConnectionProfileGroup) {
+					nodeName = element.name;
+				} else {
+					nodeName = element.label;
+				}
+				this._logService.error(`Multiple default actions defined for node: ${nodeName}, actions: ${actions.map(a => a.id).join(', ')}`);
 			}
-			this._logService.error(`Multiple default actions defined for node: ${nodeName}, actions: ${actions.map(a => a.id).join(', ')}`);
 		}
 		return undefined;
 	}
-
 
 	public getRecentConnectionActions(element: ConnectionProfile): IAction[] {
 		return [
@@ -106,7 +104,7 @@ export class ServerTreeActionProvider {
 	/**
 	 * Return actions for connection elements
 	 */
-	private getConnectionActions(tree: AsyncServerTree | ITree, profile: ConnectionProfile, inlineOnly: boolean = false): IAction[] {
+	private getConnectionActions(tree: AsyncServerTree | ITree | undefined, profile: ConnectionProfile, inlineOnly: boolean = false): IAction[] {
 		let node = new TreeNode(NodeType.Server, NodeType.Server, '', false, '', '', '', '', undefined, undefined, undefined, undefined);
 		// Only update password and not access tokens to avoid login prompts when opening context menu.
 		this._connectionManagementService.addSavedPassword(profile, true);
@@ -252,7 +250,7 @@ export class ServerTreeActionProvider {
 		// Contribute refresh action for scriptable objects via contribution
 		if (!this.isScriptableObject(context)) {
 			// Adding filter action if the node has filter properties
-			if (treeNode?.filterProperties?.length > 0 && this._configurationService.getValue<boolean>(CONFIG_WORKBENCH_ENABLEPREVIEWFEATURES)) {
+			if (treeNode?.filterProperties?.length > 0) {
 				actions.push(this._instantiationService.createInstance(FilterChildrenAction, FilterChildrenAction.ID, FilterChildrenAction.LABEL, context.treeNode));
 			}
 			// Adding remove filter action if the node has filters applied to it and the action is not inline only.
@@ -275,7 +273,7 @@ export class ServerTreeActionProvider {
 }
 
 interface ObjectExplorerContext {
-	tree: AsyncServerTree | ITree;
+	tree: AsyncServerTree | ITree | undefined;
 	profile: ConnectionProfile;
 	treeNode?: TreeNode;
 }

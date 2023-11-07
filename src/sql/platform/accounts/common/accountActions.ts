@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -40,9 +40,9 @@ export class AddAccountAction extends Action {
 		super(AddAccountAction.ID, AddAccountAction.LABEL);
 		this.class = 'add-linked-account-action';
 
-		this._addAccountCompleteEmitter = new Emitter<void>();
-		this._addAccountErrorEmitter = new Emitter<string>();
-		this._addAccountStartEmitter = new Emitter<void>();
+		this._addAccountCompleteEmitter = this._register(new Emitter<void>());
+		this._addAccountErrorEmitter = this._register(new Emitter<string>());
+		this._addAccountStartEmitter = this._register(new Emitter<void>());
 	}
 
 	public override async run(): Promise<void> {
@@ -50,7 +50,12 @@ export class AddAccountAction extends Action {
 		// Fire the event that we've started adding accounts
 		this._addAccountStartEmitter.fire();
 		try {
-			await this._accountManagementService.addAccount(this._providerId);
+			if (!this._providerId) {
+				let providerId = await this._accountManagementService.promptProvider();
+				await this._accountManagementService.addAccount(providerId);
+			} else {
+				await this._accountManagementService.addAccount(this._providerId);
+			}
 			this._addAccountCompleteEmitter.fire();
 		} catch (err) {
 			this.logService.error(`Error while adding account: ${err}`);

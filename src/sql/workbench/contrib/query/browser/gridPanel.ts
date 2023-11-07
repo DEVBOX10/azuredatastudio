@@ -1,12 +1,11 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/gridPanel';
 
 import { ITableStyles, ITableMouseEvent, FilterableColumn } from 'sql/base/browser/ui/table/interfaces';
-import { attachTableStyler } from 'sql/platform/theme/common/styler';
 import QueryRunner, { QueryGridDataProvider } from 'sql/workbench/services/query/common/queryRunner';
 import { ResultSetSummary, IColumn, ICellValue } from 'sql/workbench/services/query/common/query';
 import { VirtualizedCollection } from 'sql/base/browser/ui/table/asyncDataView';
@@ -24,7 +23,7 @@ import { IContextMenuService, IContextViewService } from 'vs/platform/contextvie
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { Emitter, Event } from 'vs/base/common/event';
-import { IColorTheme, ICssStyleCollector, IThemeService, registerThemingParticipant } from 'vs/platform/theme/common/themeService';
+import { IColorTheme, ICssStyleCollector, registerThemingParticipant } from 'vs/platform/theme/common/themeService';
 import { isUndefinedOrNull } from 'vs/base/common/types';
 import { Disposable, dispose, DisposableStore } from 'vs/base/common/lifecycle';
 import { range } from 'vs/base/common/arrays';
@@ -60,7 +59,8 @@ import { queryEditorNullBackground } from 'sql/platform/theme/common/colorRegist
 import { IComponentContextService } from 'sql/workbench/services/componentContext/browser/componentContextService';
 import { GridRange } from 'sql/base/common/gridRange';
 import { onUnexpectedError } from 'vs/base/common/errors';
-import { defaultTableFilterStyles } from 'sql/platform/theme/browser/defaultStyles';
+import { defaultTableFilterStyles, defaultTableStyles } from 'sql/platform/theme/browser/defaultStyles';
+import { parseString as parseXMLString } from 'xml2js';
 
 const ROW_HEIGHT = 29;
 const HEADER_HEIGHT = 26;
@@ -103,8 +103,7 @@ export class GridPanel extends Disposable {
 	constructor(
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILogService private readonly logService: ILogService,
-		@IThemeService private readonly themeService: IThemeService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 		this.scrollableView = new ScrollableView(this.container);
@@ -258,7 +257,6 @@ export class GridPanel extends Disposable {
 					this.minimizeTables();
 				}
 			}));
-			this.tableDisposable.add(attachTableStyler(table, this.themeService));
 
 			tables.push(table);
 		}
@@ -446,8 +444,16 @@ export abstract class GridTableBase<T> extends Disposable implements IView, IQue
 					? localize('xmlShowplan', "XML Showplan")
 					: escape(c.columnName),
 				field: i.toString(),
-				formatter: c.isXml ? hyperLinkFormatter : (row: number | undefined, cell: any | undefined, value: ICellValue, columnDef: any | undefined, dataContext: any | undefined): string | { text: string, addClasses: string } => {
-					return queryResultTextFormatter(this.gridConfig.showJsonAsLink, row, cell, value, columnDef, dataContext);
+				formatter: c.isXml || c.isJson ? hyperLinkFormatter : (row: number | undefined, cell: any | undefined, value: ICellValue, columnDef: any | undefined, dataContext: any | undefined): string | { text: string, addClasses: string } => {
+					if (isXmlCell(value)) {
+						this.resultSet.columnInfo[i].isXml = true;
+						return hyperLinkFormatter(row, cell, value, columnDef, dataContext);
+					} else if (this.gridConfig.showJsonAsLink && isJsonCell(value)) {
+						this.resultSet.columnInfo[i].isJson = true;
+						return hyperLinkFormatter(row, cell, value, columnDef, dataContext);
+					} else {
+						return textFormatter(row, cell, value, columnDef, dataContext, (DBCellValue.isDBCellValue(value) && value.isNull) ? NULL_CELL_CSS_CLASS : undefined);
+					}
 				},
 				width: this.state.columnSizes && this.state.columnSizes[i] ? this.state.columnSizes[i] : undefined
 			};
@@ -589,7 +595,7 @@ export abstract class GridTableBase<T> extends Disposable implements IView, IQue
 				inMemoryDataProcessing: this.options.inMemoryDataProcessing,
 				inMemoryDataCountThreshold: this.options.inMemoryDataCountThreshold
 			});
-		this.table = this._register(new Table(this.tableContainer, this.accessibilityService, this.quickInputService, { dataProvider: this.dataProvider, columns: this.columns }, tableOptions));
+		this.table = this._register(new Table(this.tableContainer, this.accessibilityService, this.quickInputService, defaultTableStyles, { dataProvider: this.dataProvider, columns: this.columns }, tableOptions));
 		this.table.setTableTitle(localize('resultsGrid', "Results grid"));
 		this.table.setSelectionModel(this.selectionModel);
 		this.table.registerPlugin(new MouseWheelSupport());
@@ -893,7 +899,7 @@ export abstract class GridTableBase<T> extends Disposable implements IView, IQue
 					}
 				}
 				const content = value.displayValue;
-				const input = this.untitledEditorService.create({ languageId: column.isXml ? 'xml' : 'json', initialValue: content });
+				const input = this.untitledEditorService.create({ languageId: column.isXml ? 'xml' : column.isJson ? 'json' : 'txt', initialValue: content });
 				await input.resolve();
 				await this.instantiationService.invokeFunction(formatDocumentWithSelectedProvider, input.textEditorModel, FormattingMode.Explicit, Progress.None, CancellationToken.None);
 				input.setDirty(false);
@@ -1165,10 +1171,12 @@ function isJsonCell(value: ICellValue): boolean {
 	return !!(value && !value.isNull && value.displayValue?.match(IsJsonRegex));
 }
 
-function queryResultTextFormatter(showJsonAsLink: boolean, row: number | undefined, cell: any | undefined, value: ICellValue, columnDef: any | undefined, dataContext: any | undefined): string | { text: string, addClasses: string } {
-	if (showJsonAsLink && isJsonCell(value)) {
-		return hyperLinkFormatter(row, cell, value, columnDef, dataContext);
-	} else {
-		return textFormatter(row, cell, value, columnDef, dataContext, (DBCellValue.isDBCellValue(value) && value.isNull) ? NULL_CELL_CSS_CLASS : undefined);
+function isXmlCell(value: ICellValue): boolean {
+	let isXML = false;
+	if (value && !value.isNull) {
+		parseXMLString(value.displayValue, (err, _) => {
+			isXML = err === null;
+		});
 	}
+	return isXML;
 }

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -10,7 +10,7 @@ import * as types from 'vs/base/common/types';
 import { Event, Emitter } from 'vs/base/common/event';
 import { ServiceOptionType } from 'sql/workbench/api/common/sqlExtHostTypes';
 import { coalesce } from 'vs/base/common/arrays';
-import { MediaDeviceType } from 'sql/workbench/contrib/backup/common/constants';
+import { MediaDeviceType } from 'sql/workbench/common/backup/constants';
 
 export interface RestoreOptionsElement {
 	optionMetadata: azdata.ServiceOption;

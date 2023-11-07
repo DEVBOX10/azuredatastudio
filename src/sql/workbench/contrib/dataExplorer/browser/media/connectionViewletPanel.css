@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 /* --- Registered servers tree viewlet --- */
@@ -252,13 +252,6 @@
 .monaco-list-row .connection-profile .connection-profile-container .icon {
 	flex: 0 30px;
 	position: relative;
-}
-
-.monaco-list-row .connection-profile .connection-profile-container .server-group-color {
-	width: 5px;
-	height: 18px;
-	border-radius: 2.5px;
-	margin-top: 2.5px;
 }
 
 .monaco-list-row .connection-profile .connection-profile-container .icon .connection-status-badge {

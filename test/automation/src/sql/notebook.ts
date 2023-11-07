@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Code } from '../code';
-import { QuickAccess } from '../quickaccess';
+import { QuickAccess, QuickAccessKind } from '../quickaccess';
 import { QuickInput } from '../quickinput';
 import { Editors } from '../editors';
-import { IElement } from '..';
+import { IElement } from '../driver';
 import * as constants from '../sql/constants';
 
 const activeCellSelector = '.notebook-cell.active';
@@ -27,7 +27,7 @@ export class Notebook {
 	}
 
 	async openFile(fileName: string): Promise<void> {
-		await this.quickAccess.openQuickAccess(fileName);
+		await this.quickAccess.openQuickAccessWithRetry(QuickAccessKind.Files, fileName);
 		await this.quickInput.waitForQuickInputElements(names => names[0] === fileName);
 		await this.code.waitAndClick('.quick-input-widget .quick-input-list .monaco-list-row');
 		await this.editors.waitForActiveTab(fileName);

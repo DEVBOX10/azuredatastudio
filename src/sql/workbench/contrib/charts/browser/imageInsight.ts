@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IInsight } from './interfaces';
 import { INotificationService } from 'vs/platform/notification/common/notification';
 import { $ } from 'vs/base/browser/dom';
 import { mixin } from 'vs/base/common/objects';
-import { IInsightOptions, InsightType } from 'sql/workbench/contrib/charts/common/interfaces';
+import { IInsightOptions, InsightType } from 'sql/workbench/contrib/charts/browser/interfaces';
 import * as nls from 'vs/nls';
 import { IInsightData } from 'sql/platform/dashboard/browser/insightRegistry';
 

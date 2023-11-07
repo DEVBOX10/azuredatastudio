@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -19,11 +19,14 @@ const configLogFilesRemovalLimit = 'logFilesRemovalLimit';
 const extensionConfigSectionName = 'mssql';
 const configLogDebugInfo = 'logDebugInfo';
 const parallelMessageProcessingConfig = 'parallelMessageProcessing';
+const parallelMessageProcessingLimitConfig = 'parallelMessageProcessingLimit';
 const enableSqlAuthenticationProviderConfig = 'enableSqlAuthenticationProvider';
+const enableConnectionPoolingConfig = 'enableConnectionPooling';
 const tableDesignerPreloadConfig = 'tableDesigner.preloadDatabaseModel';
+const httpConfig = 'http';
+const configProxy = 'proxy';
+const configProxyStrictSSL = 'proxyStrictSSL';
 
-const azureExtensionConfigName = 'azure';
-const azureAuthenticationLibraryConfig = 'authenticationLibrary';
 /**
  *
  * @returns Whether the current OS is linux or not
@@ -67,16 +70,6 @@ export function removeOldLogFiles(logPath: string, prefix: string): JSON {
 export function getConfiguration(config: string = extensionConfigSectionName): vscode.WorkspaceConfiguration {
 	return vscode.workspace.getConfiguration(config);
 }
-/**
- * We need Azure core extension configuration for fetching Authentication Library setting in use.
- * This is required for 'enableSqlAuthenticationProvider' to be enabled (as it applies to MSAL only).
- * This can be removed in future when ADAL support is dropped.
- * @param config Azure core extension configuration section name
- * @returns Azure core extension config section
- */
-export function getAzureCoreExtConfiguration(config: string = azureExtensionConfigName): vscode.WorkspaceConfiguration {
-	return vscode.workspace.getConfiguration(config);
-}
 
 export function getConfigLogFilesRemovalLimit(): number | undefined {
 	let config = getConfiguration();
@@ -96,6 +89,19 @@ export function getConfigLogRetentionSeconds(): number | undefined {
 	}
 }
 
+export function getHttpProxyUrl(): string | undefined {
+	let config = getConfiguration(httpConfig);
+	if (config) {
+		return config[configProxy];
+	} return undefined;
+}
+
+export function getHttpProxyStrictSSL(): boolean {
+	let config = getConfiguration(httpConfig);
+	if (config) {
+		return config.get<boolean>(configProxyStrictSSL, true); // true by default
+	} return true; // true by default.
+}
 /**
  * The tracing level defined in the package.json
  */
@@ -143,25 +149,33 @@ export function setConfigPreloadDatabaseModel(enable: boolean): void {
 	}
 }
 
+/**
+ * Retrieves configuration `mssql:parallelMessageProcessing` from settings file.
+ * @returns true if setting is enabled in ADS (enabled by default).
+ */
 export function getParallelMessageProcessingConfig(): boolean {
 	const config = getConfiguration();
 	if (!config) {
-		return false;
+		return true; // default value
 	}
-	const setting = config.inspect(parallelMessageProcessingConfig);
-	return (azdata.env.quality === azdata.env.AppQuality.dev && setting?.globalValue === undefined && setting?.workspaceValue === undefined) ? true : config[parallelMessageProcessingConfig];
+	return config[parallelMessageProcessingConfig];
 }
 
-export function getAzureAuthenticationLibraryConfig(): string {
-	const config = getAzureCoreExtConfiguration();
-	if (config) {
-		return config.get<string>(azureAuthenticationLibraryConfig, 'MSAL'); // default Auth library
+/**
+ * Retrieves configuration `mssql:parallelMessageProcessingLimit` from settings file.
+ * @returns max number of parallel messages that are allowed to be processed by backend service, 100 by default.
+ */
+export function getParallelMessageProcessingLimitConfig(): number {
+	const config = getConfiguration();
+	if (!config) {
+		return 100; // default value
 	}
-	else {
-		return 'MSAL';
-	}
+	return config[parallelMessageProcessingLimitConfig];
 }
-
+/**
+ * Retrieves configuration `mssql:enableSqlAuthenticationProvider` from settings file.
+ * @returns true if setting is enabled in ADS, false otherwise.
+ */
 export function getEnableSqlAuthenticationProviderConfig(): boolean {
 	const config = getConfiguration();
 	if (config) {
@@ -169,6 +183,21 @@ export function getEnableSqlAuthenticationProviderConfig(): boolean {
 	}
 	else {
 		return true;
+	}
+}
+
+/**
+ * Retrieves configuration `mssql:enableConnectionPooling` from settings file.
+ * @returns true if setting is enabled in ADS or running ADS in dev mode.
+ */
+export function getEnableConnectionPoolingConfig(): boolean {
+	const config = getConfiguration();
+	if (config) {
+		const setting = config.inspect(enableConnectionPoolingConfig);
+		return (azdata.env.quality === azdata.env.AppQuality.dev && setting?.globalValue === undefined && setting?.workspaceValue === undefined) ? true : config[enableConnectionPoolingConfig];
+	}
+	else {
+		return true; // enabled by default
 	}
 }
 
@@ -200,6 +229,15 @@ export function getCommonLaunchArgsAndCleanupOldLogFiles(logPath: string, fileNa
 	}
 	// Always enable autoflush so that log entries are written immediately to disk, otherwise we can end up with partial logs
 	launchArgs.push('--autoflush-log');
+
+	let httpProxy = getHttpProxyUrl();
+	if (httpProxy) {
+		launchArgs.push('--http-proxy-url');
+		launchArgs.push(httpProxy);
+		if (getHttpProxyStrictSSL()) {
+			launchArgs.push('--http-proxy-strict-ssl')
+		}
+	}
 	return launchArgs;
 }
 

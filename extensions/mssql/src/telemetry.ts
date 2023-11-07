@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
@@ -83,7 +83,8 @@ export class LanguageClientErrorHandler implements ErrorHandler {
 }
 
 export enum TelemetryViews {
-	MssqlObjectExplorer = 'mssqlObjectExplorer'
+	MssqlObjectExplorer = 'mssqlObjectExplorer',
+	MssqlConnections = 'mssqlConnections'
 }
 
 export enum TelemetryActions {
@@ -93,4 +94,7 @@ export enum TelemetryActions {
 	DisableGroupBySchemaContextMenu = 'objectExplorerDisableGroupBySchemaContextMenu',
 	EnableGroupByServerViewTitleAction = 'objectExplorerEnableGroupByServerViewTitleAction',
 	DisableGroupByServerViewTitleAction = 'objectExplorerDisableGroupByServerViewTitleAction',
+	EnableFeatureAsyncParallelProcessing = 'enableFeatureAsyncParallelProcessing',
+	EnableFeatureSqlAuthenticationProvider = 'enableFeatureSqlAuthenticationProvider',
+	EnableFeatureConnectionPooling = 'enableFeatureConnectionPooling',
 }

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -335,6 +335,7 @@ class TestComponentBase implements azdata.Component {
 	focus(): Thenable<void> {
 		return Promise.resolve();
 	}
+	dispose() { }
 }
 
 export class TestDropdownComponent extends TestComponentBase implements azdata.DropDownComponent {
@@ -528,6 +529,7 @@ export function createViewContext(): TestContext {
 		onValidityChanged: undefined!,
 		validate: undefined!,
 		initializeModel: () => { return Promise.resolve(); },
+		dispose() { },
 		modelBuilder: <azdata.ModelBuilder>{
 			radioButton: () => radioButtonBuilder,
 			text: () => textBuilder,

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/countInsight';
@@ -8,7 +8,7 @@ import 'vs/css!./media/countInsight';
 import { IInsight } from './interfaces';
 
 import { $, clearNode } from 'vs/base/browser/dom';
-import { IInsightOptions, InsightType } from 'sql/workbench/contrib/charts/common/interfaces';
+import { IInsightOptions, InsightType } from 'sql/workbench/contrib/charts/browser/interfaces';
 import { IInsightData } from 'sql/platform/dashboard/browser/insightRegistry';
 
 export class CountInsight implements IInsight {

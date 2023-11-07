@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -451,7 +451,7 @@ export class SchemaCompareMainWindow {
 			this.splitView.addItem(this.diffEditor);
 			this.splitView.setLayout({
 				orientation: 'vertical',
-				splitViewHeight: 800
+				splitViewSize: undefined // setting this to undefined will default the splitview size to use the model view container's size
 			});
 
 			// create a map of the differences to row numbers

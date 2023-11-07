@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import nls = require('vs/nls');
@@ -238,10 +238,9 @@ export class GetCurrentConnectionStringAction extends Action2 {
 	public static LABEL = nls.localize('connectionAction.GetCurrentConnectionString', "Get Current Connection String");
 
 	constructor() {
-		//super(GetCurrentConnectionStringAction.ID, GetCurrentConnectionStringAction.LABEL);
 		super({
-			id: ClearRecentConnectionsAction.ID,
-			title: { value: ClearRecentConnectionsAction.LABEL, original: ClearRecentConnectionsAction.LABEL_ORG },
+			id: GetCurrentConnectionStringAction.ID,
+			title: { value: GetCurrentConnectionStringAction.LABEL, original: GetCurrentConnectionStringAction.LABEL_ORG },
 			f1: true
 		});
 	}

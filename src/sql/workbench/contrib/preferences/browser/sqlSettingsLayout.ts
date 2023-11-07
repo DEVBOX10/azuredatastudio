@@ -1,10 +1,12 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
 import { tocData as vstocData, ITOCEntry } from 'vs/workbench/contrib/preferences/browser/settingsLayout';
+
+export const OBJECT_EXPLORER_CONFIG_PREFIX = 'objectExplorer';
 
 // Copy existing table of contents and append
 export const tocData: ITOCEntry<string> = Object.assign({}, vstocData);
@@ -15,7 +17,12 @@ let sqlTocItems: ITOCEntry<string>[] = [{
 		{
 			id: 'data/connection',
 			label: localize('connection', "Connection"),
-			settings: ['startup.alwaysShowServersView', 'connection.*', 'serverGroup.*', 'datasource.*']
+			settings: ['connection.*', 'datasource.*']
+		},
+		{
+			id: 'data/objectExplorer',
+			label: localize('objectExplorer', "Object Explorer"),
+			settings: ['startup.alwaysShowServersView', 'serverTree.*', 'serverGroup.*']
 		},
 		{
 			id: 'data/queryEditor',

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionManagementService, IConnectionCompletionOptions } from 'sql/platform/connection/common/connectionManagement';
@@ -128,7 +128,10 @@ export class TreeSelectionHandler {
 		}
 		const selectedNode = selection[0];
 		if (selectedNode instanceof ConnectionProfile && !capabilitiesService.getCapabilities(selectedNode.providerName)) {
-			connectionManagementService.handleUnsupportedProvider(selectedNode.providerName).catch(onUnexpectedError);
+			// Async tree handles unsupported providers through the connection management service
+			if (!(tree instanceof AsyncServerTree)) {
+				connectionManagementService.handleUnsupportedProvider(selectedNode.providerName).catch(onUnexpectedError);
+			}
 			return;
 		}
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
@@ -358,7 +358,7 @@ export class ToggleAddCellActionViewItem extends DropdownMenuActionViewItem {
 			{
 				actionRunner,
 				classNames: ToggleAddCellDropdownAction.ICON,
-				anchorAlignmentProvider: () => AnchorAlignment.RIGHT
+				anchorAlignmentProvider: () => AnchorAlignment.LEFT
 			});
 		this.setActionContext(cellContext);
 	}
@@ -392,7 +392,7 @@ export class CellToggleMoreActionViewItem extends DropdownMenuActionViewItem {
 			{
 				actionRunner,
 				classNames: CellToggleMoreAction.ICON,
-				anchorAlignmentProvider: () => AnchorAlignment.RIGHT
+				anchorAlignmentProvider: () => AnchorAlignment.LEFT
 			});
 		this.setActionContext(this._cellContext);
 		this._actions = [

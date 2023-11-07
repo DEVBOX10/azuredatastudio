@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
@@ -9,7 +9,7 @@ import * as TypeMoq from 'typemoq';
 import { nb } from 'azdata';
 import { isStream, getProvidersForFileName, asyncForEach, getStandardKernelsForProvider, IStandardKernelWithProvider } from 'sql/workbench/services/notebook/browser/models/notebookUtils';
 import { INotebookService, DEFAULT_NOTEBOOK_PROVIDER, SQL_NOTEBOOK_PROVIDER } from 'sql/workbench/services/notebook/browser/notebookService';
-import { NotebookServiceStub } from 'sql/workbench/contrib/notebook/test/stubs';
+import { NotebookServiceStub } from 'sql/workbench/contrib/notebook/test/browser/stubs';
 import { tryMatchCellMagic, extractCellMagicCommandPlusArgs } from 'sql/workbench/services/notebook/browser/utils';
 import { RichTextEditStack } from 'sql/workbench/contrib/notebook/browser/cellViews/textCell.component';
 import { notebookConstants } from 'sql/workbench/services/notebook/browser/interfaces';

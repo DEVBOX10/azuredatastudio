@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionManagementService } from 'sql/platform/connection/common/connectionManagement';
@@ -161,7 +161,7 @@ export class InsightsDialogController {
 				this._columns = resultset.columnInfo;
 				let rows: ResultSetSubset;
 				try {
-					rows = await this._queryRunner.getQueryRows(0, resultset.rowCount, batch.id, resultset.id);
+					rows = await this._queryRunner.getQueryRowsPaged(0, resultset.rowCount, batch.id, resultset.id);
 				} catch (e) {
 					return Promise.reject(e);
 				}

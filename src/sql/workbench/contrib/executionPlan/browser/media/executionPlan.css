@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 /* Styling for the execution plan tab container */
@@ -73,7 +73,7 @@ However we always want it to be the width of the container it is resizing.
 }
 
 .eps-container .execution-plan .plan .plan-action-container .search-node-widget .property-name-label {
-	flex: 0 60px;
+	flex: 0 80px;
 	line-height: 26px
 }
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
@@ -71,9 +71,7 @@ export class AccountPickerService implements IAccountPickerService {
 	 */
 	public renderAccountPicker(rootContainer: HTMLElement): void {
 		if (!this._accountPicker) {
-			// TODO: expand support to multiple providers
-			const providerId: string = 'azure_publicCloud';
-			this._accountPicker = this._instantiationService.createInstance(AccountPicker, providerId);
+			this._accountPicker = this._instantiationService.createInstance(AccountPicker);
 			this._accountPicker.createAccountPickerComponent();
 		}
 

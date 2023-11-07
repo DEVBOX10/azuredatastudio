@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { SaveResultsRequestParams } from 'azdata';
@@ -14,12 +14,13 @@ import * as nls from 'vs/nls';
 import Severity from 'vs/base/common/severity';
 import { INotificationService, INotification } from 'vs/platform/notification/common/notification';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { getRootPath, resolveCurrentDirectory } from 'sql/platform/common/pathUtilities';
+import { getRootPath, resolveCurrentDirectory } from 'sql/platform/workspace/common/pathUtilities';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IFileDialogService, FileFilter } from 'vs/platform/dialogs/common/dialogs';
 import { IOpenerService } from 'vs/platform/opener/common/opener';
 import { IQueryEditorConfiguration } from 'sql/platform/query/common/query';
 import { Schemas } from 'vs/base/common/network';
+import { ICommandService } from 'vs/platform/commands/common/commands';
 
 let prevSavePath: URI;
 
@@ -58,7 +59,8 @@ export class ResultSerializer {
 		@IWorkspaceContextService private _contextService: IWorkspaceContextService,
 		@IFileDialogService private readonly fileDialogService: IFileDialogService,
 		@INotificationService private _notificationService: INotificationService,
-		@IOpenerService private readonly openerService: IOpenerService
+		@IOpenerService private readonly openerService: IOpenerService,
+		@ICommandService private readonly commandService: ICommandService
 	) { }
 
 	/**
@@ -257,6 +259,18 @@ export class ResultSerializer {
 			if (saveConfig.includeHeaders !== undefined) {
 				saveResultsParams.includeHeaders = saveConfig.includeHeaders;
 			}
+			if (saveConfig.freezeHeaderRow !== undefined) {
+				saveResultsParams.freezeHeaderRow = saveConfig.freezeHeaderRow;
+			}
+			if (saveConfig.boldHeaderRow !== undefined) {
+				saveResultsParams.boldHeaderRow = saveConfig.boldHeaderRow;
+			}
+			if (saveConfig.autoFilterHeaderRow !== undefined) {
+				saveResultsParams.autoFilterHeaderRow = saveConfig.autoFilterHeaderRow;
+			}
+			if (saveConfig.autoSizeColumns !== undefined) {
+				saveResultsParams.autoSizeColumns = saveConfig.autoSizeColumns;
+			}
 		}
 
 		return saveResultsParams;
@@ -371,6 +385,12 @@ export class ResultSerializer {
 					label: nls.localize('openFile', "Open file"),
 					run: () => {
 						this.openerService.open(filePath, { openExternal: format === SaveFormat.EXCEL });
+					}
+				},
+				{
+					label: nls.localize('openFileLocation', "Open file location"),
+					run: async () => {
+						this.commandService.executeCommand('revealFileInOS', filePath);
 					}
 				}]
 			);

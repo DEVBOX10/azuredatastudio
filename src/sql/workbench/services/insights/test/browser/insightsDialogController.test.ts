@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { InsightsDialogController } from 'sql/workbench/services/insights/browser/insightsDialogController';
@@ -130,7 +130,7 @@ function getPrimedQueryRunner(data: string[][], columns: string[]): IPrimedQuery
 		];
 	});
 
-	querymock.setup(x => x.getQueryRows(It.isAnyNumber(), It.isAnyNumber(), It.isAnyNumber(), It.isAnyNumber()))
+	querymock.setup(x => x.getQueryRowsPaged(It.isAnyNumber(), It.isAnyNumber(), It.isAnyNumber(), It.isAnyNumber()))
 		.returns(x => Promise.resolve(<ResultSetSubset>{
 			rowCount: data.length,
 			rows: data.map(r => r.map(c => { return { displayValue: c }; }))

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Code } from './code';
@@ -16,6 +16,13 @@ export class QuickInput {
 	private static QUICK_INPUT_ENTRY_LABEL_SPAN = `${QuickInput.QUICK_INPUT_ROW} .monaco-highlighted-label`;
 
 	constructor(private code: Code) { }
+
+	// {{SQL CARBON EDIT}} - defined submit
+	async submit(text: string): Promise<void> {
+		await this.code.waitForSetValue(QuickInput.QUICK_INPUT_INPUT, text);
+		await this.code.dispatchKeybinding('enter');
+		await this.waitForQuickInputClosed();
+	}
 
 	async waitForQuickInputOpened(retryCount?: number): Promise<void> {
 		await this.code.waitForActiveElement(QuickInput.QUICK_INPUT_INPUT, retryCount);

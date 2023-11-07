@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { Graph } from './graphInsight';
@@ -12,7 +12,7 @@ import { CountInsight } from './countInsight';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { Dimension, clearNode } from 'vs/base/browser/dom';
 import { deepClone } from 'vs/base/common/objects';
-import { IInsightOptions, ChartType, DataDirection, InsightType } from 'sql/workbench/contrib/charts/common/interfaces';
+import { IInsightOptions, ChartType, DataDirection, InsightType } from 'sql/workbench/contrib/charts/browser/interfaces';
 import { IInsightData } from 'sql/platform/dashboard/browser/insightRegistry';
 
 const defaultOptions: IInsightOptions = {

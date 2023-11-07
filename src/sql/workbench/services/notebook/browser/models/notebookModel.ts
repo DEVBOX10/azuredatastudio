@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { nb, connection } from 'azdata';
@@ -1321,6 +1321,7 @@ export class NotebookModel extends Disposable implements INotebookModel {
 		}
 		else {
 			spec = notebookConstants.sqlKernelSpec;
+			this.logService.info(`Could not find kernel spec from display name ${displayName}. Defaulting to SQL kernel.`);
 		}
 		return spec;
 	}

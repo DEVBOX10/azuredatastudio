@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'sqldbproj' {
@@ -321,7 +321,9 @@ declare module 'sqldbproj' {
 		sqlServer2022 = 'SQL Server 2022',
 		sqlAzure = 'Azure SQL Database',
 		sqlDW = 'Azure Synapse SQL Pool',
-		sqlEdge = 'Azure SQL Edge'
+		sqlEdge = 'Azure SQL Edge',
+		sqlDwServerless = 'Azure Synapse Serverless SQL Pool',
+		sqlDwUnified = 'Synapse Data Warehouse in Microsoft Fabric'
 	}
 
 	export interface ISqlConnectionProperties {

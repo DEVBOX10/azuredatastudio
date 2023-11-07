@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { isString } from 'vs/base/common/types';
@@ -134,7 +134,7 @@ export class ProviderConnectionInfo implements azdata.ConnectionInfo {
 		this.options[name] = value;
 	}
 
-	public getServerInfo() {
+	private getServerInfo() {
 		let title = '';
 		if (this.serverCapabilities) {
 			title = this.serverName;
@@ -169,7 +169,7 @@ export class ProviderConnectionInfo implements azdata.ConnectionInfo {
 		return label;
 	}
 
-	public hasLoaded(): boolean {
+	private hasLoaded(): boolean {
 		return Object.keys(this.capabilitiesService.providers).length > 0;
 	}
 
@@ -231,7 +231,8 @@ export class ProviderConnectionInfo implements azdata.ConnectionInfo {
 				let finalValue = undefined;
 				let options = this.serverCapabilities.connectionOptions.filter(value => value.name === idNames[index]!);
 				if (options.length > 0 && value) {
-					finalValue = value !== options[0].defaultValue ? value : undefined;
+					let defaultValue = options[0].defaultValue ?? '';
+					finalValue = value && value.toString().toLocaleLowerCase() !== defaultValue.toString().toLocaleLowerCase() ? value : undefined;
 					if (options[0].specialValueType === 'appName' && this.providerName === Constants.mssqlProviderName) {
 						finalValue = (value as string).startsWith('azdata') ? undefined : finalValue
 					}
@@ -390,7 +391,7 @@ export class ProviderConnectionInfo implements azdata.ConnectionInfo {
 					element.specialValueType !== ConnectionOptionSpecialType.password) {
 					if (getNonDefault) {
 						let value = this.getOptionValue(element.name);
-						if (value && value !== element.defaultValue) {
+						if (value && value.toString().toLocaleLowerCase() !== element.defaultValue?.toLocaleLowerCase()) {
 							connectionOptions.push(element);
 						}
 					}

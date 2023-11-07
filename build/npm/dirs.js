@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 const fs = require('fs');
@@ -29,6 +29,7 @@ const dirs = [
 	'extensions/import',
 	'extensions/integration-tests',
 	'extensions/ipynb',
+	'extensions/javascript',
 	'extensions/json-language-features',
 	'extensions/json-language-features/server',
 	'extensions/kusto',
@@ -44,6 +45,7 @@ const dirs = [
 	'extensions/notebook-renderers',
 	'extensions/profiler',
 	'extensions/query-history',
+	'extensions/query-store',
 	'extensions/resource-deployment',
 	'extensions/schema-compare',
 	'extensions/search-result',
@@ -54,6 +56,7 @@ const dirs = [
 	'extensions/sql-database-projects',
 	'extensions/sql-migration',
 	'extensions/vscode-test-resolver',
+	'extensions/xml-language-features',
 	// {{SQL CARBON EDIT}} - End
 	'remote',
 	'remote/web',

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/linkCalloutDialog';
@@ -96,7 +96,6 @@ export class LinkCalloutDialog extends Modal {
 
 		this.addFooterButton(constants.insertButtonText, () => this.insert());
 		this.addFooterButton(constants.cancelButtonText, () => this.cancel(), undefined, true);
-		this.registerListeners();
 	}
 
 	protected renderBody(container: HTMLElement) {
@@ -139,12 +138,6 @@ export class LinkCalloutDialog extends Modal {
 			});
 		this._linkUrlInputBox.value = this._defaultLinkUrl;
 		DOM.append(linkAddressRow, linkAddressInputContainer);
-	}
-
-	private registerListeners(): void {
-		// {{SQL CARBON TODO}} - apply styles
-		// this._register(styler.attachInputBoxStyler(this._linkTextInputBox, this._themeService));
-		// this._register(styler.attachInputBoxStyler(this._linkUrlInputBox, this._themeService));
 	}
 
 	protected override onAccept(e?: StandardKeyboardEvent) {

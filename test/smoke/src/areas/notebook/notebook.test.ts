@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as cp from 'child_process';
@@ -24,8 +24,9 @@ export function setup(logger: Logger) {
 			cp.execSync('git checkout . --quiet', { cwd: app.workspacePathOrFolder });
 			cp.execSync('git reset --hard HEAD --quiet', { cwd: app.workspacePathOrFolder });
 		});
-
-		it('inserts/edits code cell', async function () {
+		/*
+		{{SQL CARBON EDIT}} START - Commenting these out since they're using vscode notebooks and not SQL notebooks.
+		it.skip('inserts/edits code cell', async function () { // TODO@rebornix https://github.com/microsoft/vscode/issues/139672
 			const app = this.app as Application;
 			await app.workbench.notebook.openNotebook();
 			await app.workbench.notebook.focusNextCell();
@@ -70,5 +71,7 @@ export function setup(logger: Logger) {
 			await app.workbench.notebook.executeCellAction('.notebook-editor .monaco-list-row.focused div.monaco-toolbar .codicon-debug');
 			await app.workbench.notebook.waitForActiveCellEditorContents('test');
 		});
+		{{SQL CARBON EDIT}} END
+		*/
 	});
 }

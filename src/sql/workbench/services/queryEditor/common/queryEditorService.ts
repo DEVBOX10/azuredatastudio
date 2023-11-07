@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { IConnectableInput } from 'sql/platform/connection/common/connectionManagement';
 import { IEditorOptions } from 'vs/platform/editor/common/editor';
 import { URI } from 'vs/base/common/uri';
-import { IUntitledQueryEditorInput } from 'sql/base/query/common/untitledQueryEditorInput';
+import { IUntitledQueryEditorInput } from 'sql/workbench/common/editor/query/untitledQueryEditorInput';
 
 export interface IQueryEditorOptions extends IEditorOptions {
 
@@ -45,8 +45,8 @@ export interface IQueryEditorService {
 	_serviceBrand: undefined;
 
 	// Creates new untitled document for SQL/KUSTO queries and opens it in a new editor tab
-	newSqlEditor(options?: INewSqlEditorOptions, connectionProviderName?: string, initialConnectionUri?: string): Promise<IUntitledQueryEditorInput>;
+	newSqlEditor(options?: INewSqlEditorOptions, connectionProviderName?: string): Promise<IUntitledQueryEditorInput>;
 
 	// Creates new edit data session
-	newEditDataEditor(schemaName: string, tableName: string, queryString: string, initialConnectionUri?: string): Promise<IConnectableInput>;
+	newEditDataEditor(schemaName: string, tableName: string, queryString: string): Promise<IConnectableInput>;
 }

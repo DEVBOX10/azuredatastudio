@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
@@ -390,7 +390,7 @@ export class DeleteConnectionAction extends Action {
 
 export class FilterChildrenAction extends Action {
 	public static ID = 'objectExplorer.filterChildren';
-	public static LABEL = localize('objectExplorer.filterChildren', "Filter (Preview)");
+	public static LABEL = localize('objectExplorer.filterChildren', "Filter");
 
 	constructor(
 		id: string,

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
@@ -19,7 +19,7 @@ suite('TableComponent Tests', () => {
 			['4', '5', '6']
 		];
 		let columns = ['c1', 'c2', 'c3'];
-		const tableComponent = new TableComponent(undefined, undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
+		const tableComponent = new TableComponent(undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
 
 		let actual = tableComponent.transformData(data, columns);
 		let expected: { [key: string]: string }[] = [
@@ -39,7 +39,7 @@ suite('TableComponent Tests', () => {
 
 	test('Table transformData should return empty array given undefined rows', () => {
 		let data = undefined;
-		const tableComponent = new TableComponent(undefined, undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
+		const tableComponent = new TableComponent(undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
 		let columns = ['c1', 'c2', 'c3'];
 		let actual = tableComponent.transformData(data, columns);
 		let expected: { [key: string]: string }[] = [];
@@ -52,7 +52,7 @@ suite('TableComponent Tests', () => {
 			['4', '5', '6']
 		];
 		let columns;
-		const tableComponent = new TableComponent(undefined, undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
+		const tableComponent = new TableComponent(undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
 		let actual = tableComponent.transformData(data, columns);
 		let expected: { [key: string]: string }[] = [];
 		assert.deepStrictEqual(actual, expected);
@@ -63,7 +63,7 @@ suite('TableComponent Tests', () => {
 			['1', '2'],
 			['4', '5']
 		];
-		const tableComponent = new TableComponent(undefined, undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
+		const tableComponent = new TableComponent(undefined, undefined, new NullLogService(), undefined, undefined, undefined, undefined, undefined, undefined);
 		let columns = ['c1', 'c2', 'c3'];
 		let actual = tableComponent.transformData(data, columns);
 		let expected: { [key: string]: string }[] = [

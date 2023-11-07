@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
@@ -56,7 +56,7 @@ export class BuildHelper {
 
 	public async ensureDacFxDllsPresence(outputChannel: vscode.OutputChannel): Promise<boolean> {
 		const sdkName = 'Microsoft.Build.Sql';
-		const microsoftBuildSqlDefaultVersion = '0.1.10-preview'; // default version of Microsoft.Build.Sql nuget to use for building legacy style projects, update in README when updating this
+		const microsoftBuildSqlDefaultVersion = '0.1.12-preview'; // default version of Microsoft.Build.Sql nuget to use for building legacy style projects, update in README when updating this
 
 		const dacFxBuildFiles: string[] = [
 			'Microsoft.Data.SqlClient.dll',

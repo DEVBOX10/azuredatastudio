@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
@@ -26,7 +26,9 @@ import { registerTableDesignerCommands } from './tableDesigner/tableDesigner';
 // import { SqlNotebookController } from './sqlNotebook/sqlNotebookController';
 import { registerObjectManagementCommands } from './objectManagement/commands';
 import { TelemetryActions, TelemetryReporter, TelemetryViews } from './telemetry';
+import { TelemetryEventMeasures } from '@microsoft/ads-extension-telemetry';
 import { noConvertResult, noDocumentFound, unsupportedPlatform } from './localizedConstants';
+import { registerConnectionCommands } from './connection/commands';
 
 const localize = nls.loadMessageBundle();
 
@@ -41,8 +43,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<IExten
 	}
 
 	// ensure our log path exists
-	if (!(await Utils.exists(context.logPath))) {
-		await fs.mkdir(context.logPath);
+	if (!(await Utils.exists(context.logUri.fsPath))) {
+		await fs.mkdir(context.logUri.fsPath);
 	}
 
 	IconPathHelper.setExtensionContext(context);
@@ -134,16 +136,60 @@ export async function activate(context: vscode.ExtensionContext): Promise<IExten
 				}
 			});
 		}
+		if (e.affectsConfiguration(Constants.configParallelMessageProcessingName)) {
+			if (Utils.getParallelMessageProcessingConfig()) {
+				TelemetryReporter.sendActionEvent(TelemetryViews.MssqlConnections, TelemetryActions.EnableFeatureAsyncParallelProcessing);
+			}
+			await displayReloadAds();
+		}
+		if (Utils.getParallelMessageProcessingConfig() && e.affectsConfiguration(Constants.configParallelMessageProcessingLimitName)) {
+			let additionalMeasurements: TelemetryEventMeasures;
+			additionalMeasurements.parallelMessageProcessingLimit = Utils.getParallelMessageProcessingLimitConfig()
+			TelemetryReporter.sendMetricsEvent(additionalMeasurements, Constants.configParallelMessageProcessingLimitName);
+			await displayReloadAds();
+		}
+		if (e.affectsConfiguration(Constants.configEnableSqlAuthenticationProviderName)) {
+			if (Utils.getEnableSqlAuthenticationProviderConfig()) {
+				TelemetryReporter.sendActionEvent(TelemetryViews.MssqlConnections, TelemetryActions.EnableFeatureSqlAuthenticationProvider);
+			}
+			await displayReloadAds();
+		}
+		if (e.affectsConfiguration(Constants.configEnableConnectionPoolingName)) {
+			if (Utils.getEnableConnectionPoolingConfig()) {
+				TelemetryReporter.sendActionEvent(TelemetryViews.MssqlConnections, TelemetryActions.EnableFeatureConnectionPooling);
+			}
+			await displayReloadAds();
+		}
+		// Prompt to reload ADS as we send the proxy URL to STS to instantiate Http Client instances.
+		if (e.affectsConfiguration(Constants.configHttpProxy) || e.affectsConfiguration(Constants.configHttpProxyStrictSSL)) {
+			await displayReloadAds();
+		}
 	}));
 
 	registerTableDesignerCommands(appContext);
 	registerObjectManagementCommands(appContext);
+	registerConnectionCommands(appContext);
 
 	// context.subscriptions.push(new SqlNotebookController()); Temporarily disabled due to breaking query editor
 
 	context.subscriptions.push(TelemetryReporter);
-
 	return createMssqlApi(appContext, server);
+}
+
+/**
+ * Display notification with action to reload ADS
+ * @returns true if button is clicked, false otherwise.
+ */
+async function displayReloadAds(): Promise<boolean> {
+	const reloadPrompt = localize('mssql.reloadPrompt', "This setting requires Azure Data Studio to be reloaded to take into effect.");
+	const reloadChoice = localize('mssql.reloadChoice', "Reload Azure Data Studio");
+	const result = await vscode.window.showInformationMessage(reloadPrompt, reloadChoice);
+	if (result === reloadChoice) {
+		await vscode.commands.executeCommand('workbench.action.reloadWindow');
+		return true;
+	} else {
+		return false;
+	}
 }
 
 const logFiles = ['resourceprovider.log', 'sqltools.log', 'credentialstore.log'];
@@ -151,7 +197,7 @@ function registerLogCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('mssql.showLogFile', async () => {
 		const choice = await vscode.window.showQuickPick(logFiles);
 		if (choice) {
-			const document = await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(context.logPath, choice)));
+			const document = await vscode.workspace.openTextDocument(vscode.Uri.file(path.join(context.logUri.fsPath, choice)));
 			if (document) {
 				void vscode.window.showTextDocument(document);
 			}

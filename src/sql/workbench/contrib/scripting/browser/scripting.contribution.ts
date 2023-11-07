@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
@@ -105,6 +105,7 @@ MenuRegistry.appendMenuItem(MenuId.ObjectExplorerItemContext, {
 		ConnectionContextKey.Provider.notEqualsTo('KUSTO'),
 		ConnectionContextKey.Provider.notEqualsTo('LOGANALYTICS'),
 		ContextKeyExpr.or(
+			TreeNodeContextKey.NodeType.isEqualTo(NodeType.HistoryTable),
 			TreeNodeContextKey.NodeType.isEqualTo(NodeType.Table),
 			TreeNodeContextKey.NodeType.isEqualTo(NodeType.View)
 		)

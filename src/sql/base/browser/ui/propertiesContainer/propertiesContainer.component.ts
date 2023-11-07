@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/propertiesContainer';
@@ -45,12 +45,12 @@ export class PropertiesContainer extends Disposable implements OnInit, OnDestroy
 	}
 
 	ngAfterViewInit(): void {
-		this._togglePropertiesAction.onDidChange((e) => {
+		this._register(this._togglePropertiesAction.onDidChange((e) => {
 			if (e.expanded !== undefined) {
 				this._changeRef.detectChanges();
 			}
-		});
-		this._actionbar = new ActionBar(this._actionbarRef.nativeElement);
+		}));
+		this._actionbar = this._register(new ActionBar(this._actionbarRef.nativeElement));
 		this._actionbar.push(this._togglePropertiesAction, { icon: true, label: false });
 	}
 

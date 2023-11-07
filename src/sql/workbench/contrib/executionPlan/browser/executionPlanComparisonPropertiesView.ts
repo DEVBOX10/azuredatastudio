@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { ExecutionPlanPropertiesViewBase, PropertiesSortType } from 'sql/workbench/contrib/executionPlan/browser/executionPlanPropertiesViewBase';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
 import * as azdata from 'azdata';
 import { localize } from 'vs/nls';
 import { iconCssFormatter, textFormatter } from 'sql/base/browser/ui/table/formatters';
@@ -63,7 +62,6 @@ export class ExecutionPlanComparisonPropertiesView extends ExecutionPlanProperti
 
 	public constructor(
 		parentContainer: HTMLElement,
-		@IThemeService themeService: IThemeService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IContextViewService contextViewService: IContextViewService,
@@ -71,7 +69,7 @@ export class ExecutionPlanComparisonPropertiesView extends ExecutionPlanProperti
 		@IQuickInputService quickInputService: IQuickInputService,
 		@IComponentContextService componentContextService: IComponentContextService
 	) {
-		super(parentContainer, themeService, instantiationService, contextMenuService, contextViewService, accessibilityService, quickInputService, componentContextService);
+		super(parentContainer, instantiationService, contextMenuService, contextViewService, accessibilityService, quickInputService, componentContextService);
 		this._model = <ExecutionPlanComparisonPropertiesViewModel>{};
 		this._parentContainer.style.display = 'none';
 		const header = DOM.$('.compare-operation-name');

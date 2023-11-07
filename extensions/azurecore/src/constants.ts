@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 export const Account = 'account';
@@ -8,8 +8,6 @@ export const Account = 'account';
 export const AccountsSection = 'accounts';
 
 export const AuthSection = 'auth';
-
-export const AuthenticationLibrarySection = 'authenticationLibrary';
 
 export const AzureSection = 'azure';
 
@@ -27,7 +25,11 @@ export const AccountsAzureAuthSection = AccountsSection + '.' + AzureSection + '
 
 export const AccountsAzureCloudSection = AccountsSection + '.' + AzureSection + '.' + CloudSection;
 
-export const AzureAuthenticationLibrarySection = AzureSection + '.' + AuthenticationLibrarySection;
+export const enablePublicCloud = 'enablePublicCloud';
+
+export const enableUsGovCloud = 'enableUsGovCloud';
+
+export const enableChinaCloud = 'enableChinaCloud';
 
 export const EnableArcFeaturesSection = 'enableArcFeatures';
 
@@ -35,17 +37,17 @@ export const ServiceName = 'azuredatastudio';
 
 export const TenantSection = 'tenant';
 
-export const AzureTenantConfigSection = AzureSection + '.' + TenantSection + '.' + ConfigSection;
-
-export const Filter = 'filter';
-
-export const AzureTenantConfigFilterSetting = AzureTenantConfigSection + '.' + Filter;
-
 export const NoSystemKeyChainSection = 'noSystemKeychain';
 
 export const oldMsalCacheFileName = 'azureTokenCacheMsal-azure_publicCloud';
 
 export const piiLogging = 'piiLogging';
+
+export const CustomProviderSettings = 'customProviderSettings';
+
+export const CustomProviderSettingsSection = AzureSection + '.' + CustomProviderSettings;
+
+export const PackageName = 'Microsoft.azurecore';
 
 /** MSAL Account version */
 export const AccountVersion = '2.0';
@@ -74,8 +76,6 @@ export const AzureTokenFolderName = 'Azure Accounts';
 
 export const MSALCacheName = 'accessTokenCache';
 
-export const DefaultAuthLibrary = 'MSAL';
-
 export const LocalCacheSuffix = '.local';
 
 export const LockFileSuffix = '.lockfile';
@@ -92,6 +92,31 @@ export const AADSTS70043 = 'AADSTS70043';
  * require reauthentication. Have the user sign in again.
  */
 export const AADSTS50173 = 'AADSTS50173';
+/**
+ * UserStrongAuthExpired- Presented multi-factor authentication has expired due to policies configured by your administrator,
+ * you must refresh your multi-factor authentication to access '{resource}'.
+ */
+export const AADSTS50078 = 'AADSTS50078';
+/**
+ * Refresh token needs social IDP login. Have user try signing-in again with username -password
+ */
+export const AADSTS50085 = 'AADSTS50085';
+/**
+ * Authentication failed due to flow token expired. Expected - auth codes, refresh tokens, and sessions expire over time
+ * or are revoked by the user or an admin. The app will request a new login from the user.
+ */
+export const AADSTS50089 = 'AADSTS50089';
+/**
+ * ExpiredOrRevokedGrantInactiveToken - The refresh token has expired due to inactivity.
+ * The token was issued on {issueDate} and was inactive for {time}. Expected part of the token lifecycle -
+ * the user went an extended period of time without using the application, so the token was expired when the app attempted to refresh it.
+ */
+export const AADSTS700082 = 'AADSTS700082';
+/**
+ * The refresh token was issued to a single page app (SPA), and therefore has a fixed, limited lifetime of {time}, which can't be extended.
+ * It is now expired and a new sign in request must be sent by the SPA to the sign in page. The token was issued on {issueDate}.
+ */
+export const AADSTS700084 = 'AADSTS700084';
 
 /**
  * multiple_matching_tokens error can occur in scenarios when users try to run ADS as different users, reference issue:
@@ -103,14 +128,6 @@ export const multiple_matching_tokens_error = 'multiple_matching_tokens';
 
 export enum BuiltInCommands {
 	SetContext = 'setContext'
-}
-
-/**
- * AAD Auth library as selected.
- */
-export enum AuthLibrary {
-	MSAL = 'MSAL',
-	ADAL = 'ADAL'
 }
 
 /**

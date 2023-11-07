@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -20,7 +20,7 @@ import { NodeType } from 'sql/workbench/services/objectExplorer/common/nodeType'
 import { ServerTreeView } from 'sql/workbench/contrib/objectExplorer/browser/serverTreeView';
 import { createObjectExplorerServiceMock } from 'sql/workbench/services/objectExplorer/test/browser/testObjectExplorerService';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { TestTree } from 'sql/workbench/test/treeMock';
+import { TestTree } from 'sql/workbench/test/browser/parts/tree/treeMock';
 import { TestConnectionManagementService } from 'sql/platform/connection/test/common/testConnectionManagementService';
 import { MockContextKeyService } from 'vs/platform/keybinding/test/common/mockKeybindingService';
 import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';

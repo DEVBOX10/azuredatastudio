@@ -43,6 +43,11 @@
           "dark": "resources/dark/open_notebook_inverse.svg",
           "light": "resources/light/open_notebook.svg"
         }
+      },
+      {
+        "command": "kusto.showLogFile",
+        "category": "Kusto",
+        "title": "%title.showLogFile%"
       }
     ],
     "languages": [
@@ -427,7 +432,7 @@
     }
   },
   "dependencies": {
-    "dataprotocol-client": "github:Microsoft/sqlops-dataprotocolclient#1.3.5",
+    "dataprotocol-client": "github:Microsoft/sqlops-dataprotocolclient#2.0.0",
     "figures": "^2.0.0",
     "find-remove": "1.2.1",
     "@microsoft/ads-service-downloader": "^1.2.1",

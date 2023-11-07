@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/dropdownList';
@@ -79,7 +79,7 @@ export class Dropdown extends BaseDropdown {
 	}
 }
 
-export class DropdownList extends BaseDropdown {
+export class DropdownList extends Dropdown {
 	protected borderWidth = 1;
 
 	private button?: Button;
@@ -145,7 +145,7 @@ export class DropdownList extends BaseDropdown {
 	/**
 	 * Render the dropdown contents
 	 */
-	protected renderContents(container: HTMLElement): IDisposable | null {
+	protected override renderContents(container: HTMLElement): IDisposable | null {
 		let div = DOM.append(container, this._contentContainer);
 		div.style.width = (DOM.getTotalWidth(this.element) - this.borderWidth * 2) + 'px'; // Subtract border width
 		return { dispose: () => { } };

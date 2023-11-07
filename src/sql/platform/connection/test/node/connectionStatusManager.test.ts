@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
@@ -250,16 +250,13 @@ suite('SQL ConnectionStatusManager tests', () => {
 		newConnection.id = 'test_id';
 		newConnection.serverName = 'new_server_name';
 		newConnection.options['databaseDisplayName'] = newConnection.databaseName;
-		//Duplicate should not be registered if uri is of connection/dashboard type (required for functionality)
-		connections.addConnection(newConnection, 'connection:test_uri_1');
-		connections.addConnection(newConnection, 'dashboard:test_uri_1');
-		//Editor type URIs should generate a new profile id (needed to properly update the connection string)
-		connections.addConnection(newConnection, 'untitled:TestQuery1')
+		connections.addConnection(newConnection, 'test_uri_1');
+		connections.addConnection(newConnection, 'test_uri_2');
 		newConnection = new ConnectionProfile(capabilitiesService, newConnection);
 
-		// Get the connections and verify that the non editor duplicate is only returned once
+		// Get the connections and verify that the duplicate is only returned once
 		let activeConnections = connections.getActiveConnectionProfiles();
-		assert.strictEqual(activeConnections.length, 5);
-		assert.strictEqual(activeConnections.filter(connection => connection.matches(newConnection)).length, 2, 'Did not find newConnection in active connections');
+		assert.strictEqual(activeConnections.length, 4);
+		assert.strictEqual(activeConnections.filter(connection => connection.matches(newConnection)).length, 1, 'Did not find newConnection in active connections');
 	});
 });

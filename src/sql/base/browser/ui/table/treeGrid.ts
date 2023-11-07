@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/slick.grid';
@@ -40,8 +40,8 @@ function defaultTreeGridFilter<T extends Slick.SlickData>(data: T[], columns: Fi
  * TreeGrid component displays a hierarchical table data grouped into expandable and collapsible nodes.
  */
 export class TreeGrid<T extends Slick.SlickData> extends Table<T> {
-	constructor(parent: HTMLElement, accessibilityProvider: IAccessibilityProvider, quickInputProvider: IQuickInputProvider, configuration?: ITableConfiguration<T>, options?: Slick.GridOptions<T>) {
-		super(parent, accessibilityProvider, quickInputProvider, configuration, options);
+	constructor(parent: HTMLElement, accessibilityProvider: IAccessibilityProvider, quickInputProvider: IQuickInputProvider, styles: ITableStyles, configuration?: ITableConfiguration<T>, options?: Slick.GridOptions<T>) {
+		super(parent, accessibilityProvider, quickInputProvider, styles, configuration, options);
 		this._tableContainer.setAttribute('role', 'treegrid');
 		if (configuration?.dataProvider && configuration.dataProvider instanceof TableDataView) {
 			this._data = configuration.dataProvider;
@@ -117,6 +117,7 @@ export class TreeGrid<T extends Slick.SlickData> extends Table<T> {
 			}
 			return false;
 		});
+		this.style(styles);
 	}
 
 	override setData(data: Array<T>): void;

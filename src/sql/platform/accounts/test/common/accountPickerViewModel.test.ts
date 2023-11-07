@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -57,7 +57,7 @@ suite('Account picker view model tests', () => {
 	test('Construction - Events are properly defined', () => {
 		// If: I create an account picker viewmodel
 		let mockAccountManagementService = getMockAccountManagementService(false, false);
-		let vm = new AccountPickerViewModel('azure', mockAccountManagementService.object);
+		let vm = new AccountPickerViewModel(mockAccountManagementService.object);
 
 		// Then:
 		// ... The event for the view models should be properly initialized
@@ -137,7 +137,7 @@ function getViewModel(
 	ams: TestAccountManagementService,
 	evUpdate: EventVerifierSingle<UpdateAccountListEventParams>
 ): AccountPickerViewModel {
-	let vm = new AccountPickerViewModel('azure', ams);
+	let vm = new AccountPickerViewModel(ams);
 	vm.updateAccountListEvent(evUpdate.eventHandler);
 
 	return vm;

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'azurecore' {
@@ -8,6 +8,7 @@ declare module 'azurecore' {
 	import * as vscode from 'vscode';
 	import * as msRest from '@azure/ms-rest-js';
 	import { BlobItem } from '@azure/storage-blob';
+	import { AxiosResponse } from 'axios';
 
 	/**
 	 * Covers defining what the azurecore extension exports to other extensions
@@ -91,12 +92,7 @@ declare module 'azurecore' {
 		/**
 		 * Information that describes the Microsoft resource management resource
 		 */
-		microsoftResource?: Resource
-
-		/**
-		 * Information that describes the AAD graph resource
-		 */
-		graphResource: Resource;
+		microsoftResource: Resource
 
 		/**
 		 * Information that describes the MS graph resource
@@ -121,7 +117,7 @@ declare module 'azurecore' {
 		/**
 		 * Information that describes the Azure Key Vault resource
 		 */
-		azureKeyVaultResource: Resource;
+		azureKeyVaultResource?: Resource;
 
 		/**
 		 * Information that describes the Azure Dev Ops resource
@@ -172,7 +168,7 @@ declare module 'azurecore' {
 	}
 
 	/**
-	 * Represents a resource exposed by an Azure Active Directory
+	 * Represents a resource exposed by a Microsoft Entra identity
 	 */
 	export interface Resource {
 		/**
@@ -197,7 +193,7 @@ declare module 'azurecore' {
 	}
 
 	/**
-	 * Represents a tenant (an Azure Active Directory instance) to which a user has access
+	 * Represents a Microsoft Entra tenant to which a user has access
 	 */
 	export interface Tenant {
 		/**
@@ -274,19 +270,9 @@ declare module 'azurecore' {
 		GET,
 		PUT,
 		POST,
-		DELETE
+		DELETE,
+		PATCH
 	}
-
-	/**
-	 * Custom version of NetworkResponse from @azure\msal-common\dist\network\NetworkManager.d.ts
-	 * with body renamed to data to avoid breaking changes with extensions. See
-	 * https://github.com/microsoft/azuredatastudio/pull/22761 for details.
-	 */
-	export type AzureNetworkResponse<T> = {
-		headers: Record<string, string>;
-		data: T;
-		status: number;
-	};
 
 	export interface IExtension {
 		/**
@@ -314,8 +300,8 @@ declare module 'azurecore' {
 		 * @param account The azure account used to acquire access token
 		 * @param subscription The subscription under azure account where the service will perform operations.
 		 * @param path The path for the service starting from '/subscription/..'. See https://docs.microsoft.com/rest/api/azure/.
-		 * @param requestType Http request method. Currently GET, PUT, POST and DELETE methods are supported.
-		 * @param requestBody Optional request body to be used in PUT and POST requests.
+		 * @param requestType Http request method. Currently GET, PUT, POST, DELETE, and PATCH methods are supported.
+		 * @param requestBody Optional request body to be used in PUT, POST, and PATCH requests.
 		 * @param ignoreErrors When this flag is set the method will not throw any runtime or service errors and will return the errors in errors array.
 		 * @param host Use this to override the host. The default host is https://management.azure.com
 		 * @param requestHeaders Provide additional request headers
@@ -354,7 +340,7 @@ declare module 'azurecore' {
 	export type GetFileSharesResult = { fileShares: azureResource.FileShare[], errors: Error[] };
 	export type CreateResourceGroupResult = { resourceGroup: azureResource.AzureResourceResourceGroup | undefined, errors: Error[] };
 	export type ResourceQueryResult<T extends azureResource.AzureGraphResource> = { resources: T[], errors: Error[] };
-	export type AzureRestResponse<B> = { response: AzureNetworkResponse<B> | undefined, errors: Error[] };
+	export type AzureRestResponse<B> = { response: AxiosResponse<B> | undefined, errors: Error[] };
 	export type GetBlobsResult = { blobs: azureResource.Blob[], errors: Error[] };
 	export type GetStorageAccountAccessKeyResult = { keyName1: string, keyName2: string, errors: Error[] };
 	export type CacheEncryptionKeys = { key: string; iv: string; }

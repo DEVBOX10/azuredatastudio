@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -311,6 +311,7 @@ export class CreateSqlMigrationServiceDialog {
 		}));
 
 		this.migrationServiceNameText = this._view.modelBuilder.inputBox().withProps({
+			ariaLabel: constants.NAME,
 			CSSStyles: {
 				'margin-top': '-1em'
 			}

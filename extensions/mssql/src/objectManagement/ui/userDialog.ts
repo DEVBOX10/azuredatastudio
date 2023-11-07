@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as azdata from 'azdata';
 import { ObjectManagementDialogOptions } from './objectManagementDialogBase';
@@ -76,9 +76,15 @@ export class UserDialog extends PrincipalDialogBase<User, UserViewInfo> {
 	}
 
 	private initializeGeneralSection(): void {
-		this.nameInput = this.createInputBox(localizedConstants.NameText, async (newValue) => {
+		const props: azdata.InputBoxProperties = {
+			ariaLabel: localizedConstants.NameText,
+			value: this.objectInfo.name,
+			enabled: this.options.isNewObject
+		};
+
+		this.nameInput = this.createInputBox(async (newValue) => {
 			this.objectInfo.name = newValue;
-		}, this.objectInfo.name, this.options.isNewObject);
+		}, props);
 		const nameContainer = this.createLabelInputContainer(localizedConstants.NameText, this.nameInput);
 
 		this.defaultSchemaDropdown = this.createDropdown(localizedConstants.DefaultSchemaText, async (newValue) => {

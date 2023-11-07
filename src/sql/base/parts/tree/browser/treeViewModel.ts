@@ -1,11 +1,12 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { ArrayNavigator, INavigator } from 'vs/base/common/navigator';
 import { Item } from './treeModel';
+import { Disposable } from 'vs/base/common/lifecycle';
 
 export interface IViewItem {
 	model: Item;
@@ -14,7 +15,7 @@ export interface IViewItem {
 	width: number;
 }
 
-export class HeightMap {
+export class HeightMap extends Disposable {
 
 	private heightMap: IViewItem[] = [];
 	private indexes: { [item: string]: number; } = {};
@@ -231,7 +232,8 @@ export class HeightMap {
 		throw new Error('not implemented');
 	}
 
-	dispose(): void {
+	override dispose(): void {
+		super.dispose();
 		this.heightMap = [];
 		this.indexes = {};
 	}

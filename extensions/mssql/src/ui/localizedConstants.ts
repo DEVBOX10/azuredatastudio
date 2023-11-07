@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from 'vscode-nls';
@@ -14,6 +14,7 @@ export const LoadingDialogCompletedText: string = localize('mssql.ui.loadingDial
 export const ScriptText: string = localize('mssql.ui.scriptText', "Script");
 export const SelectText = localize('objectManagement.selectLabel', "Select");
 export const AddText = localize('objectManagement.addText', "Add…");
+export const EditText = localize('objectManagement.editText', "Edit");
 export const RemoveText = localize('objectManagement.removeText', "Remove");
 export const NoActionScriptedMessage: string = localize('mssql.ui.noActionScriptedMessage', "There is no action to be scripted.");
 export const ScriptGeneratedText: string = localize('mssql.ui.scriptGenerated', "Script has been generated successfully. You can close the dialog to view it in the newly opened editor.")

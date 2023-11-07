@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 const execSync = require('child_process').execSync;
@@ -24,6 +24,7 @@ const extensionList = [
 	//'mssql',
 	'notebook',
 	'query-history',
+	'query-store',
 	'resource-deployment',
 	'schema-compare',
 	'sql-bindings',
@@ -36,9 +37,9 @@ let argv = require('yargs')
 	.default('extensions', extensionList)
 	.strict().help().wrap(null).version(false).argv;
 
-let LINUX_EXTRA_ARGS='';
+let LINUX_EXTRA_ARGS = '';
 
-if(os.platform() === 'linux') {
+if (os.platform() === 'linux') {
 	LINUX_EXTRA_ARGS = '--no-sandbox --disable-dev-shm-usage --use-gl=swiftshader';
 }
 
@@ -72,7 +73,7 @@ for (const ext of argv.extensions) {
 
 	if (os.platform() === 'darwin') {
 		// passing in env on mac causes the executing the command to fail, so only pass in env for windows and linux
-		console.log(execSync(command, { stdio: 'inherit'}));
+		console.log(execSync(command, { stdio: 'inherit' }));
 	} else {
 		const env = {
 			...process.env,
@@ -80,7 +81,7 @@ for (const ext of argv.extensions) {
 			ELECTRON_ENABLE_STACK_DUMPING: 1,
 			ELECTRON_ENABLE_LOGGING: 1
 		};
-		console.log(execSync(command, { stdio: 'inherit', env: env}));
+		console.log(execSync(command, { stdio: 'inherit', env: env }));
 	}
 
 	// clean up

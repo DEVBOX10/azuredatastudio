@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as azdata from 'azdata';
@@ -26,12 +26,11 @@ export interface ObjectManagementDialogOptions extends ScriptableDialogOptions {
 	isNewObject: boolean;
 	parentUrn: string;
 	objectUrn?: string;
-	objectExplorerContext?: azdata.ObjectExplorerContext;
 	objectName?: string;
 }
 
 export abstract class ObjectManagementDialogBase<ObjectInfoType extends ObjectManagement.SqlObject, ViewInfoType extends ObjectManagement.ObjectViewInfo<ObjectInfoType>> extends ScriptableDialogBase<ObjectManagementDialogOptions> {
-	private _contextId: string;
+	private readonly _contextId: string;
 	private _viewInfo: ViewInfoType;
 	private _originalObjectInfo: ObjectInfoType;
 
@@ -46,6 +45,7 @@ export abstract class ObjectManagementDialogBase<ObjectInfoType extends ObjectMa
 		}
 		super(dialogTitle, dialogName, options);
 		this._contextId = generateUuid();
+		this.dialogObject.okButton.label = options.isNewObject ? localizedConstants.CreateObjectLabel : localizedConstants.ApplyUpdatesLabel;
 	}
 
 	protected postInitializeData(): void { }
@@ -62,16 +62,23 @@ export abstract class ObjectManagementDialogBase<ObjectInfoType extends ObjectMa
 		await this.objectManagementService.save(this._contextId, this.objectInfo);
 	}
 
+	protected get saveChangesTaskLabel(): string {
+		const typeDisplayName = localizedConstants.getNodeTypeDisplayName(this.options.objectType);
+		return this.options.isNewObject ? localizedConstants.CreateObjectOperationDisplayName(typeDisplayName)
+			: localizedConstants.UpdateObjectOperationDisplayName(typeDisplayName, this.options.objectName);
+	}
+
+	protected get actionName(): string {
+		return this.options.isNewObject ? TelemetryActions.CreateObject : TelemetryActions.UpdateObject;
+	}
+
 	protected override async initialize(): Promise<void> {
 		await super.initialize();
-		const typeDisplayName = localizedConstants.getNodeTypeDisplayName(this.options.objectType);
 		this.dialogObject.registerOperation({
-			displayName: this.options.isNewObject ? localizedConstants.CreateObjectOperationDisplayName(typeDisplayName)
-				: localizedConstants.UpdateObjectOperationDisplayName(typeDisplayName, this.options.objectName),
+			displayName: this.saveChangesTaskLabel,
 			description: '',
 			isCancelable: false,
 			operation: async (operation: azdata.BackgroundOperation): Promise<void> => {
-				const actionName = this.options.isNewObject ? TelemetryActions.CreateObject : TelemetryActions.UpdateObject;
 				try {
 					if (this.isDirty) {
 						const startTime = Date.now();
@@ -85,7 +92,7 @@ export abstract class ObjectManagementDialogBase<ObjectInfoType extends ObjectMa
 							}
 						}
 
-						TelemetryReporter.sendTelemetryEvent(actionName, {
+						TelemetryReporter.sendTelemetryEvent(this.actionName, {
 							objectType: this.options.objectType
 						}, {
 							elapsedTimeMs: Date.now() - startTime
@@ -95,7 +102,7 @@ export abstract class ObjectManagementDialogBase<ObjectInfoType extends ObjectMa
 				}
 				catch (err) {
 					operation.updateStatus(azdata.TaskStatus.Failed, getErrorMessage(err));
-					TelemetryReporter.createErrorEvent2(ObjectManagementViewName, actionName, err).withAdditionalProperties({
+					TelemetryReporter.createErrorEvent2(ObjectManagementViewName, this.actionName, err).withAdditionalProperties({
 						objectType: this.options.objectType
 					}).send();
 				} finally {

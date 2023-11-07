@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IConnectionProfile } from 'sql/platform/connection/common/interfaces';
@@ -178,4 +178,8 @@ export function adjustForMssqlAppName(currentAppName: string, suffix?: string): 
 	return (currentAppName && currentAppName !== appName && !currentAppName.endsWith(finalSuffix))
 		? currentAppName + finalSuffix
 		: currentAppName ?? appName;
+}
+
+export function delay(time: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, time));
 }

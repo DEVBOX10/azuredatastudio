@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
@@ -43,5 +43,5 @@ function createChartView(isQueryEditorChart: boolean): ChartView {
 	const notificationService = new TestNotificationService();
 	const configurationService = new TestConfigurationService();
 	instantiationService.stub(IThemeService, themeService);
-	return new ChartView(isQueryEditorChart, contextViewService, themeService, instantiationService, notificationService, configurationService);
+	return new ChartView(isQueryEditorChart, contextViewService, instantiationService, notificationService, configurationService);
 }

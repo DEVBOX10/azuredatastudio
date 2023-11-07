@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as playwright from '@playwright/test';
@@ -185,6 +185,14 @@ export class PlaywrightDriver {
 	async click(selector: string, xoffset?: number | undefined, yoffset?: number | undefined) {
 		const { x, y } = await this.getElementXY(selector, xoffset, yoffset);
 		await this.page.mouse.click(x + (xoffset ? xoffset : 0), y + (yoffset ? yoffset : 0));
+	}
+
+	// {{SQL CARBON EDIT}} - defined doubleClick
+	async doubleClick(selector: string) {
+		await this.click(selector, 0, 0);
+		await this.timeout(60);
+		await this.click(selector, 0, 0);
+		await this.timeout(100);
 	}
 
 	async setValue(selector: string, text: string) {

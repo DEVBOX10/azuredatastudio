@@ -35,7 +35,7 @@ Learn more about the SQL Database Projects extension in the documentation: https
 
 ### General Settings
 - `sqlDatabaseProjects.dotnetSDK Location`: The path to the folder containing the `dotnet` folder for the .NET SDK. If not set, the extension will attempt to find the .NET SDK on the system.
-- `sqlDatabaseProjects.microsoftBuildSqlVersion`: Version of Microsoft.Build.Sql binaries used when building SQL projects that are not SDK-style SQL projects. If not set, the extension will use Microsoft.Build.Sql 0.1.10-preview.
+- `sqlDatabaseProjects.microsoftBuildSqlVersion`: Version of Microsoft.Build.Sql binaries used when building SQL projects that are not SDK-style SQL projects. If not set, the extension will use Microsoft.Build.Sql 0.1.12-preview.
 - `sqlDatabaseProjects.netCoreDoNotAsk`: When true, no longer prompts to install .NET SDK when a supported installation is not found.
 - `sqlDatabaseProjects.collapseProjectNodes`: Option to set the default state of the project nodes in the database projects view to collapsed. If not set, the extension will default to expanded.
 
@@ -64,4 +64,4 @@ Please report issues and feature requests [here.](https://github.com/microsoft/a
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-Licensed under the [Source EULA](https://raw.githubusercontent.com/Microsoft/azuredatastudio/main/LICENSE.txt).
+Licensed under the [MIT License](https://raw.githubusercontent.com/Microsoft/azuredatastudio/main/LICENSE.txt).

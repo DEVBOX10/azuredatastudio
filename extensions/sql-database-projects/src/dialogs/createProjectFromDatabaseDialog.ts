@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import type * as azdataType from 'azdata';
@@ -51,7 +51,9 @@ export class CreateProjectFromDatabaseDialog {
 		this.dialog.cancelButton.label = constants.cancelButtonText;
 
 		let connected = false;
-		if (this.profile) {
+
+		// make sure the connection profile passed in has sufficient information to attempt to connect
+		if (this.profile && this.profile?.serverName) {
 			const connections = await getAzdataApi()!.connection.getConnections(true);
 			connected = !!connections.find(c => c.connectionId === this.profile!.id);
 
@@ -62,7 +64,12 @@ export class CreateProjectFromDatabaseDialog {
 
 				if (!result.connected) {
 					// if can't connect automatically, open connection dialog with the info from the profile
-					const connection = await getAzdataApi()!.connection.openConnectionDialog(undefined, this.profile);
+					const connection = await getAzdataApi()!.connection.openConnectionDialog(undefined, this.profile, {
+						saveConnection: false,
+						showDashboard: false,
+						showConnectionDialogOnError: true,
+						showFirewallRuleOnError: true
+					});
 					connected = !!connection;
 
 					// update these fields if connection was successful, to ensure they match the connection made
@@ -72,6 +79,9 @@ export class CreateProjectFromDatabaseDialog {
 						this.profile.serverName = connection.options['server'];
 						this.profile.userName = connection.options['user'];
 					}
+				} else {
+					// Successfully connectted, update connection Id as received.
+					this.profile.id = result.connectionId!;
 				}
 			}
 		}
@@ -100,13 +110,19 @@ export class CreateProjectFromDatabaseDialog {
 
 			const connectionRow = this.createConnectionRow(view);
 			const databaseRow = this.createDatabaseRow(view);
-			const sourceDatabaseFormSection = view.modelBuilder.flexContainer().withLayout({ flexFlow: 'column' }).component();
-			sourceDatabaseFormSection.addItems([connectionRow, databaseRow]);
+			const sourceDatabaseFormSection = view.modelBuilder.groupContainer().withLayout({
+				header: constants.sourceDatabase,
+				collapsible: false,
+				collapsed: false
+			}).withItems([connectionRow, databaseRow]).component();
 
 			const projectNameRow = this.createProjectNameRow(view);
 			const projectLocationRow = this.createProjectLocationRow(view);
-			const targetProjectFormSection = view.modelBuilder.flexContainer().withLayout({ flexFlow: 'column' }).component();
-			targetProjectFormSection.addItems([projectNameRow, projectLocationRow]);
+			const targetProjectFormSection = view.modelBuilder.groupContainer().withLayout({
+				header: constants.targetProject,
+				collapsible: false,
+				collapsed: false
+			}).withItems([projectNameRow, projectLocationRow]).component();
 
 			const folderStructureRow = this.createFolderStructureRow(view);
 
@@ -130,10 +146,16 @@ export class CreateProjectFromDatabaseDialog {
 				.withItems([this.sdkStyleCheckbox, sdkLearnMore], { CSSStyles: { flex: '0 0 auto', 'margin-right': '10px' } })
 				.component();
 
+			const settingsFormSection = view.modelBuilder.groupContainer().withLayout({
+				header: constants.createProjectSettings,
+				collapsible: false,
+				collapsed: false
+			}).withItems([folderStructureRow, this.includePermissionsCheckbox, sdkFormComponentGroup]).component();
+
 			this.formBuilder = <azdataType.FormBuilder>view.modelBuilder.formContainer()
 				.withFormItems([
 					{
-						title: constants.sourceDatabase,
+						title: '',
 						components: [
 							{
 								component: sourceDatabaseFormSection,
@@ -141,7 +163,7 @@ export class CreateProjectFromDatabaseDialog {
 						]
 					},
 					{
-						title: constants.targetProject,
+						title: '',
 						components: [
 							{
 								component: targetProjectFormSection,
@@ -149,16 +171,10 @@ export class CreateProjectFromDatabaseDialog {
 						]
 					},
 					{
-						title: constants.createProjectSettings,
+						title: '',
 						components: [
 							{
-								component: folderStructureRow,
-							},
-							{
-								component: this.includePermissionsCheckbox
-							},
-							{
-								component: sdkFormComponentGroup
+								component: settingsFormSection
 							}
 						]
 					}
@@ -246,7 +262,12 @@ export class CreateProjectFromDatabaseDialog {
 		}).component();
 
 		this.selectConnectionButton.onDidClick(async () => {
-			let connection = await getAzdataApi()!.connection.openConnectionDialog();
+			let connection = await getAzdataApi()!.connection.openConnectionDialog(undefined, undefined, {
+				saveConnection: false,
+				showDashboard: false,
+				showConnectionDialogOnError: true,
+				showFirewallRuleOnError: true
+			});
 			this.connectionId = connection.connectionId;
 
 			let connectionTextboxValue: string;

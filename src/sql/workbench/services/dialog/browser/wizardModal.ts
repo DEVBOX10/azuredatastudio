@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/dialogModal';
@@ -319,7 +319,8 @@ export class WizardModal extends Modal {
 		let button = newPage === undefined ? this._doneButton : this._nextButton;
 		let buttonSpinnerHandler = setTimeout(() => {
 			button.enabled = false;
-			button.element.innerHTML = '&nbsp';
+			// Temporarily set the label to empty since we're showing a spinner instead
+			button.label = '';
 			button.element.classList.add('validating');
 		}, 100);
 		let navigationValid = await this._wizard.validateNavigation(newPage);

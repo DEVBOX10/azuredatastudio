@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
@@ -18,7 +18,6 @@ import { EventVerifierSingle } from 'sql/base/test/common/event';
 import { TestNotificationService } from 'vs/platform/notification/test/common/testNotificationService';
 import { AccountDialog } from 'sql/workbench/services/accountManagement/browser/accountDialog';
 import { Emitter } from 'vs/base/common/event';
-import { TestConfigurationService } from 'sql/platform/connection/test/common/testConfigurationService';
 import { NullAdsTelemetryService } from 'sql/platform/telemetry/common/adsTelemetryService';
 
 // SUITE CONSTANTS /////////////////////////////////////////////////////////
@@ -34,8 +33,7 @@ const noAccountProvider: azdata.AccountProviderMetadata = {
 const account: azdata.Account = {
 	key: {
 		providerId: hasAccountProvider.id,
-		accountId: 'testAccount1',
-		authLibrary: 'MSAL'
+		accountId: 'testAccount1'
 	},
 	displayInfo: {
 		displayName: 'Test Account 1',
@@ -538,12 +536,11 @@ function getTestState(): AccountManagementState {
 		.returns(() => <any>mockAccountStore.object);
 
 	const testNotificationService = new TestNotificationService();
-	const testConfigurationService = new TestConfigurationService();
 	const mockTelemetryService = new NullAdsTelemetryService();
 
 	// Create the account management service
 	let ams = new AccountManagementService(mockInstantiationService.object, new TestStorageService(),
-		undefined, undefined, undefined, testNotificationService, testConfigurationService, mockTelemetryService);
+		undefined, undefined, undefined, testNotificationService, mockTelemetryService, undefined);
 
 	// Wire up event handlers
 	let evUpdate = new EventVerifierSingle<UpdateAccountListEventParams>();

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import * as TypeMoq from 'typemoq';
@@ -12,8 +12,8 @@ import { TestNotificationService } from 'vs/platform/notification/test/common/te
 import { URI } from 'vs/base/common/uri';
 
 import { ClientSession } from 'sql/workbench/services/notebook/browser/models/clientSession';
-import { SessionManager, EmptySession } from 'sql/workbench/contrib/notebook/test/emptySessionClasses';
-import { ExecuteManagerStub, ServerManagerStub } from 'sql/workbench/contrib/notebook/test/stubs';
+import { SessionManager, EmptySession } from 'sql/workbench/contrib/notebook/test/browser/emptySessionClasses';
+import { ExecuteManagerStub, ServerManagerStub } from 'sql/workbench/contrib/notebook/test/browser/stubs';
 import { isUndefinedOrNull } from 'vs/base/common/types';
 
 suite('Client Session', function (): void {

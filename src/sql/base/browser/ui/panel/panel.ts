@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/panel';
@@ -74,7 +74,7 @@ export class TabbedPanel extends Disposable {
 	private _headerVisible: boolean;
 	private _styleElement: HTMLStyleElement;
 
-	private _onTabChange = new Emitter<PanelTabIdentifier>();
+	private _onTabChange = this._register(new Emitter<PanelTabIdentifier>());
 	public onTabChange: Event<PanelTabIdentifier> = this._onTabChange.event;
 
 	private tabHistory: string[] = [];

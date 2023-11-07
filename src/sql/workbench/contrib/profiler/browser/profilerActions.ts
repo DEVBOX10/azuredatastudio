@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { IProfilerService } from 'sql/workbench/services/profiler/browser/interfaces';
@@ -275,7 +275,7 @@ export class NewProfilerAction extends Task {
 	}
 
 	public async runTask(accessor: ServicesAccessor, profile: IConnectionProfile): Promise<void> {
-		let profilerInput = accessor.get<IInstantiationService>(IInstantiationService).createInstance(ProfilerInput, profile);
+		let profilerInput = accessor.get<IInstantiationService>(IInstantiationService).createInstance(ProfilerInput, profile, undefined);
 		await accessor.get<IEditorService>(IEditorService).openEditor(profilerInput, { pinned: true }, ACTIVE_GROUP);
 		let options: IConnectionCompletionOptions = {
 			saveTheConnection: false,

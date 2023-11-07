@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { ConnectionProfileGroup } from 'sql/platform/connection/common/connectionProfileGroup';
@@ -120,19 +120,10 @@ export class AsyncServerTree extends WorkbenchAsyncDataTree<ConnectionProfileGro
 		return node;
 	}
 
-	public override async updateChildren(element?: ServerTreeElement, recursive?: boolean, rerender?: boolean, options?: IAsyncDataTreeUpdateChildrenOptions<ServerTreeElement>): Promise<void> {
-		const expandedChildren = this.getExpandedState(element);
+	public override async updateChildren(element?: ServerTreeElement, recursive: boolean = false, rerender: boolean = false, options: IAsyncDataTreeUpdateChildrenOptions<ServerTreeElement> = {
+		diffDepth: 0
+	}): Promise<void> {
 		await super.updateChildren(element, recursive, rerender, options);
-		await this.expandElements(expandedChildren);
-	}
-
-	public async expandElements(elements: ServerTreeElement[]): Promise<void> {
-		for (let element of elements) {
-			const node = this.getDataNode(element, false);
-			if (node) {
-				await this.expand(node.element);
-			}
-		}
 	}
 
 	/**
@@ -143,15 +134,15 @@ export class AsyncServerTree extends WorkbenchAsyncDataTree<ConnectionProfileGro
 		this.getDataNode(element).stale = true;
 	}
 
-	public async revealSelectFocusElement(element: ServerTreeElement) {
+	public revealSelectFocusElement(element: ServerTreeElement) {
 		const dataNode = this.getDataNode(element);
 		// The root of the tree is a special case as it is not rendered
 		// so we instead reveal select and focus on the first child of the root.
 		if (dataNode === this.root) {
 			element = dataNode.children[0].element;
 		}
-		await this.reveal(element);
-		await this.setSelection([element]);
+		this.reveal(element);
+		this.setSelection([element]);
 		this.setFocus([element]);
 	}
 }

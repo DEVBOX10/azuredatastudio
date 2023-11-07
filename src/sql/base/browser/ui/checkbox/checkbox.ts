@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import 'vs/css!./media/checkbox';
@@ -25,10 +25,10 @@ export class Checkbox extends Widget {
 	private _el: HTMLInputElement;
 	private _label: HTMLSpanElement;
 
-	private _onChange = new Emitter<boolean>();
+	private _onChange = this._register(new Emitter<boolean>());
 	public readonly onChange: Event<boolean> = this._onChange.event;
 
-	private _onFocus = new Emitter<void>();
+	private _onFocus = this._register(new Emitter<void>());
 	public readonly onFocus: Event<void> = this._onFocus.event;
 
 	constructor(container: HTMLElement, private readonly _options: ICheckboxOptions) {

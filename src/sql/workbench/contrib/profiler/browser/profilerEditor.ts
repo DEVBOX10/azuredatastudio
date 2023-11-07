@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the Source EULA. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { ProfilerInput } from 'sql/workbench/browser/editor/profiler/profilerInput';
@@ -9,11 +9,10 @@ import { Table } from 'sql/base/browser/ui/table/table';
 import { TableDataView } from 'sql/base/browser/ui/table/tableDataView';
 import { IProfilerService, IProfilerViewTemplate } from 'sql/workbench/services/profiler/browser/interfaces';
 import { Taskbar } from 'sql/base/browser/ui/taskbar/taskbar';
-import { attachTableStyler } from 'sql/platform/theme/common/styler';
 import { IProfilerStateChangedEvent } from 'sql/workbench/common/editor/profiler/profilerState';
 import { ProfilerTableEditor, ProfilerTableViewState } from 'sql/workbench/contrib/profiler/browser/profilerTableEditor';
 import * as Actions from 'sql/workbench/contrib/profiler/browser/profilerActions';
-import { CONTEXT_PROFILER_EDITOR, PROFILER_TABLE_COMMAND_SEARCH } from 'sql/workbench/contrib/profiler/common/interfaces';
+import { PROFILER_TABLE_COMMAND_SEARCH } from 'sql/workbench/contrib/profiler/common/interfaces';
 import { SelectBox } from 'sql/base/browser/ui/selectBox/selectBox';
 import { textFormatter, slickGridDataItemColumnValueExtractor } from 'sql/base/browser/ui/table/formatters';
 import { ProfilerResourceEditor } from 'sql/workbench/contrib/profiler/browser/profilerResourceEditor';
@@ -27,10 +26,8 @@ import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
 import { Command } from 'vs/editor/browser/editorExtensions';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
 import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
-import { ContextKeyExpr, IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
 import * as types from 'vs/base/common/types';
-import { attachSelectBoxStyler } from 'sql/platform/theme/common/vsstyler';
 import { ColorScheme } from 'vs/platform/theme/common/theme';
 import { CancellationToken } from 'vs/base/common/cancellation';
 import { IStorageService } from 'vs/platform/storage/common/storage';
@@ -57,6 +54,8 @@ import { CommonFindController, FindStartFocusAction } from 'vs/editor/contrib/fi
 import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
 import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
 import { IComponentContextService } from 'sql/workbench/services/componentContext/browser/componentContextService';
+import { defaultSelectBoxStyles, defaultTableStyles } from 'sql/platform/theme/browser/defaultStyles';
+import { ActiveEditorContext } from 'vs/workbench/common/contextkeys';
 
 class BasicView implements IView {
 	public get element(): HTMLElement {
@@ -141,8 +140,6 @@ export class ProfilerEditor extends EditorPane {
 	private _stateListener: IDisposable;
 	private _panelView: BasicView;
 
-	private _profilerEditorContextKey: IContextKey<boolean>;
-
 	private _viewTemplateSelector: SelectBox;
 	private _viewTemplates: Array<IProfilerViewTemplate>;
 	private _sessionSelector: SelectBox;
@@ -168,7 +165,6 @@ export class ProfilerEditor extends EditorPane {
 		@IInstantiationService private _instantiationService: IInstantiationService,
 		@IModelService private _modelService: IModelService,
 		@IProfilerService private _profilerService: IProfilerService,
-		@IContextKeyService private _contextKeyService: IContextKeyService,
 		@IContextViewService private _contextViewService: IContextViewService,
 		@IEditorService editorService: IEditorService,
 		@IStorageService storageService: IStorageService,
@@ -180,7 +176,6 @@ export class ProfilerEditor extends EditorPane {
 		@IComponentContextService private readonly _componentContextService: IComponentContextService
 	) {
 		super(ProfilerEditor.ID, telemetryService, themeService, storageService);
-		this._profilerEditorContextKey = CONTEXT_PROFILER_EDITOR.bindTo(this._contextKeyService);
 
 		if (editorGroupsService) {
 			// Add all the initial groups to be listened to
@@ -255,7 +250,7 @@ export class ProfilerEditor extends EditorPane {
 		this._clearFilterAction = this._instantiationService.createInstance(Actions.ProfilerClearSessionFilter, Actions.ProfilerClearSessionFilter.ID, Actions.ProfilerClearSessionFilter.LABEL);
 		this._clearFilterAction.enabled = true;
 		this._viewTemplates = this._profilerService.getViewTemplates();
-		this._viewTemplateSelector = new SelectBox(this._viewTemplates.map(i => i.name), 'Standard View', this._contextViewService);
+		this._viewTemplateSelector = new SelectBox(this._viewTemplates.map(i => i.name), 'Standard View', defaultSelectBoxStyles, this._contextViewService);
 		this._viewTemplateSelector.setAriaLabel(nls.localize('profiler.viewSelectAccessibleName', "Select View"));
 		this._register(this._viewTemplateSelector.onDidSelect(e => {
 			if (this.input) {
@@ -268,7 +263,7 @@ export class ProfilerEditor extends EditorPane {
 		this._viewTemplateSelector.render(viewTemplateContainer);
 
 		this._sessionsList = [''];
-		this._sessionSelector = new SelectBox(this._sessionsList, '', this._contextViewService);
+		this._sessionSelector = new SelectBox(this._sessionsList, '', defaultSelectBoxStyles, this._contextViewService);
 		this._sessionSelector.setAriaLabel(nls.localize('profiler.sessionSelectAccessibleName', "Select Session"));
 		this._register(this._sessionSelector.onDidSelect(e => {
 			if (this.input) {
@@ -280,9 +275,6 @@ export class ProfilerEditor extends EditorPane {
 		sessionsContainer.style.maxWidth = '250px';
 		sessionsContainer.style.paddingRight = '5px';
 		this._sessionSelector.render(sessionsContainer);
-
-		this._register(attachSelectBoxStyler(this._viewTemplateSelector, this.themeService));
-		this._register(attachSelectBoxStyler(this._sessionSelector, this.themeService));
 
 		this._actionBar.setContent([
 			{ action: this._createAction },
@@ -369,7 +361,7 @@ export class ProfilerEditor extends EditorPane {
 		let editorContainer = this._createProfilerEditor();
 		let tabbedPanelContainer = document.createElement('div');
 		tabbedPanelContainer.className = 'profiler-tabbedPane';
-		this._tabbedPanel = new TabbedPanel(tabbedPanelContainer);
+		this._tabbedPanel = this._register(new TabbedPanel(tabbedPanelContainer));
 		attachTabbedPanelStyler(this._tabbedPanel, this.themeService);
 
 		const expandPanel = () => {
@@ -393,7 +385,7 @@ export class ProfilerEditor extends EditorPane {
 		detailTableContainer.style.width = '100%';
 		detailTableContainer.style.height = '100%';
 		this._detailTableData = new TableDataView<IDetailData>();
-		this._detailTable = new Table(detailTableContainer, this._accessibilityService, this._quickInputService, {
+		this._detailTable = new Table(detailTableContainer, this._accessibilityService, this._quickInputService, defaultTableStyles, {
 			dataProvider: this._detailTableData, columns: [
 				{
 					id: 'label',
@@ -419,7 +411,7 @@ export class ProfilerEditor extends EditorPane {
 		});
 
 		const detailTableCopyKeybind = new CopyKeybind<IDetailData>();
-		detailTableCopyKeybind.onCopy((ranges: Slick.Range[]) => {
+		this._register(detailTableCopyKeybind.onCopy((ranges: Slick.Range[]) => {
 			// we always only get 1 item in the ranges
 			if (ranges && ranges.length === 1) {
 				handleCopyRequest(this._clipboardService, this.textResourcePropertiesService, ranges[0], (row, cell) => {
@@ -428,7 +420,7 @@ export class ProfilerEditor extends EditorPane {
 					return cell === 0 ? item.label : item.value;
 				});
 			}
-		});
+		}));
 		this._detailTable.setSelectionModel(new CellSelectionModel());
 		this._detailTable.registerPlugin(detailTableCopyKeybind);
 		this._register(this._componentContextService.registerTable(this._detailTable));
@@ -445,11 +437,7 @@ export class ProfilerEditor extends EditorPane {
 		});
 
 		this._collapsedPanelAction = this._instantiationService.createInstance(Actions.ProfilerCollapsablePanelAction, Actions.ProfilerCollapsablePanelAction.ID, Actions.ProfilerCollapsablePanelAction.LABEL);
-
 		this._tabbedPanel.pushAction(this._collapsedPanelAction, { icon: true, label: false });
-
-		this._register(attachTableStyler(this._detailTable, this.themeService));
-
 		return tabbedPanelContainer;
 	}
 
@@ -473,7 +461,6 @@ export class ProfilerEditor extends EditorPane {
 	public override setInput(input: ProfilerInput, options?: IEditorOptions): Promise<void> {
 		let savedViewState = this._savedTableViewStates.get(input);
 
-		this._profilerEditorContextKey.set(true);
 		if (input instanceof ProfilerInput && this.input !== undefined && input.matches(this.input)) {
 			if (savedViewState) {
 				this._profilerTableEditor.restoreViewState(savedViewState);
@@ -509,11 +496,12 @@ export class ProfilerEditor extends EditorPane {
 			if (savedViewState) {
 				this._profilerTableEditor.restoreViewState(savedViewState);
 			}
-		});
-	}
 
-	public override clearInput(): void {
-		this._profilerEditorContextKey.set(false);
+			if (this.input.isFileSession && this.input.isSetupPhase) {		// Add loading indicator when opening a new file session
+				this._profilerTableEditor.loadingSpinner.loading = true;
+				this.input.setInitializerPhase(false);
+			}
+		});
 	}
 
 	public toggleSearch(): void {
@@ -554,14 +542,16 @@ export class ProfilerEditor extends EditorPane {
 			if (this.input.state.isConnected) {
 				this._updateToolbar();
 
-				// Launch the create session dialog if openning a new window.
+				// Launch the create session dialog if opening a new window.
 				let uiState = this._profilerService.getSessionViewState(this.input.id);
 				let previousSessionName = uiState && uiState.previousSessionName;
-				if (!this.input.sessionName && !previousSessionName) {
+				if (!this.input.sessionName && !previousSessionName && !this.input.isFileSession) {
 					this._profilerService.launchCreateSessionDialog(this.input);
 				}
 
-				this._updateSessionSelector(previousSessionName);
+				if (!this.input.isFileSession) {		// skip updating session selector for File session to block starting another session from a non-connected file session
+					this._updateSessionSelector(previousSessionName);
+				}
 			} else {
 				this._startAction.enabled = false;
 				this._stopAction.enabled = false;
@@ -587,7 +577,11 @@ export class ProfilerEditor extends EditorPane {
 			}
 			if (this.input.state.isStopped) {
 				this._updateToolbar();
-				this._updateSessionSelector();
+				if (!this.input.isFileSession) {		// skip updating session selector for File sessions to block starting another session from a non-connected file session
+					this._updateSessionSelector();
+				} else {
+					this._profilerTableEditor.loadingSpinner.loading = false;		// Remove the loading indicator when the complete file is read
+				}
 			}
 		}
 	}
@@ -638,7 +632,6 @@ export class ProfilerEditor extends EditorPane {
 	}
 
 	public override focus() {
-		this._profilerEditorContextKey.set(true);
 		super.focus();
 		let savedViewState = this._savedTableViewStates.get(this.input);
 		if (savedViewState) {
@@ -672,7 +665,7 @@ class StartSearchProfilerTableCommand extends SettingsCommand {
 
 const command = new StartSearchProfilerTableCommand({
 	id: PROFILER_TABLE_COMMAND_SEARCH,
-	precondition: ContextKeyExpr.and(CONTEXT_PROFILER_EDITOR),
+	precondition: ActiveEditorContext.isEqualTo(ProfilerEditor.ID),
 	kbOpts: {
 		primary: KeyMod.CtrlCmd | KeyCode.KeyF,
 		weight: KeybindingWeight.EditorContrib
